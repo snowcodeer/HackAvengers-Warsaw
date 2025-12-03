@@ -6,6 +6,7 @@ let hands;
 let camera;
 let controlData = { x: 0, y: 0 };
 let isHandshakeDetected = false;
+let handshakeFrames = 0;
 
 // Configuration
 const config = {
@@ -124,11 +125,20 @@ function checkHandshake(hand1, hand2) {
 
     // Threshold for "touching"
     if (distance < 0.15) {
-        isHandshakeDetected = true;
+        handshakeFrames++;
     } else {
+        handshakeFrames = Math.max(0, handshakeFrames - 1);
+    }
+
+    // Debounce: Require 10 consecutive frames (approx 0.3s at 30fps)
+    if (handshakeFrames > 10) {
+        isHandshakeDetected = true;
+    } else if (handshakeFrames === 0) {
         isHandshakeDetected = false;
     }
-    updateHandshakeUI(isHandshakeDetected);
+
+    // UI update is now handled by game logic
+    // updateHandshakeUI(isHandshakeDetected);
 }
 
 // UI Updates
@@ -159,7 +169,7 @@ function updateStats(x, y) {
     }
 }
 
-function updateHandshakeUI(detected) {
+export function updateHandshakeUI(detected) {
     const notification = document.getElementById('handshake-notification');
     if (notification) {
         notification.style.display = detected ? 'block' : 'none';

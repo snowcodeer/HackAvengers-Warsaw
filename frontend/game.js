@@ -1,5 +1,5 @@
 // 3D Game World using Three.js
-import { initHandTracker, getControlData, getHandshakeStatus } from './handinput.js';
+import { initHandTracker, getControlData, getHandshakeStatus, updateHandshakeUI } from './camera/handinput.js';
 
 let scene, camera, renderer;
 let player, playerVelocity;
@@ -671,6 +671,15 @@ function updateNPCs() {
         prompt.classList.add('active');
     } else {
         prompt.classList.remove('active');
+    }
+
+    // Handshake Logic
+    const isGestureDetected = getHandshakeStatus();
+    // Only show handshake if gesture is detected AND we are close to an NPC (e.g. < 10 units)
+    if (isGestureDetected && nearestNPC && closestDist < 10) {
+        updateHandshakeUI(true);
+    } else {
+        updateHandshakeUI(false);
     }
 }
 
