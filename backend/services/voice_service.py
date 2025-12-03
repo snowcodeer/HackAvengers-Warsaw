@@ -13,8 +13,17 @@ class VoiceService:
         # In a real implementation, this would call the ElevenLabs API
         pass
 
-    def text_to_speech(self, text: str, voice_id: str):
-        # Placeholder for TTS implementation
-        pass
+    def generate_audio_stream(self, text: str, voice_id: str):
+        # We pass the text directly to ElevenLabs, including [tags] for expression.
+        try:
+            audio_stream = self.client.text_to_speech.convert(
+                text=text,
+                voice_id=voice_id,
+                model_id="eleven_v3" 
+            )
+            return audio_stream
+        except Exception as e:
+            print(f"Error generating audio: {e}")
+            return None
 
 voice_service = VoiceService()
