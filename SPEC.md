@@ -182,7 +182,6 @@ After Babel fractured all languages, rare "Bridgers" can heal the divide by lear
 | 3D Engine | Three.js |
 | Hand Tracking | MediaPipe Hands |
 | UI Layer | HTML / CSS / Vanilla JS |
-| Build Tool | Vite |
 
 **Backend**
 
