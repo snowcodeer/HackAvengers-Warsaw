@@ -166,6 +166,7 @@ function createBunnies() {
         const darkColor = darkenColor(bodyColor, 15);
         const lightColor = lightenColor(bodyColor, 10);
         
+        // Build bunny always facing RIGHT, use scaleX to flip
         bunny.innerHTML = `
             <div class="bunny-body" style="
                 width: 32px;
@@ -178,10 +179,11 @@ function createBunnies() {
                     0 4px 0 0 ${darkColor};
                 transform: scaleX(${facingLeft ? -1 : 1});
             ">
+                <!-- Head -->
                 <div style="
                     position: absolute;
                     top: -12px;
-                    ${facingLeft ? 'right' : 'left'}: -8px;
+                    right: -8px;
                     width: 24px;
                     height: 20px;
                     background: ${bodyColor};
@@ -190,6 +192,7 @@ function createBunnies() {
                         -4px 0 0 0 ${lightColor},
                         0 -4px 0 0 ${lightColor};
                 ">
+                    <!-- Left ear -->
                     <div style="
                         position: absolute;
                         top: -20px;
@@ -208,6 +211,7 @@ function createBunnies() {
                             background: #ffb8b8;
                         "></div>
                     </div>
+                    <!-- Right ear -->
                     <div style="
                         position: absolute;
                         top: -16px;
@@ -226,10 +230,11 @@ function createBunnies() {
                             background: #ffb8b8;
                         "></div>
                     </div>
+                    <!-- Eye -->
                     <div style="
                         position: absolute;
                         top: 6px;
-                        ${facingLeft ? 'left' : 'right'}: 4px;
+                        right: 4px;
                         width: 6px;
                         height: 6px;
                         background: #303030;
@@ -243,37 +248,41 @@ function createBunnies() {
                             background: white;
                         "></div>
                     </div>
+                    <!-- Nose -->
                     <div style="
                         position: absolute;
                         bottom: 2px;
-                        ${facingLeft ? 'left' : 'right'}: -2px;
+                        right: -2px;
                         width: 6px;
                         height: 4px;
                         background: #ffb0b0;
                     "></div>
                 </div>
+                <!-- Tail -->
                 <div style="
                     position: absolute;
                     top: 4px;
-                    ${facingLeft ? 'left' : 'right'}: -10px;
+                    left: -10px;
                     width: 12px;
                     height: 12px;
                     background: ${lightColor};
                     border-radius: 50%;
                 "></div>
+                <!-- Front leg -->
                 <div style="
                     position: absolute;
                     bottom: -8px;
-                    ${facingLeft ? 'right' : 'left'}: 4px;
+                    right: 4px;
                     width: 8px;
                     height: 12px;
                     background: ${bodyColor};
                     box-shadow: 2px 0 0 0 ${darkColor};
                 "></div>
+                <!-- Back leg -->
                 <div style="
                     position: absolute;
                     bottom: -8px;
-                    ${facingLeft ? 'left' : 'right'}: 4px;
+                    left: 4px;
                     width: 10px;
                     height: 14px;
                     background: ${darkColor};
@@ -281,16 +290,76 @@ function createBunnies() {
             </div>
         `;
         
-        const hopDelay = Math.random() * 2;
-        const hopDuration = 0.8 + Math.random() * 0.4;
-        bunny.style.setProperty('--hop-delay', `${hopDelay}s`);
-        bunny.style.setProperty('--hop-duration', `${hopDuration}s`);
-        
-        const moveDistance = 30 + Math.random() * 50;
-        bunny.style.setProperty('--move-distance', `${moveDistance}px`);
-        
         container.appendChild(bunny);
+        
+        // Start random bunny behavior
+        startBunnyBehavior(bunny, facingLeft);
     }
+}
+
+// Random bunny behavior - bunnies only jump in the direction they're facing
+function startBunnyBehavior(bunny, initialFacing) {
+    let currentLeft = parseFloat(bunny.style.left);
+    let facingLeft = initialFacing;
+    const bunnyBody = bunny.querySelector('.bunny-body');
+    
+    function updateFacing() {
+        if (bunnyBody) {
+            bunnyBody.style.transform = `scaleX(${facingLeft ? -1 : 1})`;
+        }
+    }
+    
+    function hop() {
+        // Random behavior: idle, turn around, or hop forward
+        const action = Math.random();
+        
+        if (action < 0.25) {
+            // Idle - just wiggle in place
+            bunny.classList.remove('hopping');
+            bunny.classList.add('idle');
+            setTimeout(hop, 1500 + Math.random() * 2500);
+        } else if (action < 0.4) {
+            // Turn around (don't jump yet)
+            facingLeft = !facingLeft;
+            updateFacing();
+            bunny.classList.remove('hopping');
+            bunny.classList.add('idle');
+            setTimeout(hop, 800 + Math.random() * 1000);
+        } else {
+            // Hop forward in facing direction
+            bunny.classList.remove('idle');
+            bunny.classList.add('hopping');
+            
+            const moveAmount = 4 + Math.random() * 6;
+            
+            // Always move in the direction the bunny is facing
+            if (facingLeft) {
+                currentLeft = Math.max(5, currentLeft - moveAmount);
+            } else {
+                currentLeft = Math.min(90, currentLeft + moveAmount);
+            }
+            
+            // If hitting bounds, turn around AFTER this hop
+            if (currentLeft <= 5 || currentLeft >= 90) {
+                setTimeout(() => {
+                    facingLeft = !facingLeft;
+                    updateFacing();
+                }, 500);
+            }
+            
+            bunny.style.left = `${currentLeft}%`;
+            
+            // Schedule next action after hop animation completes
+            setTimeout(() => {
+                bunny.classList.remove('hopping');
+                setTimeout(hop, 400 + Math.random() * 1500);
+            }, 500);
+            return;
+        }
+    }
+    
+    // Start with random delay
+    setTimeout(hop, Math.random() * 2000);
 }
 
 // Create huge pixel trees
@@ -311,8 +380,25 @@ function createPixelTree(container, leftPos, index) {
     const treeHeight = window.innerHeight * (1.2 + Math.random() * 0.5);
     const trunkWidth = 40 + Math.floor(Math.random() * 30);
     
-    const growDelay = 0.2 + index * 0.3;
-    tree.style.animationDelay = `${growDelay}s`;
+    const baseDelay = 0.1 + index * 0.5;
+    
+    // Single trunk piece
+    const trunkHTML = `
+        <div class="tree-trunk" style="
+            width: ${trunkWidth}px;
+            height: ${treeHeight * 0.5}px;
+            background: #6a4420;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow:
+                ${Math.floor(trunkWidth * 0.2)}px 0 0 0 #4a2a10,
+                -${Math.floor(trunkWidth * 0.2)}px 0 0 0 #8a5a30,
+                inset 8px 0 0 0 #8a5a30,
+                inset -8px 0 0 0 #4a2a10;
+        "></div>
+    `;
     
     const foliageRows = 8 + Math.floor(Math.random() * 5);
     let foliageHTML = '';
@@ -329,6 +415,7 @@ function createPixelTree(container, leftPos, index) {
                 width: ${rowWidth}px;
                 height: ${rowHeight}px;
                 background: ${greenShade};
+                position: absolute;
                 bottom: ${treeHeight * 0.4 + offsetY}px;
                 left: 50%;
                 transform: translateX(-50%);
@@ -345,6 +432,7 @@ function createPixelTree(container, leftPos, index) {
                     width: ${rowWidth * 0.8}px;
                     height: 16px;
                     background: #f8f8f8;
+                    position: absolute;
                     bottom: ${treeHeight * 0.4 + offsetY + rowHeight - 8}px;
                     left: 50%;
                     transform: translateX(-50%);
@@ -357,23 +445,8 @@ function createPixelTree(container, leftPos, index) {
         }
     }
     
-    tree.innerHTML = `
-        <div class="tree-trunk" style="
-            width: ${trunkWidth}px;
-            height: ${treeHeight * 0.5}px;
-            background: #6a4420;
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow:
-                ${Math.floor(trunkWidth * 0.2)}px 0 0 0 #4a2a10,
-                -${Math.floor(trunkWidth * 0.2)}px 0 0 0 #8a5a30,
-                inset 8px 0 0 0 #8a5a30,
-                inset -8px 0 0 0 #4a2a10;
-        "></div>
-        ${foliageHTML}
-    `;
+    tree.innerHTML = `${trunkHTML}${foliageHTML}`;
+    tree.style.animationDelay = `${baseDelay}s`;
     
     container.appendChild(tree);
 }
@@ -429,8 +502,8 @@ function createFlower(container, index, leftPos, growOrderIndex) {
     const curveDirection = Math.random() > 0.5 ? 1 : -1;
     const curveIntensity = 60 + Math.random() * 80;
     
-    const growDelay = 0.5 + (growOrderIndex * 0.25);
-    flower.style.animationDelay = `${growDelay}s`;
+    // Grow delay for this flower
+    const growDelay = 0.2 + (growOrderIndex * 0.15);
     
     const swayAmount = 1 + Math.random() * 2;
     const swayDuration = 3 + Math.random() * 2;
@@ -438,7 +511,7 @@ function createFlower(container, index, leftPos, growOrderIndex) {
     const stemHTML = createPixelCurvedStem(totalHeight, stemWidth, curveDirection, curveIntensity);
     const headOffsetX = curveDirection * curveIntensity;
     
-    // Container size needs to be bigger to fit petals (petals extend via box-shadow)
+    // Container size needs to be bigger to fit petals
     const containerSize = flowerSize + (petalSize * 3);
     
     flower.innerHTML = `
@@ -484,14 +557,18 @@ function createFlower(container, index, leftPos, growOrderIndex) {
         </div>
     `;
     
+    // Set animation delay
+    flower.style.animationDelay = `${growDelay}s`;
+    flower.style.setProperty('--grow-delay', `${growDelay}s`);
     flower.style.setProperty('--sway-amount', `${swayAmount}deg`);
     flower.style.setProperty('--sway-duration', `${swayDuration}s`);
     
     container.appendChild(flower);
     
+    // Start swaying after grown
     setTimeout(() => {
         flower.classList.add('sway');
-    }, (growDelay + 2.5) * 1000);
+    }, (growDelay + 2.2) * 1000);
 }
 
 function createPixelCurvedStem(height, width, direction, intensity) {
@@ -548,132 +625,196 @@ function createPixelCurvedStem(height, width, direction, intensity) {
     return stemHTML;
 }
 
-// Create petals with snow on top
+// Create beautiful detailed pixel petals
 function createPixelPetalsWithSnow(size, color, style) {
-    const darkColor = darkenColor(color, 15);
-    const lightColor = lightenColor(color, 15);
-    const snowColor = '#ffffff';
-    const snowShadow = '#e0e8f0';
+    const darkColor = darkenColor(color, 25);
+    const darkerColor = darkenColor(color, 40);
+    const lightColor = lightenColor(color, 30);
+    const lighterColor = lightenColor(color, 50);
+    const highlightColor = lightenColor(color, 70);
     
-    const s = size;
-    const s7 = Math.floor(s * 0.7);
-    const s5 = Math.floor(s * 0.5);
-    const s12 = Math.floor(s * 1.2);
-    const snowS = Math.floor(s * 0.6); // Snow size slightly smaller
+    // Petal dimensions
+    const s = Math.floor(size * 1.6);
+    const spread = Math.floor(size * 0.45);
+    const smallSpread = Math.floor(size * 0.25);
+    const tinySpread = Math.floor(size * 0.15);
+    const centerSize = Math.floor(size * 1.4);
     
-    let petalShadow;
-    let snowShadowStr;
+    // Inner detail positions
+    const inner = Math.floor(s * 0.5);
+    const mid = Math.floor(s * 0.75);
+    
+    let petalsHTML = '';
     
     switch(style) {
         case 'star':
-            petalShadow = `
-                0 -${s}px 0 0 ${color},
-                0 ${s}px 0 0 ${color},
-                -${s}px 0 0 0 ${color},
-                ${s}px 0 0 0 ${color},
-                -${s5}px -${s5}px 0 0 ${darkColor},
-                ${s5}px -${s5}px 0 0 ${darkColor},
-                -${s5}px ${s5}px 0 0 ${darkColor},
-                ${s5}px ${s5}px 0 0 ${darkColor}
-            `;
-            snowShadowStr = `
-                0 -${s}px 0 0 ${snowColor},
-                -${s5}px -${s5}px 0 0 ${snowShadow},
-                ${s5}px -${s5}px 0 0 ${snowShadow}
+            // 8-pointed star with layered detail
+            petalsHTML = `
+                <div style="
+                    position: absolute;
+                    width: ${centerSize}px;
+                    height: ${centerSize}px;
+                    background: ${color};
+                    box-shadow:
+                        /* Outer petals - dark edges */
+                        0 -${s}px 0 ${spread}px ${darkColor},
+                        0 ${s}px 0 ${spread}px ${darkColor},
+                        -${s}px 0 0 ${spread}px ${darkColor},
+                        ${s}px 0 0 ${spread}px ${darkColor},
+                        /* Diagonal petals */
+                        -${mid}px -${mid}px 0 ${smallSpread}px ${color},
+                        ${mid}px -${mid}px 0 ${smallSpread}px ${color},
+                        -${mid}px ${mid}px 0 ${smallSpread}px ${darkerColor},
+                        ${mid}px ${mid}px 0 ${smallSpread}px ${darkerColor},
+                        /* Main petal colors */
+                        0 -${Math.floor(s*0.85)}px 0 ${smallSpread}px ${color},
+                        0 ${Math.floor(s*0.85)}px 0 ${smallSpread}px ${color},
+                        -${Math.floor(s*0.85)}px 0 0 ${smallSpread}px ${lightColor},
+                        ${Math.floor(s*0.85)}px 0 0 ${smallSpread}px ${color},
+                        /* Inner highlights */
+                        0 -${inner}px 0 ${tinySpread}px ${lightColor},
+                        -${inner}px 0 0 ${tinySpread}px ${lighterColor},
+                        /* Pixel detail spots */
+                        -${Math.floor(s*0.3)}px -${Math.floor(s*0.8)}px 0 3px ${highlightColor},
+                        ${Math.floor(s*0.3)}px -${Math.floor(s*0.6)}px 0 2px ${lighterColor};
+                "></div>
             `;
             break;
+            
         case 'diamond':
-            petalShadow = `
-                0 -${s12}px 0 0 ${color},
-                0 ${s12}px 0 0 ${color},
-                -${s12}px 0 0 0 ${color},
-                ${s12}px 0 0 0 ${color},
-                0 -${s}px 0 0 ${lightColor},
-                0 ${s}px 0 0 ${lightColor},
-                -${s}px 0 0 0 ${lightColor},
-                ${s}px 0 0 0 ${lightColor}
-            `;
-            snowShadowStr = `
-                0 -${s12}px 0 0 ${snowColor},
-                0 -${s}px 0 0 ${snowShadow},
-                -${Math.floor(s12 * 0.5)}px -${Math.floor(s12 * 0.5)}px 0 0 ${snowShadow},
-                ${Math.floor(s12 * 0.5)}px -${Math.floor(s12 * 0.5)}px 0 0 ${snowShadow}
+            // Elegant diamond petals with gradient layers
+            petalsHTML = `
+                <div style="
+                    position: absolute;
+                    width: ${centerSize}px;
+                    height: ${centerSize}px;
+                    background: ${color};
+                    box-shadow:
+                        /* Outer dark edges */
+                        0 -${s}px 0 ${spread}px ${darkerColor},
+                        0 ${s}px 0 ${spread}px ${darkerColor},
+                        -${s}px 0 0 ${spread}px ${darkerColor},
+                        ${s}px 0 0 ${spread}px ${darkerColor},
+                        /* Mid layer */
+                        0 -${Math.floor(s*0.8)}px 0 ${smallSpread}px ${darkColor},
+                        0 ${Math.floor(s*0.8)}px 0 ${smallSpread}px ${darkColor},
+                        -${Math.floor(s*0.8)}px 0 0 ${smallSpread}px ${color},
+                        ${Math.floor(s*0.8)}px 0 0 ${smallSpread}px ${color},
+                        /* Inner bright layer */
+                        0 -${inner}px 0 ${smallSpread}px ${color},
+                        0 ${inner}px 0 ${smallSpread}px ${color},
+                        -${inner}px 0 0 ${smallSpread}px ${lightColor},
+                        ${inner}px 0 0 ${smallSpread}px ${lightColor},
+                        /* Diagonal accents */
+                        -${mid}px -${mid}px 0 ${tinySpread}px ${lightColor},
+                        ${mid}px -${mid}px 0 ${tinySpread}px ${lightColor},
+                        /* Highlight spots */
+                        0 -${Math.floor(s*0.5)}px 0 4px ${highlightColor},
+                        -${Math.floor(s*0.5)}px 0 0 3px ${lighterColor},
+                        ${Math.floor(s*0.4)}px -${Math.floor(s*0.4)}px 0 2px ${highlightColor};
+                "></div>
             `;
             break;
+            
         case 'tulip':
-            petalShadow = `
-                0 -${s12}px 0 0 ${color},
-                -${s7}px -${s7}px 0 0 ${color},
-                ${s7}px -${s7}px 0 0 ${color},
-                -${s}px 0 0 0 ${lightColor},
-                ${s}px 0 0 0 ${lightColor},
-                -${s5}px ${s5}px 0 0 ${darkColor},
-                ${s5}px ${s5}px 0 0 ${darkColor}
-            `;
-            snowShadowStr = `
-                0 -${s12}px 0 0 ${snowColor},
-                -${s7}px -${s7}px 0 0 ${snowShadow},
-                ${s7}px -${s7}px 0 0 ${snowShadow}
+            // Tulip with curved appearance
+            petalsHTML = `
+                <div style="
+                    position: absolute;
+                    width: ${centerSize}px;
+                    height: ${centerSize}px;
+                    background: ${color};
+                    box-shadow:
+                        /* Main tulip shape - outer */
+                        0 -${s}px 0 ${spread}px ${color},
+                        -${Math.floor(s*0.9)}px -${mid}px 0 ${spread}px ${lightColor},
+                        ${Math.floor(s*0.9)}px -${mid}px 0 ${spread}px ${darkColor},
+                        /* Middle layer */
+                        0 -${Math.floor(s*0.7)}px 0 ${smallSpread}px ${lightColor},
+                        -${Math.floor(s*0.6)}px -${inner}px 0 ${smallSpread}px ${lighterColor},
+                        ${Math.floor(s*0.6)}px -${inner}px 0 ${smallSpread}px ${color},
+                        /* Inner cup */
+                        -${Math.floor(s*0.3)}px 0 0 ${smallSpread}px ${lightColor},
+                        ${Math.floor(s*0.3)}px 0 0 ${smallSpread}px ${darkColor},
+                        /* Dark base */
+                        -${Math.floor(s*0.4)}px ${Math.floor(s*0.3)}px 0 ${tinySpread}px ${darkerColor},
+                        ${Math.floor(s*0.4)}px ${Math.floor(s*0.3)}px 0 ${tinySpread}px ${darkerColor},
+                        /* Highlights */
+                        0 -${Math.floor(s*0.85)}px 0 4px ${highlightColor},
+                        -${Math.floor(s*0.5)}px -${Math.floor(s*0.6)}px 0 3px ${highlightColor},
+                        -${Math.floor(s*0.7)}px -${Math.floor(s*0.3)}px 0 2px ${lighterColor};
+                "></div>
             `;
             break;
+            
         case 'daisy':
-            petalShadow = `
-                0 -${s}px 0 0 ${color},
-                0 ${s}px 0 0 ${color},
-                -${s}px 0 0 0 ${color},
-                ${s}px 0 0 0 ${color},
-                -${s7}px -${s7}px 0 0 ${color},
-                ${s7}px -${s7}px 0 0 ${color},
-                -${s7}px ${s7}px 0 0 ${color},
-                ${s7}px ${s7}px 0 0 ${color},
-                0 -${s12}px 0 0 ${darkColor},
-                0 ${s12}px 0 0 ${darkColor},
-                -${s12}px 0 0 0 ${darkColor},
-                ${s12}px 0 0 0 ${darkColor}
-            `;
-            snowShadowStr = `
-                0 -${s}px 0 0 ${snowColor},
-                0 -${s12}px 0 0 ${snowColor},
-                -${s7}px -${s7}px 0 0 ${snowShadow},
-                ${s7}px -${s7}px 0 0 ${snowShadow}
+            // Full daisy with many detailed petals
+            petalsHTML = `
+                <div style="
+                    position: absolute;
+                    width: ${centerSize}px;
+                    height: ${centerSize}px;
+                    background: ${color};
+                    box-shadow:
+                        /* 8 outer petals with edges */
+                        0 -${s}px 0 ${spread}px ${color},
+                        0 ${s}px 0 ${spread}px ${darkColor},
+                        -${s}px 0 0 ${spread}px ${lightColor},
+                        ${s}px 0 0 ${spread}px ${darkColor},
+                        -${mid}px -${mid}px 0 ${spread}px ${color},
+                        ${mid}px -${mid}px 0 ${spread}px ${color},
+                        -${mid}px ${mid}px 0 ${spread}px ${darkColor},
+                        ${mid}px ${mid}px 0 ${spread}px ${darkColor},
+                        /* Inner petal layer */
+                        0 -${Math.floor(s*0.7)}px 0 ${smallSpread}px ${lightColor},
+                        0 ${Math.floor(s*0.7)}px 0 ${smallSpread}px ${color},
+                        -${Math.floor(s*0.7)}px 0 0 ${smallSpread}px ${lighterColor},
+                        ${Math.floor(s*0.7)}px 0 0 ${smallSpread}px ${color},
+                        /* Inner diagonal accents */
+                        -${inner}px -${inner}px 0 ${tinySpread}px ${lighterColor},
+                        ${inner}px -${inner}px 0 ${tinySpread}px ${lightColor},
+                        /* Pixel highlights on petals */
+                        0 -${Math.floor(s*0.8)}px 0 4px ${highlightColor},
+                        -${Math.floor(s*0.8)}px 0 0 3px ${highlightColor},
+                        -${Math.floor(s*0.5)}px -${Math.floor(s*0.5)}px 0 3px ${highlightColor},
+                        ${Math.floor(s*0.4)}px -${Math.floor(s*0.7)}px 0 2px ${lighterColor};
+                "></div>
             `;
             break;
-        default: // round
-            petalShadow = `
-                0 -${s}px 0 0 ${color},
-                0 ${s}px 0 0 ${color},
-                -${s}px 0 0 0 ${color},
-                ${s}px 0 0 0 ${color},
-                -${s7}px -${s7}px 0 0 ${darkColor},
-                ${s7}px -${s7}px 0 0 ${darkColor},
-                -${s7}px ${s7}px 0 0 ${darkColor},
-                ${s7}px ${s7}px 0 0 ${darkColor}
-            `;
-            snowShadowStr = `
-                0 -${s}px 0 0 ${snowColor},
-                -${s7}px -${s7}px 0 0 ${snowShadow},
-                ${s7}px -${s7}px 0 0 ${snowShadow}
+            
+        default: // round - classic 4-petal with detail
+            petalsHTML = `
+                <div style="
+                    position: absolute;
+                    width: ${centerSize}px;
+                    height: ${centerSize}px;
+                    background: ${color};
+                    box-shadow:
+                        /* Outer petals with dark edges */
+                        0 -${s}px 0 ${spread}px ${darkColor},
+                        0 ${s}px 0 ${spread}px ${darkerColor},
+                        -${s}px 0 0 ${spread}px ${darkColor},
+                        ${s}px 0 0 ${spread}px ${darkerColor},
+                        /* Main petal colors */
+                        0 -${Math.floor(s*0.85)}px 0 ${smallSpread}px ${color},
+                        0 ${Math.floor(s*0.85)}px 0 ${smallSpread}px ${darkColor},
+                        -${Math.floor(s*0.85)}px 0 0 ${smallSpread}px ${lightColor},
+                        ${Math.floor(s*0.85)}px 0 0 ${smallSpread}px ${color},
+                        /* Inner bright layer */
+                        0 -${inner}px 0 ${smallSpread}px ${lightColor},
+                        0 ${inner}px 0 ${smallSpread}px ${color},
+                        -${inner}px 0 0 ${smallSpread}px ${lighterColor},
+                        ${inner}px 0 0 ${smallSpread}px ${lightColor},
+                        /* Highlight spots */
+                        0 -${Math.floor(s*0.6)}px 0 4px ${highlightColor},
+                        -${Math.floor(s*0.6)}px 0 0 4px ${highlightColor},
+                        -${Math.floor(s*0.3)}px -${Math.floor(s*0.7)}px 0 2px ${lighterColor},
+                        ${Math.floor(s*0.2)}px -${Math.floor(s*0.5)}px 0 2px ${highlightColor};
+                "></div>
             `;
     }
     
-    return `
-        <div class="flower-petals" style="
-            width: ${size}px;
-            height: ${size}px;
-            background: ${color};
-            position: absolute;
-            box-shadow: ${petalShadow};
-        "></div>
-        <div class="flower-snow-petals" style="
-            width: ${Math.floor(size * 0.7)}px;
-            height: ${Math.floor(size * 0.5)}px;
-            background: ${snowColor};
-            position: absolute;
-            top: -${Math.floor(size * 0.3)}px;
-            box-shadow: ${snowShadowStr};
-            z-index: 6;
-        "></div>
-    `;
+    return petalsHTML;
 }
 
 function lightenColor(color, percent) {
@@ -726,17 +867,6 @@ function initPixelSnowfall() {
 
 function initButtonEffects() {
     const beginBtn = document.getElementById('beginBtn');
-    const snowChunks = beginBtn.querySelectorAll('.snow-chunk');
-    
-    beginBtn.addEventListener('mouseleave', () => {
-        setTimeout(() => {
-            snowChunks.forEach(chunk => {
-                chunk.style.animation = 'none';
-                chunk.offsetHeight;
-                chunk.style.animation = '';
-            });
-        }, 500);
-    });
     
     beginBtn.addEventListener('click', () => {
         beginBtn.style.transform = 'translateY(8px)';
