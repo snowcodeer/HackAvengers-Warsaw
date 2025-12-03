@@ -4,22 +4,71 @@ This is the backend for the Mówka language learning game, built with FastAPI.
 
 ## Current Capabilities
 
-The backend currently provides the following API endpoints (mocked data):
+The backend provides the following API endpoints with **real AI integration**:
 
 ### Conversation (`/api/conversation`)
-- `POST /start`: Initializes a conversation session with an NPC.
-- `POST /respond`: Accepts audio/text input and returns an NPC response.
-  - *Note*: Currently mocks STT and returns a placeholder response.
-- `POST /end`: Ends the conversation session.
+- `POST /start`: Initializes a conversation with an NPC.
+  - **LLM**: Uses **Claude 3 Haiku** to generate context-aware, goal-oriented greetings.
+  - **TTS**: Streams audio using **ElevenLabs v3** with expressive voice tags.
+- `POST /respond`: Accepts text input and returns an NPC response.
+  - **Logic**: Handles redirects (wrong NPC), hints, and quest progression.
+  - **Audio**: Returns an `audio_url` for streaming the response.
+- `GET /audio/{audio_id}`: Streams generated audio directly to the client.
 
 ### Quest & Vocabulary (`/api/quest`)
-- `GET /state`: Returns the current quest state (e.g., "Find the lost cat").
+- `GET /state`: Returns the current quest state.
+- `POST /state`: Manually updates the quest state.
 - `GET /vocabulary`: Returns a list of learned words.
 
-## Tests
+## Project Status
 
-The project includes automated tests using `pytest` to verify API functionality:
+- [x] **Core Backend Setup** (FastAPI, Project Structure)
+- [x] **NPC Logic Engine** (Claude 3 Haiku Integration)
+  - [x] Goal-oriented prompting
+  - [x] Redirect logic for out-of-order interactions
+  - [x] Automatic quest advancement via `[DONE]` tag
+- [x] **Voice Integration** (ElevenLabs)
+  - [x] Text-to-Speech (TTS) implementation
+  - [x] Audio streaming endpoint
+  - [x] Expressive voice tags (`[sadly]`, `[excited]`, etc.) using **Eleven v3**
+- [ ] **Speech-to-Text (STT)**
+  - [ ] Integrate ElevenLabs STT for microphone input
+- [ ] **Frontend Integration**
+  - [x] Basic API connection
+  - [x] Audio playback
+  - [ ] STT Input UI
+  - [ ] Quest UI updates
+- [ ] **Game Content**
+  - [ ] Expand questline beyond the initial "Find Cat" demo
+  - [ ] Add more vocabulary tracking
 
-- `test_read_main`: Checks if the server is running and root endpoint returns 200 OK.
-- `test_start_conversation`: Verifies conversation initialization with an NPC.
-- `test_quest_state`: Verifies the initial quest state is returned correctly.
+## Setup & Running
+
+1.  **Create Virtual Environment**:
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
+
+2.  **Install Dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3.  **Environment Variables**:
+    Create a `.env` file with:
+    ```
+    ANTHROPIC_API_KEY=your_key
+    ELEVENLABS_API_KEY=your_key
+    ```
+
+4.  **Run Server**:
+    ```bash
+    uvicorn main:app --reload
+    ```
+    The API will be available at `http://localhost:8000`. Documentation is at `/docs`.
+
+5.  **Run Tests**:
+    ```bash
+    PYTHONPATH=. pytest
+    ```

@@ -14,12 +14,12 @@ After Babel fractured all languages, rare "Bridgers" can heal the divide by lear
 
 ## **3. Core Gameplay**
 
-1. Navigate 3D village using hand gestures (TBD)
-2. Approach NPC → prompt appears: "Handshake to talk"
-3. Handshake gesture → initiate conversation
-4. Respond with voice → transcription appears with errors highlighted
-5. NPC models correct pronunciation: "Szukam kota? Tak, widziałem."
-6. Follow clues across village → find cat → return to child
+- [ ] Navigate 3D village using hand gestures (TBD)
+- [ ] Approach NPC → prompt appears: "Handshake to talk"
+- [ ] Handshake gesture → initiate conversation
+- [ ] Respond with voice → transcription appears with errors highlighted
+- [ ] NPC models correct pronunciation: "Szukam kota? Tak, widziałem."
+- [ ] Follow clues across village → find cat → return to child
 
 ---
 
@@ -57,14 +57,14 @@ After Babel fractured all languages, rare "Bridgers" can heal the divide by lear
 | Conversation end | Return to idle |
 
 **6.2 Voice Interaction**
-- Player speaks Polish to NPCs
-- NPCs respond with synthesised Polish speech
-- Natural conversation flow with contextual responses
+- [ ] Player speaks Polish to NPCs
+- [ ] NPCs respond with synthesised Polish speech
+- [ ] Natural conversation flow with contextual responses
 
 **6.3 Speech Feedback**
-- Real-time transcription displayed in speech bubble
-- Errors highlighted in bold
-- NPC models correct pronunciation in response
+- [ ] Real-time transcription displayed in speech bubble
+- [ ] Errors highlighted in bold
+- [ ] NPC models correct pronunciation in response
 
 **6.4 Help System**
 
@@ -78,17 +78,31 @@ After Babel fractured all languages, rare "Bridgers" can heal the divide by lear
 | Stuck (3+ failed attempts) | Bird flies in with English support |
 
 **6.5 Bird Helper ([Placeholder])**
-- Appears when player is truly stuck
-- Flies into scene, perches nearby
-- Speaks in both English and Polish (bilingual helper)
-- Uses neutral ElevenLabs voice
-- Flies away once player succeeds
+- [ ] Appears when player is truly stuck
+- [ ] Flies into scene, perches nearby
+- [ ] Speaks in both English and Polish (bilingual helper)
+- [ ] Uses neutral ElevenLabs voice
+- [ ] Flies away once player succeeds
 
 **6.6 Vocabulary Journal**
-- Tracks words learned
-- Shows pronunciation guide
-- Logs player attempts and accuracy
-- Accessible via voice: "Słownik"
+- [ ] Tracks words learned
+- [ ] Shows pronunciation guide
+- [ ] Logs player attempts and accuracy
+- [ ] Accessible via voice: "Słownik"
+
+**6.7 Context Clues (New)**
+- [x] **Echo Sight**: Looking in the direction of a quest objective causes the relevant Polish keyword in the objective text to glow.
+- [x] **Thought Bubbles**: NPCs display icons (pictograms) above their heads representing key subjects (e.g., a cat icon when saying "kot").
+- [x] **Objective UI**: Top of screen displays current goal in simple Polish (e.g., "Idź do ogrodu").
+
+**6.8 Difficulty Progression (New)**
+The game uses a scaffolding system to gradually increase Polish complexity.
+- [x] **Level 1**: Mostly English, key Polish words (e.g., "kot", "tak").
+- [x] **Level 2**: Simple Polish sentences, English repetition.
+- [x] **Level 3**: Polish, English only if confused.
+- [x] **Level 4**: Polish only, simple grammar.
+- [x] **Level 5**: Natural Polish.
+- [x] **Scaling**: Difficulty increases automatically every 10 conversation turns.
 
 ---
 
@@ -138,9 +152,9 @@ After Babel fractured all languages, rare "Bridgers" can heal the divide by lear
 | Garden | Fence, plants, bench |
 
 **9.3 Visual Style**
-- Warm, hand-painted aesthetic
-- Muted earth tones, golden light
-- Crumbling Babel tower in background
+- [ ] Warm, hand-painted aesthetic
+- [ ] Muted earth tones, golden light
+- [ ] Crumbling Babel tower in background
 
 ---
 
@@ -284,13 +298,13 @@ Player speaks
 | Property | Value |
 |----------|-------|
 | Endpoint | `POST https://api.anthropic.com/v1/messages` |
-| Model | `claude-sonnet-4-20250514` |
+| Model | `claude-3-5-sonnet-20240620` |
 
 **Request Structure**
 
 ```json
 {
-  "model": "claude-sonnet-4-20250514",
+  "model": "claude-3-5-sonnet-20240620",
   "max_tokens": 256,
   "system": "[NPC persona + teaching instructions]",
   "messages": [
@@ -328,13 +342,13 @@ Player speaks
 ## **12. Scope**
 
 **In Scope (MVP):**
-- 1 village, 4 locations
-- 5 NPCs (child, Mati, Jade, Kitty, bird)
-- 1 quest
-- Hand gesture navigation (TBD)
-- Handshake to initiate conversation
-- Voice interaction via ElevenLabs
-- Claude-powered NPC conversations
-- Speech feedback with error highlighting
-- Bird helper (bilingual)
-- Vocabulary journal
+- [ ] 1 village, 4 locations
+- [ ] 5 NPCs (child, Mati, Jade, Kitty, bird)
+- [ ] 1 quest
+- [ ] Hand gesture navigation (TBD)
+- [ ] Handshake to initiate conversation
+- [ ] Voice interaction via ElevenLabs
+- [ ] Claude-powered NPC conversations
+- [ ] Speech feedback with error highlighting
+- [ ] Bird helper (bilingual)
+- [ ] Vocabulary journal
