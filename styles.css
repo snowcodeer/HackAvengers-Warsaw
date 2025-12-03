@@ -121,6 +121,7 @@ body {
     width: 100%;
     height: calc(100% - 80px);
     pointer-events: none;
+    overflow: visible;
 }
 
 /* Z-INDEX ORDER: Trees (back) -> Flowers -> Bushes -> Rocks -> Bunnies (front) */
@@ -130,23 +131,34 @@ body {
     position: absolute;
     bottom: 0;
     transform-origin: bottom center;
-    animation: treeGrow 2s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
-    opacity: 0;
     z-index: 1;
+    overflow: visible;
+    opacity: 0;
+    animation: treeGrow 1.5s ease-out forwards;
 }
 
 @keyframes treeGrow {
-    0% { transform: scaleY(0) scaleX(0.7); opacity: 0; }
-    20% { opacity: 1; }
-    70% { transform: scaleY(1.05) scaleX(1); }
-    100% { transform: scaleY(1) scaleX(1); opacity: 1; }
+    0% { 
+        opacity: 0;
+        transform: scaleY(0) scaleX(0.8);
+    }
+    30% { 
+        opacity: 1;
+    }
+    80% { 
+        transform: scaleY(1.02) scaleX(1);
+    }
+    100% { 
+        opacity: 1;
+        transform: scaleY(1) scaleX(1);
+    }
 }
 
-.tree-foliage-row, .tree-snow-row {
-    position: absolute;
+.tree-trunk, .tree-foliage-row, .tree-snow-row {
+    /* Elements are positioned inline */
 }
 
-/* Flowers - MIDDLE - NO CLIP PATH, use wrapper for overflow */
+/* Flowers */
 .flower {
     position: absolute;
     bottom: 0;
@@ -155,45 +167,43 @@ body {
     align-items: center;
     transform-origin: bottom center;
     z-index: 2;
-    animation: flowerGrowPixel 2.5s steps(20) forwards;
+    overflow: visible;
     opacity: 0;
+    animation: flowerGrow 2s ease-out forwards;
 }
 
-@keyframes flowerGrowPixel {
+@keyframes flowerGrow {
     0% { 
         opacity: 0;
-        transform: scaleY(0);
+        transform: scaleY(0) scaleX(0.5);
     }
-    5% {
+    20% { 
         opacity: 1;
-        transform: scaleY(0.05);
     }
-    10% { transform: scaleY(0.1); }
-    15% { transform: scaleY(0.15); }
-    20% { transform: scaleY(0.2); }
-    25% { transform: scaleY(0.25); }
-    30% { transform: scaleY(0.3); }
-    35% { transform: scaleY(0.35); }
-    40% { transform: scaleY(0.4); }
-    45% { transform: scaleY(0.45); }
-    50% { transform: scaleY(0.5); }
-    55% { transform: scaleY(0.55); }
-    60% { transform: scaleY(0.6); }
-    65% { transform: scaleY(0.65); }
-    70% { transform: scaleY(0.7); }
-    75% { transform: scaleY(0.75); }
-    80% { transform: scaleY(0.8); }
-    85% { transform: scaleY(0.85); }
-    90% { transform: scaleY(0.9); }
-    95% { transform: scaleY(0.95); }
+    80% { 
+        transform: scaleY(1.02) scaleX(1);
+    }
     100% { 
         opacity: 1;
-        transform: scaleY(1);
+        transform: scaleY(1) scaleX(1);
     }
+}
+
+.flower-stem-container {
+    overflow: visible;
+}
+
+.stem-segment, .pixel-leaf {
+    /* Shown immediately, flower animates as whole */
+}
+
+.flower-head-wrapper {
+    overflow: visible;
 }
 
 .flower.sway {
-    animation: flowerGrowPixel 2.5s steps(20) forwards, flowerSway var(--sway-duration, 3s) ease-in-out infinite;
+    animation: flowerGrow 2s ease-out forwards, flowerSway var(--sway-duration, 3s) ease-in-out infinite;
+    animation-delay: var(--grow-delay, 0s), calc(var(--grow-delay, 0s) + 2s);
 }
 
 @keyframes flowerSway {
@@ -259,19 +269,26 @@ body {
     position: absolute;
     bottom: 8px;
     z-index: 20;
-    animation: bunnyHop var(--hop-duration, 0.8s) ease-in-out infinite;
-    animation-delay: var(--hop-delay, 0s);
+    transition: left 0.5s ease-out;
 }
 
-@keyframes bunnyHop {
-    0%, 100% { transform: translateY(0) translateX(0); }
-    15% { transform: translateY(-20px) translateX(calc(var(--move-distance, 30px) * 0.2)); }
-    30% { transform: translateY(-35px) translateX(calc(var(--move-distance, 30px) * 0.4)); }
-    45% { transform: translateY(-25px) translateX(calc(var(--move-distance, 30px) * 0.6)); }
-    60% { transform: translateY(0) translateX(calc(var(--move-distance, 30px) * 0.8)); }
-    75% { transform: translateY(-15px) translateX(var(--move-distance, 30px)); }
-    85% { transform: translateY(0) translateX(calc(var(--move-distance, 30px) * 0.6)); }
-    92% { transform: translateY(-8px) translateX(calc(var(--move-distance, 30px) * 0.3)); }
+.pixel-bunny.hopping {
+    animation: bunnyJump 0.5s ease-out forwards;
+}
+
+@keyframes bunnyJump {
+    0% { transform: translateY(0); }
+    40% { transform: translateY(-40px); }
+    100% { transform: translateY(0); }
+}
+
+.pixel-bunny.idle {
+    animation: bunnyIdle 2s ease-in-out infinite;
+}
+
+@keyframes bunnyIdle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
 }
 
 /* Snow Container */
@@ -307,25 +324,34 @@ body {
     transform: translate(-50%, -50%);
     text-align: center;
     z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .title {
     font-family: 'Press Start 2P', cursive;
     font-size: 6rem;
     color: var(--cream);
-    text-shadow: 8px 8px 0 var(--cozy-orange), 16px 16px 0 var(--wood-dark);
+    text-shadow: 6px 6px 0 var(--cozy-orange), 12px 12px 0 var(--wood-dark);
     letter-spacing: 12px;
     margin-bottom: 50px;
-    animation: titlePulse 2s ease-in-out infinite;
+    animation: titlePulse 4s ease-in-out infinite;
 }
 
 @keyframes titlePulse {
-    0%, 100% { text-shadow: 8px 8px 0 var(--cozy-orange), 16px 16px 0 var(--wood-dark); }
-    50% { text-shadow: 8px 8px 0 var(--cozy-yellow), 16px 16px 0 var(--cozy-orange); }
+    0%, 100% { text-shadow: 6px 6px 0 var(--cozy-orange), 12px 12px 0 var(--wood-dark); }
+    50% { text-shadow: 6px 6px 0 #f8c848, 12px 12px 0 var(--wood-dark); }
 }
 
 /* Button */
-.button-container { position: relative; }
+.button-container { 
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
 
 .begin-btn {
     font-family: 'Press Start 2P', cursive;
@@ -339,6 +365,9 @@ body {
     box-shadow: 0 8px 0 0 var(--wood-shadow), 8px 0 0 0 var(--wood-dark), 8px 8px 0 0 var(--wood-shadow), inset 4px 4px 0 0 var(--wood-light), inset -4px -4px 0 0 var(--wood-dark);
     transition: all 0.05s ease;
     overflow: visible;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .begin-btn::before {
@@ -376,45 +405,53 @@ body {
     z-index: 2;
     text-shadow: 2px 2px 0 var(--wood-shadow);
     letter-spacing: 4px;
+    display: block;
+    text-align: center;
+    width: 100%;
 }
 
-/* Snow pile */
+/* Snow pile - Static beautiful snow */
 .snow-pile {
     position: absolute;
-    top: -20px;
-    left: -8px;
-    right: -8px;
-    height: 28px;
+    top: -16px;
+    left: -12px;
+    right: -12px;
+    height: 32px;
     pointer-events: none;
 }
 
 .snow-chunk {
     position: absolute;
-    background: white;
-    box-shadow: 0 4px 0 0 var(--snow-shadow), inset 2px 2px 0 0 #fff;
+    background: #ffffff;
+    box-shadow: 
+        0 4px 0 0 var(--snow-shadow), 
+        inset 2px 2px 0 0 #fff,
+        inset -2px -2px 0 0 #e8f0f8;
 }
 
-.chunk-1 { width: 32px; height: 16px; left: 5%; top: 8px; }
-.chunk-2 { width: 40px; height: 20px; left: 20%; top: 4px; z-index: 2; }
-.chunk-3 { width: 36px; height: 18px; left: 45%; top: 6px; }
-.chunk-4 { width: 32px; height: 16px; left: 68%; top: 8px; }
-.chunk-5 { width: 28px; height: 14px; right: 3%; top: 10px; }
+/* Main snow layer - bigger chunks */
+.chunk-1 { width: 36px; height: 18px; left: 0%; top: 8px; border-radius: 0; }
+.chunk-2 { width: 44px; height: 22px; left: 18%; top: 2px; z-index: 3; }
+.chunk-3 { width: 40px; height: 20px; left: 40%; top: 4px; z-index: 2; }
+.chunk-4 { width: 38px; height: 18px; left: 62%; top: 6px; }
+.chunk-5 { width: 36px; height: 16px; right: 0%; top: 8px; }
 
-.begin-btn:hover .snow-chunk { animation: pixelSnowFall 0.4s steps(8) forwards; }
+/* Top snow accents - smaller highlight chunks */
+.chunk-6 { width: 24px; height: 10px; left: 10%; top: 0px; z-index: 4; background: #fff; box-shadow: inset 2px 2px 0 0 #fff; }
+.chunk-7 { width: 28px; height: 12px; left: 48%; top: -2px; z-index: 4; background: #fff; box-shadow: inset 2px 2px 0 0 #fff; }
+.chunk-8 { width: 22px; height: 10px; right: 12%; top: 2px; z-index: 4; background: #fff; box-shadow: inset 2px 2px 0 0 #fff; }
 
-@keyframes pixelSnowFall {
-    0% { transform: translateY(0); opacity: 1; }
-    25% { transform: translateY(24px); opacity: 1; }
-    50% { transform: translateY(48px); opacity: 0.8; }
-    75% { transform: translateY(72px); opacity: 0.5; }
-    100% { transform: translateY(96px); opacity: 0; }
+/* Small sparkle effect on snow */
+.snow-chunk::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #fff;
+    top: 2px;
+    left: 4px;
+    box-shadow: 8px 2px 0 0 #fff, 16px 4px 0 0 #fff;
 }
-
-.begin-btn:hover .chunk-1 { animation-delay: 0s; }
-.begin-btn:hover .chunk-2 { animation-delay: 0.05s; }
-.begin-btn:hover .chunk-3 { animation-delay: 0.1s; }
-.begin-btn:hover .chunk-4 { animation-delay: 0.15s; }
-.begin-btn:hover .chunk-5 { animation-delay: 0.2s; }
 
 /* Responsive */
 @media (max-width: 768px) {

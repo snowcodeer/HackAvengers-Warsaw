@@ -1,4 +1,4 @@
-/* Character Customisation Page - 8-Bit Style */
+/* Character Customisation Page - 8-Bit Style - Compact Viewport */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 * {
@@ -22,29 +22,31 @@
     --pixel-black: #181818;
     --cozy-yellow: #f8e038;
     --cozy-orange: #f8a800;
-    --panel-bg: rgba(40, 30, 20, 0.9);
+    --panel-bg: rgba(40, 30, 20, 0.95);
     --panel-border: #684010;
 }
 
-body {
-    overflow-x: hidden;
-    overflow-y: auto;
+html, body {
+    overflow: hidden;
     font-family: 'Press Start 2P', cursive;
     image-rendering: pixelated;
     background: var(--pixel-black);
-    min-height: 100vh;
+    height: 100vh;
+    width: 100vw;
 }
 
 .scene {
-    position: relative;
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100vw;
-    min-height: 100vh;
+    height: 100vh;
     overflow: hidden;
 }
 
 /* Sky */
 .sky {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
@@ -55,11 +57,11 @@ body {
 
 /* Ground */
 .ground {
-    position: fixed;
+    position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 80px;
+    height: 50px;
     background: var(--ground-brown);
     z-index: 5;
 }
@@ -69,19 +71,9 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 32px;
+    height: 24px;
     background: var(--grass-mid);
-    box-shadow: 0 -8px 0 0 var(--grass-bright), 0 8px 0 0 var(--grass-dark);
-}
-
-.grass-row::before {
-    content: '';
-    position: absolute;
-    top: -16px;
-    left: 0;
-    width: 100%;
-    height: 16px;
-    background: repeating-linear-gradient(90deg, var(--grass-bright) 0px, var(--grass-bright) 8px, transparent 8px, transparent 16px);
+    box-shadow: 0 -6px 0 0 var(--grass-bright), 0 6px 0 0 var(--grass-dark);
 }
 
 /* Snow Container */
@@ -109,42 +101,45 @@ body {
     100% { transform: translateY(100vh) translateX(var(--drift, 0px)); opacity: 0; }
 }
 
-/* Main Content */
+/* Main Content - Fixed viewport */
 .content {
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 50px;
     z-index: 10;
-    padding: 30px 20px 120px;
-    max-width: 1000px;
-    margin: 0 auto;
+    padding: 15px 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .title {
-    font-size: 2.5rem;
+    font-size: 1.8rem;
     color: var(--cream);
     text-shadow: 4px 4px 0 var(--cozy-orange), 8px 8px 0 var(--wood-dark);
-    letter-spacing: 4px;
-    margin-bottom: 30px;
+    letter-spacing: 3px;
     text-align: center;
-    animation: titlePulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+    margin-bottom: 15px;
 }
 
-@keyframes titlePulse {
-    0%, 100% { text-shadow: 4px 4px 0 var(--cozy-orange), 8px 8px 0 var(--wood-dark); }
-    50% { text-shadow: 4px 4px 0 var(--cozy-yellow), 8px 8px 0 var(--cozy-orange); }
-}
-
-/* Customisation Container */
+/* Customisation Container - Side by side */
 .customisation-container {
     display: flex;
     gap: 30px;
-    flex-wrap: wrap;
+    flex: 1;
+    min-height: 0;
     justify-content: center;
-    margin-bottom: 40px;
+    align-items: stretch;
 }
 
-/* Character Preview */
+/* Character Preview - Much Bigger */
 .character-preview {
-    flex: 0 0 280px;
+    flex: 0 0 380px;
+    display: flex;
+    flex-direction: column;
 }
 
 .preview-box {
@@ -157,60 +152,67 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 300px;
+    flex: 1;
+    min-height: 350px;
 }
 
 .pixel-character {
-    width: 120px;
-    height: 180px;
+    width: 180px;
+    height: 270px;
     position: relative;
+    transform: scale(1.6);
 }
 
 .preview-label {
     color: var(--cream);
     text-align: center;
-    margin-top: 15px;
-    font-size: 0.8rem;
+    margin-top: 12px;
+    font-size: 0.75rem;
     text-shadow: 2px 2px 0 var(--wood-dark);
+    flex-shrink: 0;
 }
 
-/* Options Panel */
+/* Options Panel - Readable */
 .options-panel {
-    flex: 1;
-    min-width: 300px;
-    max-width: 500px;
+    flex: 0 0 480px;
+    max-width: 520px;
     background: var(--panel-bg);
     border: 8px solid var(--panel-border);
     box-shadow: 
         8px 8px 0 0 var(--wood-shadow),
         inset 4px 4px 0 0 var(--wood-light);
-    padding: 20px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
 }
 
 .option-group {
-    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 .option-label {
-    display: block;
+    flex: 0 0 110px;
     color: var(--cozy-yellow);
-    font-size: 0.7rem;
-    margin-bottom: 10px;
+    font-size: 0.65rem;
     text-shadow: 2px 2px 0 var(--wood-dark);
 }
 
 /* Pixel Input */
 .pixel-input {
-    width: 100%;
-    padding: 12px 16px;
+    flex: 1;
+    padding: 12px 14px;
     font-family: 'Press Start 2P', cursive;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     background: #2a2218;
     border: 4px solid var(--wood-main);
     color: var(--cream);
     box-shadow: 
-        inset 4px 4px 0 0 #1a1410,
-        4px 4px 0 0 var(--wood-shadow);
+        inset 3px 3px 0 0 #1a1410,
+        3px 3px 0 0 var(--wood-shadow);
 }
 
 .pixel-input:focus {
@@ -224,6 +226,7 @@ body {
 
 /* Option Selector */
 .option-selector {
+    flex: 1;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -231,14 +234,14 @@ body {
 
 .nav-btn {
     font-family: 'Press Start 2P', cursive;
-    font-size: 1rem;
-    padding: 10px 15px;
+    font-size: 0.9rem;
+    padding: 10px 14px;
     background: var(--wood-main);
     border: none;
     color: var(--cream);
     cursor: pointer;
     box-shadow: 
-        4px 4px 0 0 var(--wood-shadow),
+        3px 3px 0 0 var(--wood-shadow),
         inset 2px 2px 0 0 var(--wood-light);
     transition: all 0.05s;
 }
@@ -250,7 +253,7 @@ body {
 .nav-btn:active {
     transform: translate(2px, 2px);
     box-shadow: 
-        2px 2px 0 0 var(--wood-shadow),
+        1px 1px 0 0 var(--wood-shadow),
         inset 2px 2px 0 0 var(--wood-light);
 }
 
@@ -258,23 +261,24 @@ body {
     flex: 1;
     text-align: center;
     color: var(--cream);
-    font-size: 0.75rem;
-    padding: 10px;
+    font-size: 0.65rem;
+    padding: 10px 12px;
     background: #2a2218;
     border: 4px solid var(--wood-dark);
-    min-width: 120px;
+    min-width: 100px;
 }
 
 /* Color Options */
 .color-options {
+    flex: 1;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
 }
 
 .color-btn {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border: 4px solid var(--wood-dark);
     cursor: pointer;
     box-shadow: 3px 3px 0 0 var(--wood-shadow);
@@ -288,30 +292,31 @@ body {
 .color-btn.active {
     border-color: var(--cozy-yellow);
     box-shadow: 
-        0 0 0 2px var(--cozy-yellow),
-        4px 4px 0 0 var(--wood-shadow);
+        0 0 0 3px var(--cozy-yellow),
+        3px 3px 0 0 var(--wood-shadow);
 }
 
 /* Submit Button */
 .button-container {
     display: flex;
     justify-content: center;
-    margin-top: 20px;
+    margin-top: 15px;
+    flex-shrink: 0;
 }
 
 .submit-btn {
     font-family: 'Press Start 2P', cursive;
-    font-size: 1.4rem;
-    padding: 24px 60px;
+    font-size: 1.2rem;
+    padding: 18px 50px;
     background: var(--wood-main);
     border: none;
     color: var(--cream);
     cursor: pointer;
     position: relative;
     box-shadow:
-        0 8px 0 0 var(--wood-shadow),
-        8px 0 0 0 var(--wood-dark),
-        8px 8px 0 0 var(--wood-shadow),
+        0 6px 0 0 var(--wood-shadow),
+        6px 0 0 0 var(--wood-dark),
+        6px 6px 0 0 var(--wood-shadow),
         inset 4px 4px 0 0 var(--wood-light),
         inset -4px -4px 0 0 var(--wood-dark);
     transition: all 0.05s ease;
@@ -322,86 +327,73 @@ body {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: repeating-linear-gradient(90deg, transparent 0px, transparent 24px, var(--wood-dark) 24px, var(--wood-dark) 28px);
+    background: repeating-linear-gradient(90deg, transparent 0px, transparent 20px, var(--wood-dark) 20px, var(--wood-dark) 24px);
     opacity: 0.3;
     pointer-events: none;
 }
 
 .submit-btn:hover {
-    transform: translateY(4px);
+    transform: translateY(3px);
     box-shadow:
-        0 4px 0 0 var(--wood-shadow),
-        4px 0 0 0 var(--wood-dark),
-        4px 4px 0 0 var(--wood-shadow),
-        inset 4px 4px 0 0 var(--wood-light),
-        inset -4px -4px 0 0 var(--wood-dark);
+        0 2px 0 0 var(--wood-shadow),
+        2px 0 0 0 var(--wood-dark),
+        2px 2px 0 0 var(--wood-shadow),
+        inset 3px 3px 0 0 var(--wood-light),
+        inset -3px -3px 0 0 var(--wood-dark);
 }
 
 .submit-btn:active {
-    transform: translateY(8px);
+    transform: translateY(5px);
     box-shadow:
         0 0 0 0 var(--wood-shadow),
-        inset 4px 4px 0 0 var(--wood-dark),
-        inset -4px -4px 0 0 var(--wood-light);
+        inset 3px 3px 0 0 var(--wood-dark),
+        inset -3px -3px 0 0 var(--wood-light);
 }
 
 .btn-text {
     position: relative;
     z-index: 2;
     text-shadow: 2px 2px 0 var(--wood-shadow);
-    letter-spacing: 4px;
+    letter-spacing: 3px;
 }
 
-/* Snow pile on button */
+/* Snow pile on button - static */
 .snow-pile {
     position: absolute;
-    top: -16px;
-    left: -8px;
-    right: -8px;
-    height: 24px;
+    top: -12px;
+    left: -6px;
+    right: -6px;
+    height: 20px;
     pointer-events: none;
 }
 
 .snow-chunk {
     position: absolute;
     background: white;
-    box-shadow: 0 3px 0 0 #d0d8e0, inset 2px 2px 0 0 #fff;
+    box-shadow: 0 2px 0 0 #d0d8e0, inset 2px 2px 0 0 #fff;
 }
 
-.chunk-1 { width: 50px; height: 16px; left: 15%; top: 6px; }
-.chunk-2 { width: 60px; height: 18px; left: 40%; top: 2px; z-index: 2; }
-.chunk-3 { width: 45px; height: 14px; right: 15%; top: 8px; }
+.chunk-1 { width: 35px; height: 12px; left: 10%; top: 6px; }
+.chunk-2 { width: 45px; height: 14px; left: 35%; top: 2px; z-index: 2; }
+.chunk-3 { width: 35px; height: 10px; right: 10%; top: 6px; }
 
-.submit-btn:hover .snow-chunk {
-    animation: snowFall 0.4s steps(8) forwards;
-}
-
-@keyframes snowFall {
-    0% { transform: translateY(0); opacity: 1; }
-    100% { transform: translateY(80px); opacity: 0; }
-}
-
-.submit-btn:hover .chunk-1 { animation-delay: 0s; }
-.submit-btn:hover .chunk-2 { animation-delay: 0.05s; }
-.submit-btn:hover .chunk-3 { animation-delay: 0.1s; }
-
-/* Character Body Parts */
+/* Character Body Parts - Bigger */
 .char-body {
     position: absolute;
-    bottom: 30px;
+    bottom: 40px;
     left: 50%;
     transform: translateX(-50%);
-    width: 48px;
-    height: 56px;
+    width: 64px;
+    height: 72px;
 }
 
 .char-head {
     position: absolute;
-    bottom: 100px;
+    bottom: 130px;
     left: 50%;
     transform: translateX(-50%);
-    width: 44px;
-    height: 44px;
+    width: 56px;
+    height: 56px;
     border-radius: 8px;
 }
 
@@ -412,29 +404,35 @@ body {
 
 .char-eyes {
     position: absolute;
-    width: 8px;
-    height: 10px;
-    top: 14px;
+    width: 10px;
+    height: 12px;
+    top: 18px;
 }
 
-.char-eyes.left { left: 8px; }
-.char-eyes.right { right: 8px; }
+.char-eyes.left { left: 10px; }
+.char-eyes.right { right: 10px; }
 
 .char-legs {
     position: absolute;
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 40px;
-    height: 30px;
+    width: 52px;
+    height: 40px;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .title {
-        font-size: 1.5rem;
-    }
-    
+/* Responsive - maintain compact layout */
+@media (max-height: 700px) {
+    .title { font-size: 1.1rem; margin-bottom: 6px; }
+    .content { padding: 10px 15px; }
+    .preview-box { min-height: 220px; padding: 10px; }
+    .pixel-character { transform: scale(1.1); }
+    .options-panel { padding: 8px 12px; gap: 5px; }
+    .option-label { font-size: 0.45rem; flex: 0 0 80px; }
+    .submit-btn { font-size: 0.9rem; padding: 12px 30px; }
+}
+
+@media (max-width: 800px) {
     .customisation-container {
         flex-direction: column;
         align-items: center;
@@ -446,13 +444,17 @@ body {
         max-width: 280px;
     }
     
-    .options-panel {
-        width: 100%;
+    .preview-box {
+        min-height: 180px;
     }
     
-    .submit-btn {
-        font-size: 1rem;
-        padding: 18px 40px;
+    .pixel-character {
+        transform: scale(1);
+    }
+    
+    .options-panel {
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: 400px;
     }
 }
-
