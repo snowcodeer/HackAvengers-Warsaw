@@ -1,4 +1,5 @@
 // 3D Game World using Three.js
+import { initHandTracker, getControlData, getHandshakeStatus } from './handinput.js';
 
 let scene, camera, renderer;
 let player, playerVelocity;
@@ -91,7 +92,7 @@ function init() {
         characterData = JSON.parse(savedData);
     }
     document.getElementById('playerName').textContent = characterData.name || 'Player';
-    
+
     // Setup Three.js
     setupScene();
     setupLighting();
@@ -101,13 +102,20 @@ function init() {
     createTrees();
     createHouses();
     createSnow();
-    
+
     // Setup controls
     setupControls();
-    
+
+    // Initialize Hand Tracker
+    const videoElement = document.querySelector('.input_video');
+    const canvasElement = document.querySelector('.output_canvas');
+    if (videoElement && canvasElement) {
+        initHandTracker(videoElement, canvasElement);
+    }
+
     // Hide loading screen
     simulateLoading();
-    
+
     // Start animation loop
     clock = new THREE.Clock();
     animate();
@@ -133,18 +141,18 @@ function setupScene() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x87ceeb);
     scene.fog = new THREE.Fog(0xc8e8f8, 50, 150);
-    
+
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 5, 10);
-    
-    renderer = new THREE.WebGLRenderer({ 
+
+    renderer = new THREE.WebGLRenderer({
         canvas: document.getElementById('gameCanvas'),
-        antialias: true 
+        antialias: true
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    
+
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
@@ -156,7 +164,7 @@ function setupLighting() {
     // Ambient light
     const ambient = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambient);
-    
+
     // Directional light (sun)
     const sun = new THREE.DirectionalLight(0xfff4e0, 1);
     sun.position.set(50, 100, 50);
@@ -170,7 +178,7 @@ function setupLighting() {
     sun.shadow.camera.top = 50;
     sun.shadow.camera.bottom = -50;
     scene.add(sun);
-    
+
     // Hemisphere light for natural sky color
     const hemi = new THREE.HemisphereLight(0x87ceeb, 0xffffff, 0.3);
     scene.add(hemi);
@@ -179,7 +187,7 @@ function setupLighting() {
 function createGround() {
     // Snow ground
     const groundGeometry = new THREE.PlaneGeometry(200, 200);
-    const groundMaterial = new THREE.MeshStandardMaterial({ 
+    const groundMaterial = new THREE.MeshStandardMaterial({
         color: 0xffffff,
         roughness: 0.9,
         metalness: 0
@@ -188,7 +196,7 @@ function createGround() {
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     scene.add(ground);
-    
+
     // Add some snow mounds
     for (let i = 0; i < 30; i++) {
         const moundGeometry = new THREE.SphereGeometry(
@@ -214,12 +222,12 @@ function createGround() {
 function createPlayer() {
     // Player group
     player = new THREE.Group();
-    
+
     // Convert hex color string to number
     const outfitColorNum = parseInt(characterData.outfitColor.replace('#', ''), 16);
     const skinColorNum = parseInt(characterData.skinColor.replace('#', ''), 16);
     const hairColorNum = parseInt(characterData.hairColor.replace('#', ''), 16);
-    
+
     // Body
     const bodyGeometry = new THREE.BoxGeometry(1, 1.5, 0.6);
     const bodyMaterial = new THREE.MeshStandardMaterial({ color: outfitColorNum });
@@ -227,7 +235,7 @@ function createPlayer() {
     body.position.y = 1.75;
     body.castShadow = true;
     player.add(body);
-    
+
     // Head
     const headGeometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
     const headMaterial = new THREE.MeshStandardMaterial({ color: skinColorNum });
@@ -235,7 +243,7 @@ function createPlayer() {
     head.position.y = 2.9;
     head.castShadow = true;
     player.add(head);
-    
+
     // Hair
     const hairGeometry = new THREE.BoxGeometry(0.9, 0.4, 0.9);
     const hairMaterial = new THREE.MeshStandardMaterial({ color: hairColorNum });
@@ -243,21 +251,21 @@ function createPlayer() {
     hair.position.y = 3.4;
     hair.castShadow = true;
     player.add(hair);
-    
+
     // Legs
     const legGeometry = new THREE.BoxGeometry(0.35, 1, 0.35);
     const legMaterial = new THREE.MeshStandardMaterial({ color: 0x3a3a5a });
-    
+
     const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
     leftLeg.position.set(-0.2, 0.5, 0);
     leftLeg.castShadow = true;
     player.add(leftLeg);
-    
+
     const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
     rightLeg.position.set(0.2, 0.5, 0);
     rightLeg.castShadow = true;
     player.add(rightLeg);
-    
+
     player.position.set(0, 0, 0);
     playerVelocity = new THREE.Vector3();
     scene.add(player);
@@ -266,12 +274,12 @@ function createPlayer() {
 function createNPCs() {
     npcData.forEach(data => {
         const npc = new THREE.Group();
-        npc.userData = { 
-            name: data.name, 
+        npc.userData = {
+            name: data.name,
             dialogue: data.dialogue,
-            isNPC: true 
+            isNPC: true
         };
-        
+
         // Body
         const bodyGeometry = new THREE.BoxGeometry(1.2, 1.8, 0.7);
         const bodyMaterial = new THREE.MeshStandardMaterial({ color: data.color });
@@ -279,7 +287,7 @@ function createNPCs() {
         body.position.y = 1.9;
         body.castShadow = true;
         npc.add(body);
-        
+
         // Head
         const headGeometry = new THREE.BoxGeometry(0.9, 0.9, 0.9);
         const headMaterial = new THREE.MeshStandardMaterial({ color: 0xffd5b5 });
@@ -287,36 +295,36 @@ function createNPCs() {
         head.position.y = 3.3;
         head.castShadow = true;
         npc.add(head);
-        
+
         // Eyes
         const eyeGeometry = new THREE.BoxGeometry(0.15, 0.15, 0.1);
         const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
-        
+
         const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
         leftEye.position.set(-0.2, 3.4, 0.45);
         npc.add(leftEye);
-        
+
         const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
         rightEye.position.set(0.2, 3.4, 0.45);
         npc.add(rightEye);
-        
+
         // Name tag
         // (would use CSS2DRenderer for actual text, simplified here)
-        
+
         // Legs
         const legGeometry = new THREE.BoxGeometry(0.4, 1.1, 0.4);
         const legMaterial = new THREE.MeshStandardMaterial({ color: 0x4a4a4a });
-        
+
         const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
         leftLeg.position.set(-0.25, 0.55, 0);
         leftLeg.castShadow = true;
         npc.add(leftLeg);
-        
+
         const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
         rightLeg.position.set(0.25, 0.55, 0);
         rightLeg.castShadow = true;
         npc.add(rightLeg);
-        
+
         npc.position.set(data.position.x, 0, data.position.z);
         npcs.push(npc);
         scene.add(npc);
@@ -332,7 +340,7 @@ function createTrees() {
         { x: -50, z: 0 }, { x: 50, z: 0 }, { x: 0, z: -50 },
         { x: -45, z: 15 }, { x: 45, z: -15 }, { x: -20, z: -45 }
     ];
-    
+
     treePositions.forEach(pos => {
         const tree = createTree();
         tree.position.set(pos.x + (Math.random() - 0.5) * 5, 0, pos.z + (Math.random() - 0.5) * 5);
@@ -345,7 +353,7 @@ function createTrees() {
 
 function createTree() {
     const tree = new THREE.Group();
-    
+
     // Trunk
     const trunkGeometry = new THREE.BoxGeometry(1, 4, 1);
     const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x5c3d2e });
@@ -353,11 +361,11 @@ function createTree() {
     trunk.position.y = 2;
     trunk.castShadow = true;
     tree.add(trunk);
-    
+
     // Foliage layers (pine tree style)
     const foliageMaterial = new THREE.MeshStandardMaterial({ color: 0x2d5a3a });
     const snowMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
-    
+
     const layers = [
         { y: 4, size: 3 },
         { y: 5.5, size: 2.5 },
@@ -365,21 +373,21 @@ function createTree() {
         { y: 8.5, size: 1.5 },
         { y: 9.5, size: 0.8 }
     ];
-    
+
     layers.forEach(layer => {
         const foliageGeometry = new THREE.ConeGeometry(layer.size, 2, 8);
         const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
         foliage.position.y = layer.y;
         foliage.castShadow = true;
         tree.add(foliage);
-        
+
         // Snow on top
         const snowGeometry = new THREE.ConeGeometry(layer.size * 0.7, 0.5, 8);
         const snow = new THREE.Mesh(snowGeometry, snowMaterial);
         snow.position.y = layer.y + 0.8;
         tree.add(snow);
     });
-    
+
     return tree;
 }
 
@@ -389,7 +397,7 @@ function createHouses() {
         { x: 10, z: -10, rotation: Math.PI / 4 },
         { x: -5, z: 20, rotation: -Math.PI / 6 }
     ];
-    
+
     housePositions.forEach(pos => {
         const house = createHouse();
         house.position.set(pos.x, 0, pos.z);
@@ -401,7 +409,7 @@ function createHouses() {
 
 function createHouse() {
     const house = new THREE.Group();
-    
+
     // Base
     const baseGeometry = new THREE.BoxGeometry(8, 5, 6);
     const baseMaterial = new THREE.MeshStandardMaterial({ color: 0xa86020 });
@@ -410,7 +418,7 @@ function createHouse() {
     base.castShadow = true;
     base.receiveShadow = true;
     house.add(base);
-    
+
     // Roof
     const roofGeometry = new THREE.BoxGeometry(9, 1, 7);
     const roofMaterial = new THREE.MeshStandardMaterial({ color: 0xc04040 });
@@ -418,49 +426,49 @@ function createHouse() {
     roof1.position.y = 5.5;
     roof1.castShadow = true;
     house.add(roof1);
-    
+
     const roofGeometry2 = new THREE.BoxGeometry(7, 1, 5);
     const roof2 = new THREE.Mesh(roofGeometry2, roofMaterial);
     roof2.position.y = 6.5;
     roof2.castShadow = true;
     house.add(roof2);
-    
+
     const roofGeometry3 = new THREE.BoxGeometry(5, 1, 3);
     const roof3 = new THREE.Mesh(roofGeometry3, roofMaterial);
     roof3.position.y = 7.5;
     roof3.castShadow = true;
     house.add(roof3);
-    
+
     // Snow on roof
     const snowMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
     const snowGeometry = new THREE.BoxGeometry(9.5, 0.5, 7.5);
     const snow = new THREE.Mesh(snowGeometry, snowMaterial);
     snow.position.y = 8;
     house.add(snow);
-    
+
     // Door
     const doorGeometry = new THREE.BoxGeometry(1.5, 3, 0.2);
     const doorMaterial = new THREE.MeshStandardMaterial({ color: 0x4a3020 });
     const door = new THREE.Mesh(doorGeometry, doorMaterial);
     door.position.set(0, 1.5, 3.1);
     house.add(door);
-    
+
     // Windows
     const windowGeometry = new THREE.BoxGeometry(1.2, 1.2, 0.2);
-    const windowMaterial = new THREE.MeshStandardMaterial({ 
+    const windowMaterial = new THREE.MeshStandardMaterial({
         color: 0x88ccff,
         emissive: 0xffff88,
         emissiveIntensity: 0.3
     });
-    
+
     const window1 = new THREE.Mesh(windowGeometry, windowMaterial);
     window1.position.set(-2.5, 3, 3.1);
     house.add(window1);
-    
+
     const window2 = new THREE.Mesh(windowGeometry, windowMaterial);
     window2.position.set(2.5, 3, 3.1);
     house.add(window2);
-    
+
     return house;
 }
 
@@ -468,32 +476,32 @@ function createSnow() {
     const snowGeometry = new THREE.BufferGeometry();
     const snowCount = 2000;
     const positions = new Float32Array(snowCount * 3);
-    
+
     for (let i = 0; i < snowCount * 3; i += 3) {
         positions[i] = (Math.random() - 0.5) * 150;
         positions[i + 1] = Math.random() * 50;
         positions[i + 2] = (Math.random() - 0.5) * 150;
     }
-    
+
     snowGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    
+
     const snowMaterial = new THREE.PointsMaterial({
         color: 0xffffff,
         size: 0.3,
         transparent: true,
         opacity: 0.8
     });
-    
+
     const snow = new THREE.Points(snowGeometry, snowMaterial);
     snow.userData.velocities = [];
-    
+
     for (let i = 0; i < snowCount; i++) {
         snow.userData.velocities.push({
             y: Math.random() * 0.02 + 0.01,
             x: (Math.random() - 0.5) * 0.01
         });
     }
-    
+
     snowParticles.push(snow);
     scene.add(snow);
 }
@@ -502,34 +510,34 @@ function setupControls() {
     // Keyboard
     document.addEventListener('keydown', (e) => {
         keys[e.key.toLowerCase()] = true;
-        
+
         // Interact with NPC
         if (e.key.toLowerCase() === 'e' && nearestNPC && !currentDialogue) {
             startDialogue(nearestNPC);
         }
-        
+
         // Continue dialogue
         if (e.key === ' ' && currentDialogue) {
             e.preventDefault();
             advanceDialogue();
         }
     });
-    
+
     document.addEventListener('keyup', (e) => {
         keys[e.key.toLowerCase()] = false;
     });
-    
+
     // Mouse look
     document.addEventListener('click', () => {
         if (!currentDialogue) {
             document.body.requestPointerLock();
         }
     });
-    
+
     document.addEventListener('pointerlockchange', () => {
         isPointerLocked = document.pointerLockElement === document.body;
     });
-    
+
     document.addEventListener('mousemove', (e) => {
         if (isPointerLocked && !currentDialogue) {
             mouseX += e.movementX * 0.002;
@@ -542,18 +550,18 @@ function setupControls() {
 function startDialogue(npc) {
     currentDialogue = npc.userData.dialogue;
     dialogueIndex = 0;
-    
+
     document.getElementById('dialogueName').textContent = npc.userData.name;
     document.getElementById('dialogueText').textContent = currentDialogue[dialogueIndex];
     document.getElementById('dialogueBox').classList.add('active');
     document.getElementById('interactPrompt').classList.remove('active');
-    
+
     document.exitPointerLock();
 }
 
 function advanceDialogue() {
     dialogueIndex++;
-    
+
     if (dialogueIndex >= currentDialogue.length) {
         endDialogue();
     } else {
@@ -569,32 +577,51 @@ function endDialogue() {
 
 function updatePlayer(delta) {
     if (currentDialogue) return;
-    
+
     const speed = 15;
     const direction = new THREE.Vector3();
-    
+
     // Get camera direction
     const cameraDirection = new THREE.Vector3();
     camera.getWorldDirection(cameraDirection);
     cameraDirection.y = 0;
     cameraDirection.normalize();
-    
+
     const right = new THREE.Vector3();
     right.crossVectors(cameraDirection, new THREE.Vector3(0, 1, 0));
-    
+
     if (keys['w']) direction.add(cameraDirection);
     if (keys['s']) direction.sub(cameraDirection);
     if (keys['a']) direction.sub(right);
     if (keys['d']) direction.add(right);
-    
+
+    // Hand Control
+    const handControl = getControlData();
+    if (handControl.x !== 0 || handControl.y !== 0) {
+        // Map hand x/y to movement relative to camera
+        // hand y is forward/backward (cameraDirection)
+        // hand x is left/right (right vector)
+
+        // Note: handControl.y is negative for up (forward), positive for down (backward)
+        // So we subtract cameraDirection * handControl.y (if y is -1 (up), we add direction)
+        // Actually, let's check the coordinate system.
+        // Usually joystick up (y < 0) means move forward.
+
+        const forwardMove = cameraDirection.clone().multiplyScalar(-handControl.y);
+        const sideMove = right.clone().multiplyScalar(handControl.x);
+
+        direction.add(forwardMove);
+        direction.add(sideMove);
+    }
+
     if (direction.length() > 0) {
         direction.normalize();
         player.position.add(direction.multiplyScalar(speed * delta));
-        
+
         // Face movement direction
         player.rotation.y = Math.atan2(direction.x, direction.z);
     }
-    
+
     // Keep player in bounds
     player.position.x = Math.max(-90, Math.min(90, player.position.x));
     player.position.z = Math.max(-90, Math.min(90, player.position.z));
@@ -603,11 +630,11 @@ function updatePlayer(delta) {
 function updateCamera() {
     // Third person camera
     const cameraOffset = new THREE.Vector3(0, 8, 12);
-    
+
     // Rotate offset based on mouse
     const rotatedOffset = cameraOffset.clone();
     rotatedOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), -mouseX);
-    
+
     camera.position.copy(player.position).add(rotatedOffset);
     camera.position.y = player.position.y + 8 - mouseY * 5;
     camera.lookAt(player.position.x, player.position.y + 3, player.position.z);
@@ -617,10 +644,10 @@ function updateNPCs() {
     // Check distance to NPCs
     let closest = null;
     let closestDist = Infinity;
-    
+
     npcs.forEach(npc => {
         const dist = player.position.distanceTo(npc.position);
-        
+
         // Make NPC face player when close
         if (dist < 10) {
             const angle = Math.atan2(
@@ -629,15 +656,15 @@ function updateNPCs() {
             );
             npc.rotation.y = angle;
         }
-        
+
         if (dist < 5 && dist < closestDist) {
             closest = npc;
             closestDist = dist;
         }
     });
-    
+
     nearestNPC = closest;
-    
+
     // Show/hide interact prompt
     const prompt = document.getElementById('interactPrompt');
     if (nearestNPC && !currentDialogue) {
@@ -651,12 +678,12 @@ function updateSnow(delta) {
     snowParticles.forEach(snow => {
         const positions = snow.geometry.attributes.position.array;
         const velocities = snow.userData.velocities;
-        
+
         for (let i = 0; i < positions.length; i += 3) {
             const idx = i / 3;
             positions[i] += velocities[idx].x;
             positions[i + 1] -= velocities[idx].y;
-            
+
             // Reset snowflake when it hits ground
             if (positions[i + 1] < 0) {
                 positions[i + 1] = 50;
@@ -664,21 +691,21 @@ function updateSnow(delta) {
                 positions[i + 2] = (Math.random() - 0.5) * 150;
             }
         }
-        
+
         snow.geometry.attributes.position.needsUpdate = true;
     });
 }
 
 function animate() {
     requestAnimationFrame(animate);
-    
+
     const delta = clock.getDelta();
-    
+
     updatePlayer(delta);
     updateCamera();
     updateNPCs();
     updateSnow(delta);
-    
+
     renderer.render(scene, camera);
 }
 
