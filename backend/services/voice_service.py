@@ -8,10 +8,17 @@ class VoiceService:
     def __init__(self):
         self.client = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
 
-    def speech_to_text(self, audio_file):
-        # Placeholder for STT implementation
-        # In a real implementation, this would call the ElevenLabs API
-        pass
+    def speech_to_text(self, audio_content):
+        try:
+            # audio_content is bytes
+            transcription = self.client.speech_to_text.convert(
+                file=audio_content,
+                model_id="scribe_v1"
+            )
+            return transcription.text
+        except Exception as e:
+            print(f"Error transcribing audio: {e}")
+            return None
 
     def generate_audio_stream(self, text: str, voice_id: str):
         # We pass the text directly to ElevenLabs, including [tags] for expression.

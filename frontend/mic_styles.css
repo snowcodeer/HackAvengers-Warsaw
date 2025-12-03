@@ -1,0 +1,72 @@
+.mic-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #4a90d9;
+    border: 4px solid #2a5089;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 4px 4px 0 0 #203050;
+    transition: all 0.1s;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.mic-btn:hover {
+    transform: scale(1.05);
+    background: #5aa0e9;
+}
+
+.mic-btn:active {
+    transform: scale(0.95);
+    box-shadow: 2px 2px 0 0 #203050;
+}
+
+.mic-btn.recording {
+    background: #e74c3c;
+    border-color: #c0392b;
+    animation: pulse-red 1.5s infinite;
+}
+
+@keyframes pulse-red {
+    0% {
+        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+    }
+}
+
+.chat-input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 0 10px;
+}
+
+.recording-status {
+    color: #e74c3c;
+    font-size: 0.8rem;
+    font-weight: bold;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.recording-status.hidden {
+    display: none;
+}

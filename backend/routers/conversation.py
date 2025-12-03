@@ -39,6 +39,14 @@ async def stream_audio(audio_id: str):
             
     return StreamingResponse(iterfile(), media_type="audio/mpeg")
 
+@router.post("/transcribe")
+async def transcribe_audio(audio: UploadFile = File(...)):
+    content = await audio.read()
+    text = voice_service.speech_to_text(content)
+    if not text:
+        raise HTTPException(status_code=400, detail="Failed to transcribe audio (too short or corrupted)")
+    return {"text": text}
+
 @router.post("/start")
 async def start_conversation(request: ConversationStartRequest):
     # Reset history for this NPC
@@ -80,8 +88,11 @@ async def respond_to_conversation(
     
     player_text = text
     if audio:
-        # player_text = voice_service.speech_to_text(audio)
-        player_text = "Audio transcription placeholder"
+        content = await audio.read()
+        player_text = voice_service.speech_to_text(content)
+        if not player_text:
+             # Fallback or error? Let's return a helpful error
+             raise HTTPException(status_code=400, detail="Could not understand audio. Please try again.")
     
     # Retrieve history
     history = game_state["conversation_history"].get(npc_id, [])
@@ -97,9 +108,13 @@ async def respond_to_conversation(
     
     # Check for Quest Completion Tag
     quest_advanced = False
+    
+    # Clean bracketed expressions (e.g., [happy], [sad])
+    import re
+    clean_response = re.sub(r'\[.*?\]', '', npc_response).strip()
+    
+    # Check for [DONE] specifically in the original response if logic depends on it
     if "[DONE]" in npc_response:
-        npc_response = npc_response.replace("[DONE]", "").strip()
-        
         # Advance Quest State if valid transition
         if npc_id == "child" and game_state["quest_step"] == 1:
             game_state["quest_step"] = 2
@@ -116,6 +131,8 @@ async def respond_to_conversation(
         elif npc_id == "child" and game_state["quest_step"] == 5:
             # Quest Complete
             pass
+            
+    npc_response = clean_response
     
     # Update history
     history.append({"role": "user", "content": player_text})
