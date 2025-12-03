@@ -365,7 +365,7 @@ function startBunnyBehavior(bunny, initialFacing) {
 // Create huge pixel trees
 function createTallTrees() {
     const container = document.getElementById('flowersContainer');
-    const treePositions = [5, 28, 68, 92];
+    const treePositions = [5, 92];
     
     for (let i = 0; i < treePositions.length; i++) {
         createPixelTree(container, treePositions[i], i);
@@ -454,12 +454,12 @@ function createPixelTree(container, leftPos, index) {
 // Create evenly spread flowers
 function createFlowerGarden() {
     const container = document.getElementById('flowersContainer');
-    const flowerCount = 5;
+    const flowerCount = 4;
     
     const growOrder = Array.from({ length: flowerCount }, (_, i) => i);
     shuffleArray(growOrder);
     
-    // Ensure proper spacing - divide screen into 5 sections with margins
+    // Ensure proper spacing - divide screen into 4 sections with margins
     const sectionWidth = 85 / flowerCount; // Use 85% of screen width, leaving margins
     const positions = [];
     const minSpacing = 15; // Minimum spacing between flowers in percentage
@@ -502,12 +502,12 @@ function createFlower(container, index, leftPos, growOrderIndex) {
     
     const colorScheme = flowerColors[Math.floor(Math.random() * flowerColors.length)];
     
-    // Flower size
-    const flowerSize = 50 + Math.floor(Math.random() * 50);
+    // Flower size (slightly smaller)
+    const flowerSize = 40 + Math.floor(Math.random() * 40);
     const petalSize = Math.floor(flowerSize * 0.4);
     const petalStyle = petalStyles[Math.floor(Math.random() * petalStyles.length)];
     
-    const stemWidth = 14 + Math.floor(Math.random() * 8);
+    const stemWidth = 12 + Math.floor(Math.random() * 6);
     
     const curveDirection = Math.random() > 0.5 ? 1 : -1;
     const curveIntensity = 60 + Math.random() * 80;
