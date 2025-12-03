@@ -1928,6 +1928,20 @@ function updatePlayer(delta) {
     if (keys['a']) direction.sub(right);
     if (keys['d']) direction.add(right);
     
+    // Hand Control
+    const handControl = getControlData();
+    if (handControl.x !== 0 || handControl.y !== 0) {
+        // Map hand x/y to movement relative to camera
+        // hand y is forward/backward (cameraDirection)
+        // hand x is left/right (right vector)
+        // Note: handControl.y is negative for up (forward), positive for down (backward)
+        const forwardMove = cameraDirection.clone().multiplyScalar(-handControl.y);
+        const sideMove = right.clone().multiplyScalar(handControl.x);
+        
+        direction.add(forwardMove);
+        direction.add(sideMove);
+    }
+    
     if (direction.length() > 0) {
         direction.normalize();
         player.position.add(direction.multiplyScalar(speed * delta));
