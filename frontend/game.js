@@ -1,5 +1,6 @@
 // 3D Game World using Three.js
 import { initHandTracker, getControlData, getHandshakeStatus, updateHandshakeUI } from './camera/handinput.js';
+import { startMirageStream, stopMirageStream } from './mirage.js';
 
 let scene, camera, renderer;
 let player, playerVelocity;
@@ -421,10 +422,10 @@ function init() {
         characterData = JSON.parse(savedData);
     }
     document.getElementById('playerName').textContent = characterData.name || 'Player';
-    
+
     // Load all sounds
     loadAllSounds();
-    
+
     // Setup Three.js
     setupScene();
     setupLighting();
@@ -434,23 +435,23 @@ function init() {
     createTrees();
     createHouses();
     createSnow();
-    
+
     // Setup controls
     setupControls();
-    
+
     // Setup Journal
     setupJournal();
-    
+
     // Initialize Hand Tracker
     const videoElement = document.querySelector('.input_video');
     const canvasElement = document.querySelector('.output_canvas');
     if (videoElement && canvasElement) {
         initHandTracker(videoElement, canvasElement);
     }
-    
+
     // Hide loading screen
     simulateLoading();
-    
+
     // Start animation loop
     clock = new THREE.Clock();
     animate();
@@ -464,35 +465,35 @@ function loadAllSounds() {
         'sounds/footstep_snow_3.mp3',
         'sounds/footstep_snow_4.mp3'
     ];
-    
+
     footstepFiles.forEach(file => {
         const audio = new Audio(file);
         audio.volume = 0.4;
         footstepSounds.push(audio);
     });
-    
+
     // Ambient wind (looping)
     ambientWind = new Audio('sounds/ambient_wind.mp3');
     ambientWind.loop = true;
     ambientWind.volume = 0.3;
-    
+
     // UI sounds
     dialogueOpenSound = new Audio('sounds/dialogue_open.mp3');
     dialogueOpenSound.volume = 0.5;
-    
+
     dialogueAdvanceSound = new Audio('sounds/dialogue_advance.mp3');
     dialogueAdvanceSound.volume = 0.4;
-    
+
     interactPromptSound = new Audio('sounds/interact_prompt.mp3');
     interactPromptSound.volume = 0.3;
-    
+
     // Character sounds
     catMeowSound = new Audio('sounds/cat_meow.mp3');
     catMeowSound.volume = 0.6;
-    
+
     birdChirpSound = new Audio('sounds/bird_chirp.mp3');
     birdChirpSound.volume = 0.5;
-    
+
     // Quest sounds
     questCompleteSound = new Audio('sounds/quest_complete.mp3');
     questCompleteSound.volume = 0.6;
@@ -503,14 +504,14 @@ function playSound(sound) {
     if (sound) {
         const clone = sound.cloneNode();
         clone.volume = sound.volume;
-        clone.play().catch(() => {});
+        clone.play().catch(() => { });
     }
 }
 
 // Start ambient sounds (call after user interaction)
 function startAmbientSounds() {
     if (ambientWind && ambientWind.paused) {
-        ambientWind.play().catch(() => {});
+        ambientWind.play().catch(() => { });
     }
 }
 
@@ -532,17 +533,17 @@ function playQuestComplete() {
 function playFootstep() {
     const now = Date.now();
     if (now - lastFootstepTime < FOOTSTEP_INTERVAL) return;
-    
+
     lastFootstepTime = now;
     if (footstepSounds.length === 0) return;
-    
+
     const sound = footstepSounds[Math.floor(Math.random() * footstepSounds.length)];
-    
+
     // Clone to allow overlapping sounds
     const clone = sound.cloneNode();
     clone.volume = 0.3 + Math.random() * 0.2;
     clone.playbackRate = 0.9 + Math.random() * 0.2;
-    clone.play().catch(() => {}); // Ignore autoplay errors
+    clone.play().catch(() => { }); // Ignore autoplay errors
 }
 
 function setupJournal() {
@@ -550,23 +551,23 @@ function setupJournal() {
     const journalBtnChat = document.getElementById('journalBtnChat');
     const journalModal = document.getElementById('journalModal');
     const journalClose = document.getElementById('journalClose');
-    
+
     // Main journal button (when not in dialogue)
     journalBtn.addEventListener('click', () => {
         populateJournal();
         journalModal.classList.add('active');
     });
-    
+
     // Journal button next to chat (during dialogue)
     journalBtnChat.addEventListener('click', () => {
         populateJournal();
         journalModal.classList.add('active');
     });
-    
+
     journalClose.addEventListener('click', () => {
         journalModal.classList.remove('active');
     });
-    
+
     journalModal.addEventListener('click', (e) => {
         if (e.target === journalModal) {
             journalModal.classList.remove('active');
@@ -584,7 +585,7 @@ function populateJournal() {
             <div class="word-pronunciation">/${word.pronunciation}/</div>
         </div>
     `).join('');
-    
+
     // Populate attempts
     const attemptList = document.getElementById('attemptList');
     attemptList.innerHTML = journalData.attempts.map(attempt => `
@@ -615,18 +616,18 @@ function setupScene() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x87ceeb);
     scene.fog = new THREE.Fog(0xc8e8f8, 50, 150);
-    
+
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 5, 10);
-    
-    renderer = new THREE.WebGLRenderer({ 
+
+    renderer = new THREE.WebGLRenderer({
         canvas: document.getElementById('gameCanvas'),
-        antialias: true 
+        antialias: true
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    
+
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
@@ -638,7 +639,7 @@ function setupLighting() {
     // Ambient light
     const ambient = new THREE.AmbientLight(0xb0c4de, 0.6);
     scene.add(ambient);
-    
+
     // Directional light (sun)
     const sunlight = new THREE.DirectionalLight(0xffffff, 0.8);
     sunlight.position.set(50, 100, 50);
@@ -652,7 +653,7 @@ function setupLighting() {
     sunlight.shadow.camera.top = 100;
     sunlight.shadow.camera.bottom = -100;
     scene.add(sunlight);
-    
+
     // Hemisphere light for nice sky color
     const hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x98d98d, 0.4);
     scene.add(hemiLight);
@@ -661,24 +662,24 @@ function setupLighting() {
 function createGround() {
     // Snow-covered ground
     const groundGeometry = new THREE.PlaneGeometry(200, 200, 50, 50);
-    const groundMaterial = new THREE.MeshStandardMaterial({ 
+    const groundMaterial = new THREE.MeshStandardMaterial({
         color: 0xffffff,
         roughness: 0.8,
         metalness: 0.1
     });
-    
+
     // Add some variation to ground
     const positions = groundGeometry.attributes.position;
     for (let i = 0; i < positions.count; i++) {
         positions.setZ(i, Math.random() * 0.5);
     }
     groundGeometry.computeVertexNormals();
-    
+
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     scene.add(ground);
-    
+
     // Grass patches peeking through
     for (let i = 0; i < 30; i++) {
         const patchGeometry = new THREE.CircleGeometry(1 + Math.random() * 2, 8);
@@ -696,45 +697,45 @@ function createGround() {
 
 function createPlayer() {
     player = new THREE.Group();
-    
+
     const outfitColor = parseInt(characterData.outfitColor.replace('#', '0x'));
     const skinColor = parseInt(characterData.skinColor.replace('#', '0x'));
     const hairColor = parseInt(characterData.hairColor.replace('#', '0x'));
-    
+
     const hairStyles = ['Spiky', 'Mohawk', 'Flat Top', 'Long', 'Short', 'Ponytail', 'Bald', 'Curly', 'Afro', 'Pigtails', 'Buzz Cut', 'Side Part'];
     const hats = ['None', 'Cap', 'Beanie', 'Top Hat', 'Cowboy', 'Hard Hat', 'Crown', 'Headphones', 'Police Cap', 'Beret'];
     const accessories = ['None', 'Glasses', 'Sunglasses', 'Round Glasses', 'Eye Patch', 'Monocle', 'Bandana', 'Scarf'];
-    
+
     const currentHairStyle = hairStyles[characterData.hairStyle] || 'Spiky';
     const currentHat = hats[characterData.hat] || 'None';
     const currentAccessory = accessories[characterData.accessory] || 'None';
-    
+
     // Legs
     const legGeometry = new THREE.BoxGeometry(0.5, 1, 0.5);
     const legMaterial = new THREE.MeshStandardMaterial({ color: 0x3a3a5a });
-    
+
     const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
     leftLeg.position.set(-0.35, 0.5, 0);
     leftLeg.castShadow = true;
     player.add(leftLeg);
-    
+
     const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
     rightLeg.position.set(0.35, 0.5, 0);
     rightLeg.castShadow = true;
     player.add(rightLeg);
-    
+
     // Shoes
     const shoeGeometry = new THREE.BoxGeometry(0.55, 0.25, 0.6);
     const shoeMaterial = new THREE.MeshStandardMaterial({ color: 0x4a3020 });
-    
+
     const leftShoe = new THREE.Mesh(shoeGeometry, shoeMaterial);
     leftShoe.position.set(-0.35, 0.12, 0.05);
     player.add(leftShoe);
-    
+
     const rightShoe = new THREE.Mesh(shoeGeometry, shoeMaterial);
     rightShoe.position.set(0.35, 0.12, 0.05);
     player.add(rightShoe);
-    
+
     // Body
     const bodyGeometry = new THREE.BoxGeometry(1.5, 2, 1);
     const bodyMaterial = new THREE.MeshStandardMaterial({ color: outfitColor });
@@ -742,33 +743,33 @@ function createPlayer() {
     body.position.y = 2;
     body.castShadow = true;
     player.add(body);
-    
+
     // Arms
     const armGeometry = new THREE.BoxGeometry(0.4, 1.5, 0.4);
     const armMaterial = new THREE.MeshStandardMaterial({ color: skinColor });
-    
+
     const leftArm = new THREE.Mesh(armGeometry, armMaterial);
     leftArm.position.set(-0.95, 2.2, 0);
     leftArm.castShadow = true;
     player.add(leftArm);
-    
+
     const rightArm = new THREE.Mesh(armGeometry, armMaterial);
     rightArm.position.set(0.95, 2.2, 0);
     rightArm.castShadow = true;
     player.add(rightArm);
-    
+
     // Hands
     const handGeometry = new THREE.BoxGeometry(0.35, 0.35, 0.35);
     const handMaterial = new THREE.MeshStandardMaterial({ color: skinColor });
-    
+
     const leftHand = new THREE.Mesh(handGeometry, handMaterial);
     leftHand.position.set(-0.95, 1.3, 0);
     player.add(leftHand);
-    
+
     const rightHand = new THREE.Mesh(handGeometry, handMaterial);
     rightHand.position.set(0.95, 1.3, 0);
     player.add(rightHand);
-    
+
     // Head
     const headGeometry = new THREE.BoxGeometry(1, 1, 1);
     const headMaterial = new THREE.MeshStandardMaterial({ color: skinColor });
@@ -776,53 +777,53 @@ function createPlayer() {
     head.position.y = 3.5;
     head.castShadow = true;
     player.add(head);
-    
+
     // Eyes
     const eyeGeometry = new THREE.BoxGeometry(0.18, 0.18, 0.1);
     const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x2c2c2c });
-    
+
     const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
     leftEye.position.set(-0.25, 3.55, 0.5);
     player.add(leftEye);
-    
+
     const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
     rightEye.position.set(0.25, 3.55, 0.5);
     player.add(rightEye);
-    
+
     // Eye highlights
     const highlightGeometry = new THREE.BoxGeometry(0.06, 0.06, 0.05);
     const highlightMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.5 });
-    
+
     const leftHighlight = new THREE.Mesh(highlightGeometry, highlightMaterial);
     leftHighlight.position.set(-0.22, 3.58, 0.55);
     player.add(leftHighlight);
-    
+
     const rightHighlight = new THREE.Mesh(highlightGeometry, highlightMaterial);
     rightHighlight.position.set(0.28, 3.58, 0.55);
     player.add(rightHighlight);
-    
+
     // Eyebrows
     const browGeometry = new THREE.BoxGeometry(0.22, 0.06, 0.1);
     const browMaterial = new THREE.MeshStandardMaterial({ color: hairColor });
-    
+
     const leftBrow = new THREE.Mesh(browGeometry, browMaterial);
     leftBrow.position.set(-0.25, 3.72, 0.5);
     player.add(leftBrow);
-    
+
     const rightBrow = new THREE.Mesh(browGeometry, browMaterial);
     rightBrow.position.set(0.25, 3.72, 0.5);
     player.add(rightBrow);
-    
+
     // Mouth
     const mouthGeometry = new THREE.BoxGeometry(0.3, 0.08, 0.1);
     const mouthMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
     const mouth = new THREE.Mesh(mouthGeometry, mouthMaterial);
     mouth.position.set(0, 3.25, 0.5);
     player.add(mouth);
-    
+
     // Hair based on style
     const hairMaterial = new THREE.MeshStandardMaterial({ color: hairColor });
-    
+
     if (currentHairStyle !== 'Bald') {
         if (currentHairStyle === 'Spiky') {
             const spikeGeometry = new THREE.BoxGeometry(0.2, 0.4, 0.2);
@@ -902,7 +903,7 @@ function createPlayer() {
             player.add(part);
         }
     }
-    
+
     // Hats
     if (currentHat !== 'None') {
         if (currentHat === 'Cap') {
@@ -936,7 +937,7 @@ function createPlayer() {
             });
         }
     }
-    
+
     // Accessories
     if (currentAccessory !== 'None') {
         if (currentAccessory === 'Glasses' || currentAccessory === 'Round Glasses') {
@@ -962,7 +963,7 @@ function createPlayer() {
             player.add(scarf);
         }
     }
-    
+
     player.position.set(0, 0, 0);
     scene.add(player);
 }
@@ -976,7 +977,7 @@ function createNPCs() {
         npc.userData.appearance = data.appearance;
         npcs.push(npc);
         scene.add(npc);
-        
+
         // Add name label
         createNameLabel(npc, data.name);
     });
@@ -984,39 +985,39 @@ function createNPCs() {
 
 function createNPC(appearance) {
     const npc = new THREE.Group();
-    
+
     const { skinColor, outfitColor, outfitSecondary, outfitStyle, hairColor, hairStyle, hat, accessory, hasBeard, pantsColor } = appearance;
-    
+
     // Legs with custom pants color
     const legGeometry = new THREE.BoxGeometry(0.5, 1, 0.5);
     const legMaterial = new THREE.MeshStandardMaterial({ color: pantsColor || 0x3a3a5a });
-    
+
     const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
     leftLeg.position.set(-0.35, 0.5, 0);
     leftLeg.castShadow = true;
     npc.add(leftLeg);
-    
+
     const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
     rightLeg.position.set(0.35, 0.5, 0);
     rightLeg.castShadow = true;
     npc.add(rightLeg);
-    
+
     // Shoes
     const shoeGeometry = new THREE.BoxGeometry(0.55, 0.25, 0.6);
     const shoeMaterial = new THREE.MeshStandardMaterial({ color: 0x4a3020 });
-    
+
     const leftShoe = new THREE.Mesh(shoeGeometry, shoeMaterial);
     leftShoe.position.set(-0.35, 0.12, 0.05);
     npc.add(leftShoe);
-    
+
     const rightShoe = new THREE.Mesh(shoeGeometry, shoeMaterial);
     rightShoe.position.set(0.35, 0.12, 0.05);
     npc.add(rightShoe);
-    
+
     // Body - varies by outfit style
     let bodyWidth = 1.5;
     let bodyHeight = 2;
-    
+
     if (outfitStyle === 'dress') {
         // Dress - wider at bottom
         const dressGeometry = new THREE.BoxGeometry(1.8, 2.2, 1);
@@ -1078,7 +1079,7 @@ function createNPC(appearance) {
         body.castShadow = true;
         npc.add(body);
     }
-    
+
     // Outfit details
     if (outfitStyle === 'overalls') {
         // Overalls straps
@@ -1144,33 +1145,33 @@ function createNPC(appearance) {
             npc.add(splatter);
         });
     }
-    
+
     // Arms
     const armGeometry = new THREE.BoxGeometry(0.4, 1.5, 0.4);
     const armMaterial = new THREE.MeshStandardMaterial({ color: skinColor });
-    
+
     const leftArm = new THREE.Mesh(armGeometry, armMaterial);
     leftArm.position.set(-0.95, 2.2, 0);
     leftArm.castShadow = true;
     npc.add(leftArm);
-    
+
     const rightArm = new THREE.Mesh(armGeometry, armMaterial);
     rightArm.position.set(0.95, 2.2, 0);
     rightArm.castShadow = true;
     npc.add(rightArm);
-    
+
     // Hands
     const handGeometry = new THREE.BoxGeometry(0.35, 0.35, 0.35);
     const handMaterial = new THREE.MeshStandardMaterial({ color: skinColor });
-    
+
     const leftHand = new THREE.Mesh(handGeometry, handMaterial);
     leftHand.position.set(-0.95, 1.3, 0);
     npc.add(leftHand);
-    
+
     const rightHand = new THREE.Mesh(handGeometry, handMaterial);
     rightHand.position.set(0.95, 1.3, 0);
     npc.add(rightHand);
-    
+
     // Head
     const headGeometry = new THREE.BoxGeometry(1, 1, 1);
     const headMaterial = new THREE.MeshStandardMaterial({ color: skinColor });
@@ -1178,50 +1179,50 @@ function createNPC(appearance) {
     head.position.y = 3.5;
     head.castShadow = true;
     npc.add(head);
-    
+
     // Eyes
     const eyeGeometry = new THREE.BoxGeometry(0.18, 0.18, 0.1);
     const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x2c2c2c });
-    
+
     const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
     leftEye.position.set(-0.25, 3.55, 0.5);
     npc.add(leftEye);
-    
+
     const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
     rightEye.position.set(0.25, 3.55, 0.5);
     npc.add(rightEye);
-    
+
     // Eye highlights
     const highlightGeometry = new THREE.BoxGeometry(0.06, 0.06, 0.05);
     const highlightMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.5 });
-    
+
     const leftHighlight = new THREE.Mesh(highlightGeometry, highlightMaterial);
     leftHighlight.position.set(-0.22, 3.58, 0.55);
     npc.add(leftHighlight);
-    
+
     const rightHighlight = new THREE.Mesh(highlightGeometry, highlightMaterial);
     rightHighlight.position.set(0.28, 3.58, 0.55);
     npc.add(rightHighlight);
-    
+
     // Eyebrows
     const browGeometry = new THREE.BoxGeometry(0.22, 0.06, 0.1);
     const browMaterial = new THREE.MeshStandardMaterial({ color: hairColor });
-    
+
     const leftBrow = new THREE.Mesh(browGeometry, browMaterial);
     leftBrow.position.set(-0.25, 3.72, 0.5);
     npc.add(leftBrow);
-    
+
     const rightBrow = new THREE.Mesh(browGeometry, browMaterial);
     rightBrow.position.set(0.25, 3.72, 0.5);
     npc.add(rightBrow);
-    
+
     // Mouth
     const mouthGeometry = new THREE.BoxGeometry(0.3, 0.08, 0.1);
     const mouthMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
     const mouth = new THREE.Mesh(mouthGeometry, mouthMaterial);
     mouth.position.set(0, 3.25, 0.5);
     npc.add(mouth);
-    
+
     // Beard (if has beard)
     if (hasBeard) {
         const beardGeometry = new THREE.BoxGeometry(0.8, 0.5, 0.3);
@@ -1230,11 +1231,11 @@ function createNPC(appearance) {
         beard.position.set(0, 3.1, 0.4);
         npc.add(beard);
     }
-    
+
     // Hair styles
     if (hairStyle !== 'bald') {
         const hairMaterial = new THREE.MeshStandardMaterial({ color: hairColor });
-        
+
         if (hairStyle === 'short' || hairStyle === 'buzz') {
             const hairGeometry = new THREE.BoxGeometry(1.05, 0.3, 1.05);
             const hair = new THREE.Mesh(hairGeometry, hairMaterial);
@@ -1328,7 +1329,7 @@ function createNPC(appearance) {
             npc.add(tail);
         }
     }
-    
+
     // Hats
     if (hat !== 'none') {
         if (hat === 'straw') {
@@ -1448,7 +1449,7 @@ function createNPC(appearance) {
             npc.add(visor);
         }
     }
-    
+
     // Accessories
     if (accessory !== 'none') {
         if (accessory === 'glasses' || accessory === 'goggles') {
@@ -1458,13 +1459,13 @@ function createNPC(appearance) {
             const frame = new THREE.Mesh(frameGeometry, frameMaterial);
             frame.position.set(0, 3.55, 0.55);
             npc.add(frame);
-            
+
             // Lenses
             const lensGeometry = new THREE.BoxGeometry(0.25, 0.2, 0.08);
-            const lensMaterial = new THREE.MeshStandardMaterial({ 
-                color: accessory === 'goggles' ? 0x88ccff : 0xffffff, 
-                transparent: true, 
-                opacity: 0.5 
+            const lensMaterial = new THREE.MeshStandardMaterial({
+                color: accessory === 'goggles' ? 0x88ccff : 0xffffff,
+                transparent: true,
+                opacity: 0.5
             });
             const leftLens = new THREE.Mesh(lensGeometry, lensMaterial);
             leftLens.position.set(-0.25, 3.55, 0.58);
@@ -1528,10 +1529,10 @@ function createNPC(appearance) {
             npc.add(frame);
             // Circular lenses
             const lensGeometry = new THREE.BoxGeometry(0.28, 0.28, 0.08);
-            const lensMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0xffffff, 
-                transparent: true, 
-                opacity: 0.4 
+            const lensMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.4
             });
             const leftLens = new THREE.Mesh(lensGeometry, lensMaterial);
             leftLens.position.set(-0.25, 3.55, 0.58);
@@ -1541,7 +1542,7 @@ function createNPC(appearance) {
             npc.add(rightLens);
         }
     }
-    
+
     return npc;
 }
 
@@ -1556,7 +1557,7 @@ function createTrees() {
         { x: -60, z: -50 }, { x: 70, z: -20 }, { x: -45, z: 40 },
         { x: 55, z: 45 }, { x: -70, z: 10 }, { x: 40, z: -60 }
     ];
-    
+
     treePositions.forEach(pos => {
         const tree = createTree();
         tree.position.set(pos.x, 0, pos.z);
@@ -1567,7 +1568,7 @@ function createTrees() {
 
 function createTree() {
     const tree = new THREE.Group();
-    
+
     // Trunk
     const trunkGeometry = new THREE.BoxGeometry(1.5, 6, 1.5);
     const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x6a4420 });
@@ -1575,20 +1576,20 @@ function createTree() {
     trunk.position.y = 3;
     trunk.castShadow = true;
     tree.add(trunk);
-    
+
     // Foliage layers (pixelated look)
     const foliageColors = [0x2d5a2d, 0x3a7a3a, 0x4a9a4a];
     for (let i = 0; i < 4; i++) {
         const size = 5 - i * 0.8;
         const foliageGeometry = new THREE.BoxGeometry(size, 2, size);
-        const foliageMaterial = new THREE.MeshStandardMaterial({ 
-            color: foliageColors[i % 3] 
+        const foliageMaterial = new THREE.MeshStandardMaterial({
+            color: foliageColors[i % 3]
         });
         const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
         foliage.position.y = 6 + i * 1.8;
         foliage.castShadow = true;
         tree.add(foliage);
-        
+
         // Snow on foliage
         const snowGeometry = new THREE.BoxGeometry(size + 0.3, 0.4, size + 0.3);
         const snowMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
@@ -1596,7 +1597,7 @@ function createTree() {
         snow.position.y = 7 + i * 1.8;
         tree.add(snow);
     }
-    
+
     return tree;
 }
 
@@ -1605,7 +1606,7 @@ function createHouses() {
         { x: -35, z: -10 }, { x: 40, z: 10 }, { x: 10, z: -35 },
         { x: -10, z: 40 }
     ];
-    
+
     housePositions.forEach(pos => {
         const house = createHouse();
         house.position.set(pos.x, 0, pos.z);
@@ -1617,7 +1618,7 @@ function createHouses() {
 
 function createHouse() {
     const house = new THREE.Group();
-    
+
     // Base
     const baseGeometry = new THREE.BoxGeometry(8, 5, 6);
     const baseMaterial = new THREE.MeshStandardMaterial({ color: 0xa86020 });
@@ -1626,7 +1627,7 @@ function createHouse() {
     base.castShadow = true;
     base.receiveShadow = true;
     house.add(base);
-    
+
     // Roof
     const roofGeometry = new THREE.BoxGeometry(9, 1, 7);
     const roofMaterial = new THREE.MeshStandardMaterial({ color: 0xc04040 });
@@ -1634,49 +1635,49 @@ function createHouse() {
     roof1.position.y = 5.5;
     roof1.castShadow = true;
     house.add(roof1);
-    
+
     const roofGeometry2 = new THREE.BoxGeometry(7, 1, 5);
     const roof2 = new THREE.Mesh(roofGeometry2, roofMaterial);
     roof2.position.y = 6.5;
     roof2.castShadow = true;
     house.add(roof2);
-    
+
     const roofGeometry3 = new THREE.BoxGeometry(5, 1, 3);
     const roof3 = new THREE.Mesh(roofGeometry3, roofMaterial);
     roof3.position.y = 7.5;
     roof3.castShadow = true;
     house.add(roof3);
-    
+
     // Snow on roof
     const snowMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
     const snowGeometry = new THREE.BoxGeometry(9.5, 0.5, 7.5);
     const snow = new THREE.Mesh(snowGeometry, snowMaterial);
     snow.position.y = 8;
     house.add(snow);
-    
+
     // Door
     const doorGeometry = new THREE.BoxGeometry(1.5, 3, 0.2);
     const doorMaterial = new THREE.MeshStandardMaterial({ color: 0x4a3020 });
     const door = new THREE.Mesh(doorGeometry, doorMaterial);
     door.position.set(0, 1.5, 3.1);
     house.add(door);
-    
+
     // Windows
     const windowGeometry = new THREE.BoxGeometry(1.2, 1.2, 0.2);
-    const windowMaterial = new THREE.MeshStandardMaterial({ 
+    const windowMaterial = new THREE.MeshStandardMaterial({
         color: 0x88ccff,
         emissive: 0xffff88,
         emissiveIntensity: 0.3
     });
-    
+
     const window1 = new THREE.Mesh(windowGeometry, windowMaterial);
     window1.position.set(-2.5, 3, 3.1);
     house.add(window1);
-    
+
     const window2 = new THREE.Mesh(windowGeometry, windowMaterial);
     window2.position.set(2.5, 3, 3.1);
     house.add(window2);
-    
+
     return house;
 }
 
@@ -1684,32 +1685,32 @@ function createSnow() {
     const snowGeometry = new THREE.BufferGeometry();
     const snowCount = 2000;
     const positions = new Float32Array(snowCount * 3);
-    
+
     for (let i = 0; i < snowCount * 3; i += 3) {
         positions[i] = (Math.random() - 0.5) * 150;
         positions[i + 1] = Math.random() * 50;
         positions[i + 2] = (Math.random() - 0.5) * 150;
     }
-    
+
     snowGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    
+
     const snowMaterial = new THREE.PointsMaterial({
         color: 0xffffff,
         size: 0.3,
         transparent: true,
         opacity: 0.8
     });
-    
+
     const snow = new THREE.Points(snowGeometry, snowMaterial);
     snow.userData.velocities = [];
-    
+
     for (let i = 0; i < snowCount; i++) {
         snow.userData.velocities.push({
             y: Math.random() * 0.02 + 0.01,
             x: (Math.random() - 0.5) * 0.01
         });
     }
-    
+
     snowParticles.push(snow);
     scene.add(snow);
 }
@@ -1718,48 +1719,48 @@ function setupControls() {
     // Keyboard
     document.addEventListener('keydown', (e) => {
         keys[e.key.toLowerCase()] = true;
-        
+
         // Interact with NPC
         if (e.key.toLowerCase() === 'e' && nearestNPC && !currentDialogue) {
             startDialogue(nearestNPC);
         }
-        
+
         // Continue dialogue
         if (e.key === ' ' && currentDialogue) {
             e.preventDefault();
             advanceDialogue();
         }
-        
+
         // Close journal with Escape
         if (e.key === 'Escape') {
             document.getElementById('journalModal').classList.remove('active');
         }
-        
+
         // Open journal with F
         if (e.key.toLowerCase() === 'f') {
             populateJournal();
             document.getElementById('journalModal').classList.add('active');
         }
     });
-    
+
     document.addEventListener('keyup', (e) => {
         keys[e.key.toLowerCase()] = false;
     });
-    
+
     // Mouse look
     document.addEventListener('click', (e) => {
         // Start ambient sounds on first click (browser autoplay policy)
         startAmbientSounds();
-        
+
         if (!currentDialogue && !e.target.closest('.journal-btn') && !e.target.closest('.journal-modal')) {
             document.body.requestPointerLock();
         }
     });
-    
+
     document.addEventListener('pointerlockchange', () => {
         isPointerLocked = document.pointerLockElement === document.body;
     });
-    
+
     document.addEventListener('mousemove', (e) => {
         if (isPointerLocked && !currentDialogue) {
             mouseX += e.movementX * 0.002;
@@ -1774,72 +1775,96 @@ function startDialogue(npc) {
     currentSpeaker = npc;
     dialogueIndex = 0;
     chatHistory = [];
-    
+
     // Play dialogue open sound
     playSound(dialogueOpenSound);
-    
+
     // Make player and NPC face each other
     const angleToNPC = Math.atan2(
         npc.position.x - player.position.x,
         npc.position.z - player.position.z
     );
     player.rotation.y = angleToNPC;
-    
+
     const angleToPlayer = Math.atan2(
         player.position.x - npc.position.x,
         player.position.z - npc.position.z
     );
     npc.rotation.y = angleToPlayer;
-    
+
     // Hide UI elements
     document.getElementById('playerInfo').classList.add('hidden');
     document.getElementById('miniMap').classList.add('hidden');
     document.getElementById('controlsHint').classList.add('hidden');
     document.getElementById('interactPrompt').classList.remove('active');
     document.getElementById('journalBtn').classList.add('hidden');
-    
+
     // Activate chat wrapper and journal button
     const chatContainer = document.getElementById('chatContainer');
     chatContainer.innerHTML = '';
     document.getElementById('chatWrapper').classList.add('active');
     document.getElementById('journalBtnChat').classList.add('active');
-    
+
     // Store original camera position
     originalCameraPos = camera.position.clone();
     isZoomedIn = true;
-    
+
     // Zoom to NPC (stays on NPC the whole time)
     zoomToNPC();
-    
+
     document.exitPointerLock();
-    
+
     // Show first message
     showCurrentMessage();
+
+    // Start MirageLSD Stream
+    // Construct a prompt based on the NPC
+    const npcName = npc.userData.name || "Villager";
+    // Extract role if possible (e.g. "Chef Pierre" -> "Chef")
+    const role = npcName.split(' ')[0] || "Villager";
+
+    // Get selected country from localStorage (default to Poland if not set)
+    const country = localStorage.getItem('selectedCountry') || 'Poland';
+
+    let prompt = "";
+
+    if (country === 'China') {
+        prompt = `A realistic ${role} wearing traditional Chinese Hanfu clothing standing on the Great Wall of China, green mountains background, misty atmosphere, high quality`;
+    } else if (country === 'France') {
+        prompt = `A realistic ${role} wearing 19th century French fashion standing near the Eiffel Tower in Paris, romantic atmosphere, high quality`;
+    } else if (country === 'Japan') {
+        prompt = `A realistic ${role} wearing traditional Japanese Kimono standing near a Torii gate and cherry blossoms, Kyoto atmosphere, high quality`;
+    } else {
+        // Default (Poland)
+        prompt = `A realistic ${role} standing in front of a majestic Polish monument statue in Warsaw, winter atmosphere, high quality, detailed architecture`;
+    }
+
+    startMirageStream(prompt, "gameCanvas");
 }
 
 function zoomToNPC() {
     // Always focus on the NPC
     const target = currentSpeaker;
-    
+
     // Head/face position
     const facePosition = new THREE.Vector3();
     facePosition.copy(target.position);
     facePosition.y = target.position.y + 3.5; // Head height
-    
+
     // Get the direction the character is facing
     const faceDirection = new THREE.Vector3(0, 0, 1);
     faceDirection.applyAxisAngle(new THREE.Vector3(0, 1, 0), target.rotation.y);
-    
+
     // Position camera very close to NPC face for extreme close-up
     targetCameraPos = facePosition.clone();
     targetCameraPos.add(faceDirection.clone().multiplyScalar(2.5)); // 2.5 units from face - very close
     targetCameraPos.y = facePosition.y + 1.2; // Higher up so NPC appears lower in frame
-    
+
     // Add slight offset to the side for cinematic feel
     const sideOffset = new THREE.Vector3(-1, 0, 0);
     sideOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), target.rotation.y);
     targetCameraPos.add(sideOffset.multiplyScalar(0.3));
-    
+
     // Look at face (NPC will appear in lower portion of screen)
     targetLookAt = facePosition.clone();
 }
@@ -1852,33 +1877,33 @@ function zoomOut() {
 
 function showCurrentMessage() {
     if (!currentDialogue || dialogueIndex >= currentDialogue.length) return;
-    
+
     const msg = currentDialogue[dialogueIndex];
     const chatContainer = document.getElementById('chatContainer');
-    
+
     // Create chat bubble (keep previous messages)
     const bubble = document.createElement('div');
     bubble.className = `chat-bubble ${msg.speaker}`;
-    
+
     const speakerName = msg.speaker === 'npc' ? currentSpeaker.userData.name : (characterData.name || 'Player');
-    
+
     bubble.innerHTML = `
         <div class="speaker-name">${speakerName}</div>
         <div class="message-text">${msg.text}</div>
     `;
-    
+
     chatContainer.appendChild(bubble);
-    
+
     // Scroll to bottom
     chatContainer.scrollTop = chatContainer.scrollHeight;
-    
+
     // Show continue prompt
     document.getElementById('continuePrompt').classList.add('active');
 }
 
 function advanceDialogue() {
     dialogueIndex++;
-    
+
     if (dialogueIndex >= currentDialogue.length) {
         endDialogue();
     } else {
@@ -1892,42 +1917,45 @@ function endDialogue() {
     currentDialogue = null;
     currentSpeaker = null;
     dialogueIndex = 0;
-    
+
     // Hide chat wrapper and journal chat button
     document.getElementById('chatWrapper').classList.remove('active');
     document.getElementById('journalBtnChat').classList.remove('active');
     document.getElementById('continuePrompt').classList.remove('active');
-    
+
     // Show UI elements
     document.getElementById('playerInfo').classList.remove('hidden');
     document.getElementById('miniMap').classList.remove('hidden');
     document.getElementById('controlsHint').classList.remove('hidden');
     document.getElementById('journalBtn').classList.remove('hidden');
-    
+
     // Zoom out
     zoomOut();
+
+    // Stop MirageLSD Stream
+    stopMirageStream();
 }
 
 function updatePlayer(delta) {
     if (currentDialogue) return;
-    
+
     const speed = 15;
     const direction = new THREE.Vector3();
-    
+
     // Get camera direction
     const cameraDirection = new THREE.Vector3();
     camera.getWorldDirection(cameraDirection);
     cameraDirection.y = 0;
     cameraDirection.normalize();
-    
+
     const right = new THREE.Vector3();
     right.crossVectors(cameraDirection, new THREE.Vector3(0, 1, 0));
-    
+
     if (keys['w']) direction.add(cameraDirection);
     if (keys['s']) direction.sub(cameraDirection);
     if (keys['a']) direction.sub(right);
     if (keys['d']) direction.add(right);
-    
+
     // Hand Control
     const handControl = getControlData();
     if (handControl.x !== 0 || handControl.y !== 0) {
@@ -1937,22 +1965,22 @@ function updatePlayer(delta) {
         // Note: handControl.y is negative for up (forward), positive for down (backward)
         const forwardMove = cameraDirection.clone().multiplyScalar(-handControl.y);
         const sideMove = right.clone().multiplyScalar(handControl.x);
-        
+
         direction.add(forwardMove);
         direction.add(sideMove);
     }
-    
+
     if (direction.length() > 0) {
         direction.normalize();
         player.position.add(direction.multiplyScalar(speed * delta));
-        
+
         // Face movement direction
         player.rotation.y = Math.atan2(direction.x, direction.z);
-        
+
         // Play footstep sound
         playFootstep();
     }
-    
+
     // Keep player in bounds
     player.position.x = Math.max(-90, Math.min(90, player.position.x));
     player.position.z = Math.max(-90, Math.min(90, player.position.z));
@@ -1962,7 +1990,7 @@ function updateCamera() {
     if (isZoomedIn && targetCameraPos && targetLookAt) {
         // Smoothly move camera to target for close-up
         camera.position.lerp(targetCameraPos, 0.08);
-        
+
         // Smoothly look at the speaker's face
         const currentLookAt = new THREE.Vector3();
         camera.getWorldDirection(currentLookAt);
@@ -1972,11 +2000,11 @@ function updateCamera() {
     } else {
         // Normal third person camera
         const cameraOffset = new THREE.Vector3(0, 8, 12);
-        
+
         // Rotate offset based on mouse
         const rotatedOffset = cameraOffset.clone();
         rotatedOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), -mouseX);
-        
+
         camera.position.copy(player.position).add(rotatedOffset);
         camera.position.y = player.position.y + 8 - mouseY * 5;
         camera.lookAt(player.position.x, player.position.y + 3, player.position.z);
@@ -1987,10 +2015,10 @@ function updateNPCs() {
     // Check distance to NPCs
     let closest = null;
     let closestDist = Infinity;
-    
+
     npcs.forEach(npc => {
         const dist = player.position.distanceTo(npc.position);
-        
+
         // Make NPC face player when close
         if (dist < 10) {
             const angle = Math.atan2(
@@ -1999,19 +2027,19 @@ function updateNPCs() {
             );
             npc.rotation.y = angle;
         }
-        
+
         if (dist < 5 && dist < closestDist) {
             closest = npc;
             closestDist = dist;
         }
     });
-    
+
     nearestNPC = closest;
-    
+
     // Show/hide interact prompt
     const prompt = document.getElementById('interactPrompt');
     const isPromptActive = nearestNPC && !currentDialogue;
-    
+
     if (isPromptActive) {
         prompt.classList.add('active');
         // Play sound when prompt first appears
@@ -2021,9 +2049,9 @@ function updateNPCs() {
     } else {
         prompt.classList.remove('active');
     }
-    
+
     wasPromptActive = isPromptActive;
-    
+
     // Handshake Logic
     const isGestureDetected = getHandshakeStatus();
     // Only show handshake if gesture is detected AND we are close to an NPC (e.g. < 10 units)
@@ -2038,12 +2066,12 @@ function updateSnow(delta) {
     snowParticles.forEach(snow => {
         const positions = snow.geometry.attributes.position.array;
         const velocities = snow.userData.velocities;
-        
+
         for (let i = 0; i < positions.length; i += 3) {
             const idx = i / 3;
             positions[i] += velocities[idx].x;
             positions[i + 1] -= velocities[idx].y;
-            
+
             // Reset snowflake when it hits ground
             if (positions[i + 1] < 0) {
                 positions[i + 1] = 50;
@@ -2051,20 +2079,20 @@ function updateSnow(delta) {
                 positions[i + 2] = (Math.random() - 0.5) * 150;
             }
         }
-        
+
         snow.geometry.attributes.position.needsUpdate = true;
     });
 }
 
 function animate() {
     requestAnimationFrame(animate);
-    
+
     const delta = clock.getDelta();
-    
+
     updatePlayer(delta);
     updateCamera();
     updateNPCs();
     updateSnow(delta);
-    
+
     renderer.render(scene, camera);
 }
