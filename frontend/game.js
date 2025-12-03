@@ -14,6 +14,23 @@ let nearestNPC = null;
 let currentDialogue = null;
 let dialogueIndex = 0;
 
+// Audio
+const footstepSounds = [];
+let lastFootstepTime = 0;
+const FOOTSTEP_INTERVAL = 350; // ms between footsteps
+
+// Sound effects
+let ambientWind = null;
+let dialogueOpenSound = null;
+let dialogueAdvanceSound = null;
+let interactPromptSound = null;
+let catMeowSound = null;
+let birdChirpSound = null;
+let questCompleteSound = null;
+
+// Track interact prompt state for sound
+let wasPromptActive = false;
+
 // Character data from customisation
 let characterData = {
     name: 'Player',
@@ -92,6 +109,9 @@ function init() {
     }
     document.getElementById('playerName').textContent = characterData.name || 'Player';
     
+    // Load all sounds
+    loadAllSounds();
+    
     // Setup Three.js
     setupScene();
     setupLighting();
@@ -111,6 +131,93 @@ function init() {
     // Start animation loop
     clock = new THREE.Clock();
     animate();
+}
+
+function loadAllSounds() {
+    // Footstep sounds
+    const footstepFiles = [
+        'sounds/footstep_snow_1.mp3',
+        'sounds/footstep_snow_2.mp3',
+        'sounds/footstep_snow_3.mp3',
+        'sounds/footstep_snow_4.mp3'
+    ];
+    
+    footstepFiles.forEach(file => {
+        const audio = new Audio(file);
+        audio.volume = 0.4;
+        footstepSounds.push(audio);
+    });
+    
+    // Ambient wind (looping)
+    ambientWind = new Audio('sounds/ambient_wind.mp3');
+    ambientWind.loop = true;
+    ambientWind.volume = 0.3;
+    
+    // UI sounds
+    dialogueOpenSound = new Audio('sounds/dialogue_open.mp3');
+    dialogueOpenSound.volume = 0.5;
+    
+    dialogueAdvanceSound = new Audio('sounds/dialogue_advance.mp3');
+    dialogueAdvanceSound.volume = 0.4;
+    
+    interactPromptSound = new Audio('sounds/interact_prompt.mp3');
+    interactPromptSound.volume = 0.3;
+    
+    // Character sounds
+    catMeowSound = new Audio('sounds/cat_meow.mp3');
+    catMeowSound.volume = 0.6;
+    
+    birdChirpSound = new Audio('sounds/bird_chirp.mp3');
+    birdChirpSound.volume = 0.5;
+    
+    // Quest sounds
+    questCompleteSound = new Audio('sounds/quest_complete.mp3');
+    questCompleteSound.volume = 0.6;
+}
+
+// Helper to play a sound (handles autoplay restrictions)
+function playSound(sound) {
+    if (sound) {
+        const clone = sound.cloneNode();
+        clone.volume = sound.volume;
+        clone.play().catch(() => {});
+    }
+}
+
+// Start ambient sounds (call after user interaction)
+function startAmbientSounds() {
+    if (ambientWind && ambientWind.paused) {
+        ambientWind.play().catch(() => {});
+    }
+}
+
+// Play cat meow (call when finding the cat)
+function playCatMeow() {
+    playSound(catMeowSound);
+}
+
+// Play bird chirp (call when helper bird appears)
+function playBirdChirp() {
+    playSound(birdChirpSound);
+}
+
+// Play quest complete sound
+function playQuestComplete() {
+    playSound(questCompleteSound);
+}
+
+function playFootstep() {
+    const now = Date.now();
+    if (now - lastFootstepTime < FOOTSTEP_INTERVAL) return;
+    
+    lastFootstepTime = now;
+    const sound = footstepSounds[Math.floor(Math.random() * footstepSounds.length)];
+    
+    // Clone to allow overlapping sounds
+    const clone = sound.cloneNode();
+    clone.volume = 0.3 + Math.random() * 0.2;
+    clone.playbackRate = 0.9 + Math.random() * 0.2;
+    clone.play().catch(() => {}); // Ignore autoplay errors
 }
 
 function simulateLoading() {
@@ -521,6 +628,9 @@ function setupControls() {
     
     // Mouse look
     document.addEventListener('click', () => {
+        // Start ambient sounds on first click (browser autoplay policy)
+        startAmbientSounds();
+        
         if (!currentDialogue) {
             document.body.requestPointerLock();
         }
@@ -543,6 +653,9 @@ function startDialogue(npc) {
     currentDialogue = npc.userData.dialogue;
     dialogueIndex = 0;
     
+    // Play dialogue open sound
+    playSound(dialogueOpenSound);
+    
     document.getElementById('dialogueName').textContent = npc.userData.name;
     document.getElementById('dialogueText').textContent = currentDialogue[dialogueIndex];
     document.getElementById('dialogueBox').classList.add('active');
@@ -557,6 +670,8 @@ function advanceDialogue() {
     if (dialogueIndex >= currentDialogue.length) {
         endDialogue();
     } else {
+        // Play page turn sound
+        playSound(dialogueAdvanceSound);
         document.getElementById('dialogueText').textContent = currentDialogue[dialogueIndex];
     }
 }
@@ -593,6 +708,9 @@ function updatePlayer(delta) {
         
         // Face movement direction
         player.rotation.y = Math.atan2(direction.x, direction.z);
+        
+        // Play footstep sound
+        playFootstep();
     }
     
     // Keep player in bounds
@@ -640,11 +758,19 @@ function updateNPCs() {
     
     // Show/hide interact prompt
     const prompt = document.getElementById('interactPrompt');
-    if (nearestNPC && !currentDialogue) {
+    const isPromptActive = nearestNPC && !currentDialogue;
+    
+    if (isPromptActive) {
         prompt.classList.add('active');
+        // Play sound when prompt first appears
+        if (!wasPromptActive) {
+            playSound(interactPromptSound);
+        }
     } else {
         prompt.classList.remove('active');
     }
+    
+    wasPromptActive = isPromptActive;
 }
 
 function updateSnow(delta) {

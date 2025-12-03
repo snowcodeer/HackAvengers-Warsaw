@@ -2,6 +2,14 @@
 
 ## Setup & Running
 
+## Environment Variables
+
+Create .env in root
+```bash
+cp .env.example .env
+# populate your api keys in .env
+```
+
 ### Frontend setup
 To start the frontend `cd frontend/` run: `python -m http.server 8080`
 
