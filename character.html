@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Customisation - Jazda</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="character.css">
+</head>
+<body>
+    <div class="scene">
+        <div class="sky"></div>
+        <div class="snow-container" id="snowContainer"></div>
+        
+        <div class="content">
+            <h1 class="title">Character Customisation</h1>
+            
+            <div class="customisation-container">
+                <!-- Character Preview -->
+                <div class="character-preview">
+                    <div class="preview-box">
+                        <div class="pixel-character" id="characterPreview">
+                            <!-- Character will be rendered here -->
+                        </div>
+                    </div>
+                    <p class="preview-label">Preview</p>
+                </div>
+                
+                <!-- Customisation Options -->
+                <div class="options-panel">
+                    <!-- Name -->
+                    <div class="option-group">
+                        <label class="option-label">Name</label>
+                        <input type="text" id="characterName" class="pixel-input" placeholder="Enter name..." maxlength="12">
+                    </div>
+                    
+                    <!-- Body Type -->
+                    <div class="option-group">
+                        <label class="option-label">Body Type</label>
+                        <div class="option-selector">
+                            <button class="nav-btn prev" data-target="bodyType">◀</button>
+                            <span class="option-value" id="bodyTypeValue">Normal</span>
+                            <button class="nav-btn next" data-target="bodyType">▶</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Skin Color -->
+                    <div class="option-group">
+                        <label class="option-label">Skin Color</label>
+                        <div class="color-options" id="skinColors">
+                            <button class="color-btn active" data-color="#ffd5b5" style="background: #ffd5b5;"></button>
+                            <button class="color-btn" data-color="#f5c09a" style="background: #f5c09a;"></button>
+                            <button class="color-btn" data-color="#c68642" style="background: #c68642;"></button>
+                            <button class="color-btn" data-color="#8d5524" style="background: #8d5524;"></button>
+                            <button class="color-btn" data-color="#5c3d2e" style="background: #5c3d2e;"></button>
+                        </div>
+                    </div>
+                    
+                    <!-- Hair Style -->
+                    <div class="option-group">
+                        <label class="option-label">Hair Style</label>
+                        <div class="option-selector">
+                            <button class="nav-btn prev" data-target="hairStyle">◀</button>
+                            <span class="option-value" id="hairStyleValue">Spiky</span>
+                            <button class="nav-btn next" data-target="hairStyle">▶</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Hair Color -->
+                    <div class="option-group">
+                        <label class="option-label">Hair Color</label>
+                        <div class="color-options" id="hairColors">
+                            <button class="color-btn active" data-color="#2c1810" style="background: #2c1810;"></button>
+                            <button class="color-btn" data-color="#8b4513" style="background: #8b4513;"></button>
+                            <button class="color-btn" data-color="#daa520" style="background: #daa520;"></button>
+                            <button class="color-btn" data-color="#ff6b6b" style="background: #ff6b6b;"></button>
+                            <button class="color-btn" data-color="#4a90d9" style="background: #4a90d9;"></button>
+                            <button class="color-btn" data-color="#9b59b6" style="background: #9b59b6;"></button>
+                        </div>
+                    </div>
+                    
+                    <!-- Eye Color -->
+                    <div class="option-group">
+                        <label class="option-label">Eye Color</label>
+                        <div class="color-options" id="eyeColors">
+                            <button class="color-btn active" data-color="#4a90d9" style="background: #4a90d9;"></button>
+                            <button class="color-btn" data-color="#2ecc71" style="background: #2ecc71;"></button>
+                            <button class="color-btn" data-color="#8b4513" style="background: #8b4513;"></button>
+                            <button class="color-btn" data-color="#2c1810" style="background: #2c1810;"></button>
+                            <button class="color-btn" data-color="#9b59b6" style="background: #9b59b6;"></button>
+                        </div>
+                    </div>
+                    
+                    <!-- Outfit -->
+                    <div class="option-group">
+                        <label class="option-label">Outfit</label>
+                        <div class="option-selector">
+                            <button class="nav-btn prev" data-target="outfit">◀</button>
+                            <span class="option-value" id="outfitValue">Adventurer</span>
+                            <button class="nav-btn next" data-target="outfit">▶</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Outfit Color -->
+                    <div class="option-group">
+                        <label class="option-label">Outfit Color</label>
+                        <div class="color-options" id="outfitColors">
+                            <button class="color-btn active" data-color="#e74c3c" style="background: #e74c3c;"></button>
+                            <button class="color-btn" data-color="#3498db" style="background: #3498db;"></button>
+                            <button class="color-btn" data-color="#2ecc71" style="background: #2ecc71;"></button>
+                            <button class="color-btn" data-color="#f39c12" style="background: #f39c12;"></button>
+                            <button class="color-btn" data-color="#9b59b6" style="background: #9b59b6;"></button>
+                            <button class="color-btn" data-color="#1abc9c" style="background: #1abc9c;"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="button-container">
+                <button class="submit-btn" id="submitBtn">
+                    <span class="btn-text">Submit</span>
+                    <div class="snow-pile">
+                        <div class="snow-chunk chunk-1"></div>
+                        <div class="snow-chunk chunk-2"></div>
+                        <div class="snow-chunk chunk-3"></div>
+                    </div>
+                </button>
+            </div>
+        </div>
+        
+        <div class="ground">
+            <div class="grass-row"></div>
+        </div>
+    </div>
+    
+    <script src="character.js"></script>
+</body>
+</html>
+

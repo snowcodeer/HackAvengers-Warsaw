@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jazda - World</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            overflow: hidden;
+            font-family: 'Press Start 2P', cursive;
+            background: #1a1a2e;
+        }
+        
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #gameCanvas {
+            display: block;
+        }
+        
+        /* UI Overlay */
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        /* Controls hint */
+        .controls-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(40, 30, 20, 0.9);
+            border: 4px solid #684010;
+            padding: 15px;
+            color: #f8f0d8;
+            font-size: 0.6rem;
+            line-height: 1.8;
+            box-shadow: 4px 4px 0 0 #402808;
+        }
+        
+        .controls-hint kbd {
+            background: #a86020;
+            padding: 4px 8px;
+            border: 2px solid #c88838;
+            margin: 0 2px;
+        }
+        
+        /* Dialogue Box */
+        .dialogue-box {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 700px;
+            background: rgba(40, 30, 20, 0.95);
+            border: 6px solid #684010;
+            padding: 20px 25px;
+            color: #f8f0d8;
+            font-size: 0.8rem;
+            line-height: 1.8;
+            box-shadow: 
+                6px 6px 0 0 #402808,
+                inset 3px 3px 0 0 #8a6030;
+            display: none;
+            pointer-events: auto;
+        }
+        
+        .dialogue-box.active {
+            display: block;
+            animation: dialogueIn 0.2s ease-out;
+        }
+        
+        @keyframes dialogueIn {
+            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+        
+        .dialogue-name {
+            color: #f8e038;
+            font-size: 0.7rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0 #402808;
+        }
+        
+        .dialogue-text {
+            margin-bottom: 15px;
+        }
+        
+        .dialogue-continue {
+            text-align: right;
+            color: #c88838;
+            font-size: 0.6rem;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        /* Interaction prompt */
+        .interact-prompt {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -100px);
+            background: rgba(40, 30, 20, 0.9);
+            border: 4px solid #f8e038;
+            padding: 12px 20px;
+            color: #f8f0d8;
+            font-size: 0.7rem;
+            display: none;
+            box-shadow: 4px 4px 0 0 #402808;
+        }
+        
+        .interact-prompt.active {
+            display: block;
+            animation: promptPulse 1s infinite;
+        }
+        
+        @keyframes promptPulse {
+            0%, 100% { transform: translate(-50%, -100px) scale(1); }
+            50% { transform: translate(-50%, -100px) scale(1.05); }
+        }
+        
+        /* Player name tag */
+        .player-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(40, 30, 20, 0.9);
+            border: 4px solid #684010;
+            padding: 12px 18px;
+            color: #f8f0d8;
+            font-size: 0.7rem;
+            box-shadow: 4px 4px 0 0 #402808;
+        }
+        
+        .player-name {
+            color: #f8e038;
+            margin-bottom: 5px;
+        }
+        
+        /* Mini instructions */
+        .mini-map {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(40, 30, 20, 0.9);
+            border: 4px solid #684010;
+            padding: 15px;
+            color: #f8f0d8;
+            font-size: 0.55rem;
+            box-shadow: 4px 4px 0 0 #402808;
+            text-align: center;
+        }
+        
+        .mini-map-title {
+            color: #f8e038;
+            margin-bottom: 8px;
+        }
+        
+        /* Loading screen */
+        .loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1a1a2e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .loading-screen.hidden {
+            display: none;
+        }
+        
+        .loading-text {
+            color: #f8f0d8;
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            text-shadow: 4px 4px 0 #f8a800;
+        }
+        
+        .loading-bar-container {
+            width: 300px;
+            height: 30px;
+            background: #402808;
+            border: 4px solid #684010;
+        }
+        
+        .loading-bar {
+            height: 100%;
+            background: #f8e038;
+            width: 0%;
+            transition: width 0.3s;
+            box-shadow: inset 0 -4px 0 0 #c8a028;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div class="ui-overlay">
+            <div class="player-info">
+                <div class="player-name" id="playerName">Player</div>
+                <div>Exploring the world...</div>
+            </div>
+            
+            <div class="mini-map">
+                <div class="mini-map-title">❄️ Winter Village ❄️</div>
+                <div>Walk around and<br>meet the villagers!</div>
+            </div>
+            
+            <div class="controls-hint">
+                <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> - Move<br>
+                <kbd>E</kbd> - Talk to NPC<br>
+                <kbd>Mouse</kbd> - Look around
+            </div>
+            
+            <div class="interact-prompt" id="interactPrompt">
+                Press <kbd>E</kbd> to talk
+            </div>
+            
+            <div class="dialogue-box" id="dialogueBox">
+                <div class="dialogue-name" id="dialogueName">Villager</div>
+                <div class="dialogue-text" id="dialogueText">Hello there!</div>
+                <div class="dialogue-continue">Press SPACE to continue...</div>
+            </div>
+        </div>
+        
+        <div class="loading-screen" id="loadingScreen">
+            <div class="loading-text">Loading World...</div>
+            <div class="loading-bar-container">
+                <div class="loading-bar" id="loadingBar"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
+
