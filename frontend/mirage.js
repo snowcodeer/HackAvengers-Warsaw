@@ -5,14 +5,35 @@ let realtimeClient = null;
 let stream = null;
 
 // Style prompts for different scenarios
+// OPTIMIZED: Keep prompts subtle and consistent to avoid over-stylization
+// Focus on: lighting, color temperature, atmosphere, soft artistic touches
 const STYLE_PROMPTS = {
-    boulangerie: "Warm Parisian bakery, golden morning light streaming through windows, impressionist oil painting style, cozy French cafe atmosphere",
-    berghain: "Dark industrial nightclub, cyberpunk neon lights, brutalist concrete, dramatic shadows, Blade Runner aesthetic",
-    teahouse: "Traditional Chinese ink wash painting, sumi-e style, misty mountains, serene zen garden atmosphere",
-    izakaya: "Anime style Japanese izakaya, warm orange lantern glow, cozy evening atmosphere, Studio Ghibli inspired",
-    tapas: "Spanish tapas bar, warm flamenco colors, terracotta and ochre tones, Mediterranean golden hour sunlight",
-    biergarten: "Bavarian beer garden, fairy tale forest setting, golden afternoon sunlight, traditional German illustration",
-    milk_bar: "Eastern European milk bar, vintage nostalgic aesthetic, muted Soviet-era colors, polaroid warmth"
+    // 🇫🇷 French Bakery - Soft impressionist, Monet-inspired
+    boulangerie: "Soft warm impressionist style, gentle golden morning light through lace curtains, subtle Monet-inspired brushstrokes, creamy beiges and warm honey tones, cozy intimate Parisian atmosphere, soft focus on edges, painterly but recognizable, calm and inviting",
+    
+    // 🇩🇪 German Club - Subtle cyberpunk, controlled neon
+    berghain: "Dark industrial atmosphere, subtle cyberpunk aesthetic, controlled neon accents in blues and magentas, brutalist concrete textures, cinematic Blade Runner mood, dramatic shadows with detail, moody but navigable, consistent low-key lighting",
+    
+    // 🇨🇳 Chinese Tea House - Sumi-e ink wash, zen
+    teahouse: "Traditional sumi-e ink wash painting style, soft misty atmosphere, minimalist zen aesthetic, gentle gradient washes, muted earth tones and jade greens, serene and meditative, watercolor softness, recognizable forms, peaceful continuity",
+    
+    // 🇯🇵 Japanese Izakaya - Studio Ghibli warmth
+    izakaya: "Warm Studio Ghibli inspired atmosphere, soft orange lantern glow, cozy evening ambiance, gentle anime aesthetic, warm amber and soft reds, intimate and inviting, painterly but clear, nostalgic and comforting",
+    
+    // 🇪🇸 Spanish Tapas Bar - Mediterranean golden hour
+    tapas: "Warm Mediterranean atmosphere, soft golden hour sunlight, gentle terracotta and ochre tones, subtle impressionist touches, cozy Spanish cafe ambiance, warm inviting light, painterly but recognizable, calm and relaxed",
+    
+    // 🇩🇪 German Beer Garden - Fairy tale forest
+    biergarten: "Soft fairy tale forest aesthetic, dappled golden afternoon sunlight, gentle storybook illustration style, warm natural greens and browns, cozy outdoor atmosphere, painterly but clear, inviting and peaceful",
+    
+    // 🇵🇱 Polish Milk Bar - Nostalgic vintage
+    milk_bar: "Nostalgic Eastern European aesthetic, soft muted colors, gentle polaroid warmth, vintage film grain, subtle retro atmosphere, warm amber undertones, recognizable but dreamy, calm and inviting",
+    
+    // 🇬🇧 British Pub - Cozy Victorian
+    pub: "Warm cozy Victorian pub atmosphere, soft amber firelight glow, gentle wood and brass tones, subtle oil painting style, intimate and welcoming, rich browns and deep reds, painterly but clear, comfortable and nostalgic",
+    
+    // 🇮🇹 Italian Café - Renaissance warmth  
+    cafe: "Warm Renaissance-inspired atmosphere, soft Tuscan golden light, gentle ochre and terracotta palette, subtle classical painting style, cozy Italian piazza feel, warm inviting tones, painterly but recognizable, elegant and relaxed"
 };
 
 /**
