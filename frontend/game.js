@@ -1160,12 +1160,12 @@ function createNPC(appearance) {
     const armMaterial = new THREE.MeshStandardMaterial({ color: skinColor });
 
     const leftArm = new THREE.Mesh(armGeometry, armMaterial);
-    leftArm.position.set(-0.95, 2.2, 0);
+    leftArm.position.set(-0.65, 2.2, 0);
     leftArm.castShadow = true;
     npc.add(leftArm);
 
     const rightArm = new THREE.Mesh(armGeometry, armMaterial);
-    rightArm.position.set(0.95, 2.2, 0);
+    rightArm.position.set(0.65, 2.2, 0);
     rightArm.castShadow = true;
     npc.add(rightArm);
 
@@ -1174,11 +1174,11 @@ function createNPC(appearance) {
     const handMaterial = new THREE.MeshStandardMaterial({ color: skinColor });
 
     const leftHand = new THREE.Mesh(handGeometry, handMaterial);
-    leftHand.position.set(-0.95, 1.3, 0);
+    leftHand.position.set(-0.65, 1.3, 0);
     npc.add(leftHand);
 
     const rightHand = new THREE.Mesh(handGeometry, handMaterial);
-    rightHand.position.set(0.95, 1.3, 0);
+    rightHand.position.set(0.65, 1.3, 0);
     npc.add(rightHand);
 
     // Head
