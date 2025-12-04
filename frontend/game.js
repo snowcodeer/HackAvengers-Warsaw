@@ -1,5 +1,6 @@
 // 3D Game World using Three.js
 import { initHandTracker, getControlData, getHandshakeStatus, updateHandshakeUI } from './camera/handinput.js';
+import { startMirageStream, stopMirageStream } from './mirage.js';
 
 let scene, camera, renderer;
 let player, playerVelocity;
@@ -1828,6 +1829,30 @@ function startDialogue(npc) {
     // Show voice prompt
     const voicePrompt = document.getElementById('voicePrompt');
     if (voicePrompt) voicePrompt.classList.add('active');
+
+    // Start MirageLSD Stream
+    // Construct a prompt based on the NPC
+    const npcName = npc.userData.name || "Villager";
+    // Extract role if possible (e.g. "Chef Pierre" -> "Chef")
+    const role = npcName.split(' ')[0] || "Villager";
+
+    // Get selected country from localStorage (default to Poland if not set)
+    const country = localStorage.getItem('selectedCountry') || 'Poland';
+
+    let prompt = "";
+
+    if (country === 'China') {
+        prompt = `A realistic ${role} wearing traditional Chinese Hanfu clothing standing on the Great Wall of China, green mountains background, misty atmosphere, high quality`;
+    } else if (country === 'France') {
+        prompt = `A realistic ${role} wearing 19th century French fashion standing near the Eiffel Tower in Paris, romantic atmosphere, high quality`;
+    } else if (country === 'Japan') {
+        prompt = `A realistic ${role} wearing traditional Japanese Kimono standing near a Torii gate and cherry blossoms, Kyoto atmosphere, high quality`;
+    } else {
+        // Default (Poland)
+        prompt = `A realistic ${role} standing in front of a majestic Polish monument statue in Warsaw, winter atmosphere, high quality, detailed architecture`;
+    }
+
+    startMirageStream(prompt, "gameCanvas");
 }
 
 function zoomToNPC() {
@@ -1923,6 +1948,9 @@ function endDialogue() {
 
     // Zoom out
     zoomOut();
+
+    // Stop MirageLSD Stream
+    stopMirageStream();
 }
 
 function updatePlayer(delta) {

@@ -30,31 +30,31 @@ const petalStyles = ['round', 'star', 'diamond', 'tulip', 'daisy'];
 function createBushes() {
     const container = document.getElementById('flowersContainer');
     const bushCount = 12;
-    
+
     for (let i = 0; i < bushCount; i++) {
         const bush = document.createElement('div');
         bush.className = 'pixel-bush';
-        
+
         const leftPos = 3 + (i / bushCount) * 92;
         bush.style.left = `${leftPos}%`;
-        
+
         const size = 40 + Math.floor(Math.random() * 50);
         const height = size * (0.6 + Math.random() * 0.3);
-        
+
         const greens = ['#2d8a2d', '#3da03d', '#4db84d', '#35a035'];
         const mainColor = greens[Math.floor(Math.random() * greens.length)];
         const darkColor = darkenColor(mainColor, 20);
         const lightColor = lightenColor(mainColor, 15);
-        
+
         const lumps = 3 + Math.floor(Math.random() * 3);
         let bushHTML = '';
-        
+
         for (let j = 0; j < lumps; j++) {
             const lumpSize = size * (0.5 + Math.random() * 0.4);
-            const lumpX = (j - lumps/2 + 0.5) * (size * 0.35);
+            const lumpX = (j - lumps / 2 + 0.5) * (size * 0.35);
             const lumpY = Math.random() * 10;
             const lumpColor = j % 2 === 0 ? mainColor : lightColor;
-            
+
             bushHTML += `
                 <div style="
                     position: absolute;
@@ -71,7 +71,7 @@ function createBushes() {
                 "></div>
             `;
         }
-        
+
         if (Math.random() > 0.4) {
             bushHTML += `
                 <div style="
@@ -89,12 +89,12 @@ function createBushes() {
                 "></div>
             `;
         }
-        
+
         bush.innerHTML = bushHTML;
         bush.style.width = `${size * 1.5}px`;
         bush.style.height = `${height + 20}px`;
         bush.style.animationDelay = `${0.3 + i * 0.08}s`;
-        
+
         container.appendChild(bush);
     }
 }
@@ -103,20 +103,20 @@ function createBushes() {
 function createRocks() {
     const container = document.getElementById('flowersContainer');
     const rockCount = 8;
-    
+
     for (let i = 0; i < rockCount; i++) {
         const rock = document.createElement('div');
         rock.className = 'pixel-rock';
-        
+
         const leftPos = 5 + Math.random() * 88;
         rock.style.left = `${leftPos}%`;
-        
+
         const width = 24 + Math.floor(Math.random() * 40);
         const height = width * (0.5 + Math.random() * 0.3);
-        
+
         const grays = ['#808080', '#909090', '#707070', '#858585'];
         const mainColor = grays[Math.floor(Math.random() * grays.length)];
-        
+
         rock.innerHTML = `
             <div style="
                 width: ${width}px;
@@ -141,7 +141,7 @@ function createRocks() {
                 "></div>
             ` : ''}
         `;
-        
+
         rock.style.animationDelay = `${0.5 + i * 0.1}s`;
         container.appendChild(rock);
     }
@@ -151,21 +151,21 @@ function createRocks() {
 function createBunnies() {
     const container = document.getElementById('flowersContainer');
     const bunnyCount = 5;
-    
+
     for (let i = 0; i < bunnyCount; i++) {
         const bunny = document.createElement('div');
         bunny.className = 'pixel-bunny';
-        
+
         const leftPos = 10 + (i / bunnyCount) * 75;
         bunny.style.left = `${leftPos}%`;
-        
+
         const facingLeft = Math.random() > 0.5;
-        
+
         const bunnyColors = ['#f0e8e0', '#e8e0d8', '#d8d0c8', '#f8f0e8', '#e0d8d0'];
         const bodyColor = bunnyColors[Math.floor(Math.random() * bunnyColors.length)];
         const darkColor = darkenColor(bodyColor, 15);
         const lightColor = lightenColor(bodyColor, 10);
-        
+
         // Build bunny always facing RIGHT, use scaleX to flip
         bunny.innerHTML = `
             <div class="bunny-body" style="
@@ -289,9 +289,9 @@ function createBunnies() {
                 "></div>
             </div>
         `;
-        
+
         container.appendChild(bunny);
-        
+
         // Start random bunny behavior
         startBunnyBehavior(bunny, facingLeft);
     }
@@ -302,17 +302,17 @@ function startBunnyBehavior(bunny, initialFacing) {
     let currentLeft = parseFloat(bunny.style.left);
     let facingLeft = initialFacing;
     const bunnyBody = bunny.querySelector('.bunny-body');
-    
+
     function updateFacing() {
         if (bunnyBody) {
             bunnyBody.style.transform = `scaleX(${facingLeft ? -1 : 1})`;
         }
     }
-    
+
     function hop() {
         // Random behavior: idle, turn around, or hop forward
         const action = Math.random();
-        
+
         if (action < 0.25) {
             // Idle - just wiggle in place
             bunny.classList.remove('hopping');
@@ -329,16 +329,16 @@ function startBunnyBehavior(bunny, initialFacing) {
             // Hop forward in facing direction
             bunny.classList.remove('idle');
             bunny.classList.add('hopping');
-            
+
             const moveAmount = 4 + Math.random() * 6;
-            
+
             // Always move in the direction the bunny is facing
             if (facingLeft) {
                 currentLeft = Math.max(5, currentLeft - moveAmount);
             } else {
                 currentLeft = Math.min(90, currentLeft + moveAmount);
             }
-            
+
             // If hitting bounds, turn around AFTER this hop
             if (currentLeft <= 5 || currentLeft >= 90) {
                 setTimeout(() => {
@@ -346,9 +346,9 @@ function startBunnyBehavior(bunny, initialFacing) {
                     updateFacing();
                 }, 500);
             }
-            
+
             bunny.style.left = `${currentLeft}%`;
-            
+
             // Schedule next action after hop animation completes
             setTimeout(() => {
                 bunny.classList.remove('hopping');
@@ -357,7 +357,7 @@ function startBunnyBehavior(bunny, initialFacing) {
             return;
         }
     }
-    
+
     // Start with random delay
     setTimeout(hop, Math.random() * 2000);
 }
@@ -366,7 +366,7 @@ function startBunnyBehavior(bunny, initialFacing) {
 function createTallTrees() {
     const container = document.getElementById('flowersContainer');
     const treePositions = [5, 28, 68, 92];
-    
+
     for (let i = 0; i < treePositions.length; i++) {
         createPixelTree(container, treePositions[i], i);
     }
@@ -376,12 +376,12 @@ function createPixelTree(container, leftPos, index) {
     const tree = document.createElement('div');
     tree.className = 'pixel-tree';
     tree.style.left = `${leftPos}%`;
-    
+
     const treeHeight = window.innerHeight * (1.2 + Math.random() * 0.5);
     const trunkWidth = 40 + Math.floor(Math.random() * 30);
-    
+
     const baseDelay = 0.1 + index * 0.5;
-    
+
     // Single trunk piece
     const trunkHTML = `
         <div class="tree-trunk" style="
@@ -399,17 +399,17 @@ function createPixelTree(container, leftPos, index) {
                 inset -8px 0 0 0 #4a2a10;
         "></div>
     `;
-    
+
     const foliageRows = 8 + Math.floor(Math.random() * 5);
     let foliageHTML = '';
-    
+
     const baseWidth = trunkWidth * 4;
     for (let row = 0; row < foliageRows; row++) {
         const rowWidth = baseWidth - (row * (baseWidth / foliageRows) * 0.7);
         const rowHeight = 32 + Math.floor(Math.random() * 16);
         const greenShade = row % 3 === 0 ? '#208020' : row % 3 === 1 ? '#30a030' : '#48c048';
         const offsetY = row * 28;
-        
+
         foliageHTML += `
             <div class="tree-foliage-row" style="
                 width: ${rowWidth}px;
@@ -425,7 +425,7 @@ function createPixelTree(container, leftPos, index) {
                     0 4px 0 0 #1a5a1a;
             "></div>
         `;
-        
+
         if (row % 2 === 0) {
             foliageHTML += `
                 <div class="tree-snow-row" style="
@@ -444,10 +444,10 @@ function createPixelTree(container, leftPos, index) {
             `;
         }
     }
-    
+
     tree.innerHTML = `${trunkHTML}${foliageHTML}`;
     tree.style.animationDelay = `${baseDelay}s`;
-    
+
     container.appendChild(tree);
 }
 
@@ -455,19 +455,19 @@ function createPixelTree(container, leftPos, index) {
 function createFlowerGarden() {
     const container = document.getElementById('flowersContainer');
     const flowerCount = 8;
-    
+
     const growOrder = Array.from({ length: flowerCount }, (_, i) => i);
     shuffleArray(growOrder);
-    
+
     const sectionWidth = 90 / flowerCount;
     const positions = [];
-    
+
     for (let i = 0; i < flowerCount; i++) {
         const sectionStart = 5 + (i * sectionWidth);
         const offset = Math.random() * (sectionWidth * 0.6);
         positions.push(sectionStart + offset);
     }
-    
+
     for (let i = 0; i < flowerCount; i++) {
         const growIndex = growOrder.indexOf(i);
         createFlower(container, i, positions[i], growIndex);
@@ -486,40 +486,40 @@ function createFlower(container, index, leftPos, growOrderIndex) {
     const flower = document.createElement('div');
     flower.className = 'flower';
     flower.style.left = `${leftPos}%`;
-    
+
     const heightPercent = 50 + Math.random() * 20;
     const totalHeight = (heightPercent / 100) * window.innerHeight;
-    
+
     const colorScheme = flowerColors[Math.floor(Math.random() * flowerColors.length)];
-    
+
     // Flower size
     const flowerSize = 50 + Math.floor(Math.random() * 50);
     const petalSize = Math.floor(flowerSize * 0.4);
     const petalStyle = petalStyles[Math.floor(Math.random() * petalStyles.length)];
-    
+
     const stemWidth = 14 + Math.floor(Math.random() * 8);
-    
+
     const curveDirection = Math.random() > 0.5 ? 1 : -1;
     const curveIntensity = 60 + Math.random() * 80;
-    
+
     // Grow delay for this flower
     const growDelay = 0.2 + (growOrderIndex * 0.15);
-    
+
     const swayAmount = 1 + Math.random() * 2;
     const swayDuration = 3 + Math.random() * 2;
-    
+
     const stemHTML = createPixelCurvedStem(totalHeight, stemWidth, curveDirection, curveIntensity);
     const headOffsetX = curveDirection * curveIntensity;
-    
+
     // Container size needs to be bigger to fit petals
     const containerSize = flowerSize + (petalSize * 3);
-    
+
     flower.innerHTML = `
         <div class="flower-head-wrapper" style="
             width: ${containerSize}px; 
             height: ${containerSize}px;
             position: absolute;
-            bottom: ${totalHeight - containerSize/2}px;
+            bottom: ${totalHeight - containerSize / 2}px;
             left: 50%;
             transform: translateX(calc(-50% + ${headOffsetX}px));
             z-index: 10;
@@ -556,15 +556,15 @@ function createFlower(container, index, leftPos, growOrderIndex) {
             ${stemHTML}
         </div>
     `;
-    
+
     // Set animation delay
     flower.style.animationDelay = `${growDelay}s`;
     flower.style.setProperty('--grow-delay', `${growDelay}s`);
     flower.style.setProperty('--sway-amount', `${swayAmount}deg`);
     flower.style.setProperty('--sway-duration', `${swayDuration}s`);
-    
+
     container.appendChild(flower);
-    
+
     // Start swaying after grown
     setTimeout(() => {
         flower.classList.add('sway');
@@ -574,8 +574,8 @@ function createFlower(container, index, leftPos, growOrderIndex) {
 function createPixelCurvedStem(height, width, direction, intensity) {
     const segments = Math.floor(height / 20);
     let stemHTML = '';
-    const midX = intensity + width/2 + 30;
-    
+    const midX = intensity + width / 2 + 30;
+
     for (let i = 0; i < segments; i++) {
         const progress = i / segments;
         const nextProgress = (i + 1) / segments;
@@ -585,7 +585,7 @@ function createPixelCurvedStem(height, width, direction, intensity) {
         const yPos = i * segmentHeight;
         const xPos = midX + curveOffset;
         const angle = Math.atan2(nextCurveOffset - curveOffset, segmentHeight) * (180 / Math.PI);
-        
+
         stemHTML += `
             <div class="stem-segment" style="
                 position: absolute;
@@ -601,11 +601,11 @@ function createPixelCurvedStem(height, width, direction, intensity) {
                     0 4px 0 0 #308030;
             "></div>
         `;
-        
+
         if (i % 4 === 2 && i < segments - 2) {
             const leafSide = (i % 2 === 0) ? -1 : 1;
             const leafSize = 20 + Math.floor(Math.random() * 12);
-            
+
             stemHTML += `
                 <div class="pixel-leaf" style="
                     position: absolute;
@@ -632,21 +632,21 @@ function createPixelPetalsWithSnow(size, color, style) {
     const lightColor = lightenColor(color, 30);
     const lighterColor = lightenColor(color, 50);
     const highlightColor = lightenColor(color, 70);
-    
+
     // Petal dimensions
     const s = Math.floor(size * 1.6);
     const spread = Math.floor(size * 0.45);
     const smallSpread = Math.floor(size * 0.25);
     const tinySpread = Math.floor(size * 0.15);
     const centerSize = Math.floor(size * 1.4);
-    
+
     // Inner detail positions
     const inner = Math.floor(s * 0.5);
     const mid = Math.floor(s * 0.75);
-    
+
     let petalsHTML = '';
-    
-    switch(style) {
+
+    switch (style) {
         case 'star':
             // 8-pointed star with layered detail
             petalsHTML = `
@@ -667,20 +667,20 @@ function createPixelPetalsWithSnow(size, color, style) {
                         -${mid}px ${mid}px 0 ${smallSpread}px ${darkerColor},
                         ${mid}px ${mid}px 0 ${smallSpread}px ${darkerColor},
                         /* Main petal colors */
-                        0 -${Math.floor(s*0.85)}px 0 ${smallSpread}px ${color},
-                        0 ${Math.floor(s*0.85)}px 0 ${smallSpread}px ${color},
-                        -${Math.floor(s*0.85)}px 0 0 ${smallSpread}px ${lightColor},
-                        ${Math.floor(s*0.85)}px 0 0 ${smallSpread}px ${color},
+                        0 -${Math.floor(s * 0.85)}px 0 ${smallSpread}px ${color},
+                        0 ${Math.floor(s * 0.85)}px 0 ${smallSpread}px ${color},
+                        -${Math.floor(s * 0.85)}px 0 0 ${smallSpread}px ${lightColor},
+                        ${Math.floor(s * 0.85)}px 0 0 ${smallSpread}px ${color},
                         /* Inner highlights */
                         0 -${inner}px 0 ${tinySpread}px ${lightColor},
                         -${inner}px 0 0 ${tinySpread}px ${lighterColor},
                         /* Pixel detail spots */
-                        -${Math.floor(s*0.3)}px -${Math.floor(s*0.8)}px 0 3px ${highlightColor},
-                        ${Math.floor(s*0.3)}px -${Math.floor(s*0.6)}px 0 2px ${lighterColor};
+                        -${Math.floor(s * 0.3)}px -${Math.floor(s * 0.8)}px 0 3px ${highlightColor},
+                        ${Math.floor(s * 0.3)}px -${Math.floor(s * 0.6)}px 0 2px ${lighterColor};
                 "></div>
             `;
             break;
-            
+
         case 'diamond':
             // Elegant diamond petals with gradient layers
             petalsHTML = `
@@ -696,10 +696,10 @@ function createPixelPetalsWithSnow(size, color, style) {
                         -${s}px 0 0 ${spread}px ${darkerColor},
                         ${s}px 0 0 ${spread}px ${darkerColor},
                         /* Mid layer */
-                        0 -${Math.floor(s*0.8)}px 0 ${smallSpread}px ${darkColor},
-                        0 ${Math.floor(s*0.8)}px 0 ${smallSpread}px ${darkColor},
-                        -${Math.floor(s*0.8)}px 0 0 ${smallSpread}px ${color},
-                        ${Math.floor(s*0.8)}px 0 0 ${smallSpread}px ${color},
+                        0 -${Math.floor(s * 0.8)}px 0 ${smallSpread}px ${darkColor},
+                        0 ${Math.floor(s * 0.8)}px 0 ${smallSpread}px ${darkColor},
+                        -${Math.floor(s * 0.8)}px 0 0 ${smallSpread}px ${color},
+                        ${Math.floor(s * 0.8)}px 0 0 ${smallSpread}px ${color},
                         /* Inner bright layer */
                         0 -${inner}px 0 ${smallSpread}px ${color},
                         0 ${inner}px 0 ${smallSpread}px ${color},
@@ -709,13 +709,13 @@ function createPixelPetalsWithSnow(size, color, style) {
                         -${mid}px -${mid}px 0 ${tinySpread}px ${lightColor},
                         ${mid}px -${mid}px 0 ${tinySpread}px ${lightColor},
                         /* Highlight spots */
-                        0 -${Math.floor(s*0.5)}px 0 4px ${highlightColor},
-                        -${Math.floor(s*0.5)}px 0 0 3px ${lighterColor},
-                        ${Math.floor(s*0.4)}px -${Math.floor(s*0.4)}px 0 2px ${highlightColor};
+                        0 -${Math.floor(s * 0.5)}px 0 4px ${highlightColor},
+                        -${Math.floor(s * 0.5)}px 0 0 3px ${lighterColor},
+                        ${Math.floor(s * 0.4)}px -${Math.floor(s * 0.4)}px 0 2px ${highlightColor};
                 "></div>
             `;
             break;
-            
+
         case 'tulip':
             // Tulip with curved appearance
             petalsHTML = `
@@ -727,26 +727,26 @@ function createPixelPetalsWithSnow(size, color, style) {
                     box-shadow:
                         /* Main tulip shape - outer */
                         0 -${s}px 0 ${spread}px ${color},
-                        -${Math.floor(s*0.9)}px -${mid}px 0 ${spread}px ${lightColor},
-                        ${Math.floor(s*0.9)}px -${mid}px 0 ${spread}px ${darkColor},
+                        -${Math.floor(s * 0.9)}px -${mid}px 0 ${spread}px ${lightColor},
+                        ${Math.floor(s * 0.9)}px -${mid}px 0 ${spread}px ${darkColor},
                         /* Middle layer */
-                        0 -${Math.floor(s*0.7)}px 0 ${smallSpread}px ${lightColor},
-                        -${Math.floor(s*0.6)}px -${inner}px 0 ${smallSpread}px ${lighterColor},
-                        ${Math.floor(s*0.6)}px -${inner}px 0 ${smallSpread}px ${color},
+                        0 -${Math.floor(s * 0.7)}px 0 ${smallSpread}px ${lightColor},
+                        -${Math.floor(s * 0.6)}px -${inner}px 0 ${smallSpread}px ${lighterColor},
+                        ${Math.floor(s * 0.6)}px -${inner}px 0 ${smallSpread}px ${color},
                         /* Inner cup */
-                        -${Math.floor(s*0.3)}px 0 0 ${smallSpread}px ${lightColor},
-                        ${Math.floor(s*0.3)}px 0 0 ${smallSpread}px ${darkColor},
+                        -${Math.floor(s * 0.3)}px 0 0 ${smallSpread}px ${lightColor},
+                        ${Math.floor(s * 0.3)}px 0 0 ${smallSpread}px ${darkColor},
                         /* Dark base */
-                        -${Math.floor(s*0.4)}px ${Math.floor(s*0.3)}px 0 ${tinySpread}px ${darkerColor},
-                        ${Math.floor(s*0.4)}px ${Math.floor(s*0.3)}px 0 ${tinySpread}px ${darkerColor},
+                        -${Math.floor(s * 0.4)}px ${Math.floor(s * 0.3)}px 0 ${tinySpread}px ${darkerColor},
+                        ${Math.floor(s * 0.4)}px ${Math.floor(s * 0.3)}px 0 ${tinySpread}px ${darkerColor},
                         /* Highlights */
-                        0 -${Math.floor(s*0.85)}px 0 4px ${highlightColor},
-                        -${Math.floor(s*0.5)}px -${Math.floor(s*0.6)}px 0 3px ${highlightColor},
-                        -${Math.floor(s*0.7)}px -${Math.floor(s*0.3)}px 0 2px ${lighterColor};
+                        0 -${Math.floor(s * 0.85)}px 0 4px ${highlightColor},
+                        -${Math.floor(s * 0.5)}px -${Math.floor(s * 0.6)}px 0 3px ${highlightColor},
+                        -${Math.floor(s * 0.7)}px -${Math.floor(s * 0.3)}px 0 2px ${lighterColor};
                 "></div>
             `;
             break;
-            
+
         case 'daisy':
             // Full daisy with many detailed petals
             petalsHTML = `
@@ -766,22 +766,22 @@ function createPixelPetalsWithSnow(size, color, style) {
                         -${mid}px ${mid}px 0 ${spread}px ${darkColor},
                         ${mid}px ${mid}px 0 ${spread}px ${darkColor},
                         /* Inner petal layer */
-                        0 -${Math.floor(s*0.7)}px 0 ${smallSpread}px ${lightColor},
-                        0 ${Math.floor(s*0.7)}px 0 ${smallSpread}px ${color},
-                        -${Math.floor(s*0.7)}px 0 0 ${smallSpread}px ${lighterColor},
-                        ${Math.floor(s*0.7)}px 0 0 ${smallSpread}px ${color},
+                        0 -${Math.floor(s * 0.7)}px 0 ${smallSpread}px ${lightColor},
+                        0 ${Math.floor(s * 0.7)}px 0 ${smallSpread}px ${color},
+                        -${Math.floor(s * 0.7)}px 0 0 ${smallSpread}px ${lighterColor},
+                        ${Math.floor(s * 0.7)}px 0 0 ${smallSpread}px ${color},
                         /* Inner diagonal accents */
                         -${inner}px -${inner}px 0 ${tinySpread}px ${lighterColor},
                         ${inner}px -${inner}px 0 ${tinySpread}px ${lightColor},
                         /* Pixel highlights on petals */
-                        0 -${Math.floor(s*0.8)}px 0 4px ${highlightColor},
-                        -${Math.floor(s*0.8)}px 0 0 3px ${highlightColor},
-                        -${Math.floor(s*0.5)}px -${Math.floor(s*0.5)}px 0 3px ${highlightColor},
-                        ${Math.floor(s*0.4)}px -${Math.floor(s*0.7)}px 0 2px ${lighterColor};
+                        0 -${Math.floor(s * 0.8)}px 0 4px ${highlightColor},
+                        -${Math.floor(s * 0.8)}px 0 0 3px ${highlightColor},
+                        -${Math.floor(s * 0.5)}px -${Math.floor(s * 0.5)}px 0 3px ${highlightColor},
+                        ${Math.floor(s * 0.4)}px -${Math.floor(s * 0.7)}px 0 2px ${lighterColor};
                 "></div>
             `;
             break;
-            
+
         default: // round - classic 4-petal with detail
             petalsHTML = `
                 <div style="
@@ -796,24 +796,24 @@ function createPixelPetalsWithSnow(size, color, style) {
                         -${s}px 0 0 ${spread}px ${darkColor},
                         ${s}px 0 0 ${spread}px ${darkerColor},
                         /* Main petal colors */
-                        0 -${Math.floor(s*0.85)}px 0 ${smallSpread}px ${color},
-                        0 ${Math.floor(s*0.85)}px 0 ${smallSpread}px ${darkColor},
-                        -${Math.floor(s*0.85)}px 0 0 ${smallSpread}px ${lightColor},
-                        ${Math.floor(s*0.85)}px 0 0 ${smallSpread}px ${color},
+                        0 -${Math.floor(s * 0.85)}px 0 ${smallSpread}px ${color},
+                        0 ${Math.floor(s * 0.85)}px 0 ${smallSpread}px ${darkColor},
+                        -${Math.floor(s * 0.85)}px 0 0 ${smallSpread}px ${lightColor},
+                        ${Math.floor(s * 0.85)}px 0 0 ${smallSpread}px ${color},
                         /* Inner bright layer */
                         0 -${inner}px 0 ${smallSpread}px ${lightColor},
                         0 ${inner}px 0 ${smallSpread}px ${color},
                         -${inner}px 0 0 ${smallSpread}px ${lighterColor},
                         ${inner}px 0 0 ${smallSpread}px ${lightColor},
                         /* Highlight spots */
-                        0 -${Math.floor(s*0.6)}px 0 4px ${highlightColor},
-                        -${Math.floor(s*0.6)}px 0 0 4px ${highlightColor},
-                        -${Math.floor(s*0.3)}px -${Math.floor(s*0.7)}px 0 2px ${lighterColor},
-                        ${Math.floor(s*0.2)}px -${Math.floor(s*0.5)}px 0 2px ${highlightColor};
+                        0 -${Math.floor(s * 0.6)}px 0 4px ${highlightColor},
+                        -${Math.floor(s * 0.6)}px 0 0 4px ${highlightColor},
+                        -${Math.floor(s * 0.3)}px -${Math.floor(s * 0.7)}px 0 2px ${lighterColor},
+                        ${Math.floor(s * 0.2)}px -${Math.floor(s * 0.5)}px 0 2px ${highlightColor};
                 "></div>
             `;
     }
-    
+
     return petalsHTML;
 }
 
@@ -837,28 +837,28 @@ function darkenColor(color, percent) {
 
 function initPixelSnowfall() {
     const snowContainer = document.getElementById('snowContainer');
-    
+
     function createSnowflake() {
         const snowflake = document.createElement('div');
         snowflake.className = 'snowflake';
         snowflake.style.left = Math.random() * 100 + 'vw';
-        
+
         const sizes = [4, 6, 8, 10];
         const size = sizes[Math.floor(Math.random() * sizes.length)];
         snowflake.style.width = size + 'px';
         snowflake.style.height = size + 'px';
-        
+
         const duration = 8 + Math.random() * 6;
         snowflake.style.animationDuration = duration + 's';
         snowflake.style.animationDelay = Math.random() * 2 + 's';
-        
+
         const drift = Math.round((Math.random() - 0.5) * 80 / 4) * 4;
         snowflake.style.setProperty('--drift', drift + 'px');
-        
+
         snowContainer.appendChild(snowflake);
         setTimeout(() => snowflake.remove(), (duration + 2) * 1000);
     }
-    
+
     for (let i = 0; i < 50; i++) {
         setTimeout(() => createSnowflake(), i * 80);
     }
@@ -867,16 +867,31 @@ function initPixelSnowfall() {
 
 function initButtonEffects() {
     const beginBtn = document.getElementById('beginBtn');
-    
+    const languageModal = document.getElementById('languageModal');
+    const langBtns = document.querySelectorAll('.lang-btn');
+
     beginBtn.addEventListener('click', () => {
         beginBtn.style.transform = 'translateY(8px)';
         createPixelBurst(beginBtn);
-        setTimeout(() => { 
-            beginBtn.style.transform = ''; 
+        setTimeout(() => {
+            beginBtn.style.transform = '';
+            // Show language selection modal instead of direct navigation
+            languageModal.classList.add('active');
+        }, 300);
+    });
+
+    langBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+            const country = btn.dataset.country;
+
+            // Store selection
+            localStorage.setItem('selectedLanguage', lang);
+            localStorage.setItem('selectedCountry', country);
+
             // Navigate to character customisation
             window.location.href = 'character.html';
-        }, 300);
-        console.log('Let the adventure begin! 🌸❄️🐰');
+        });
     });
 }
 
@@ -884,17 +899,17 @@ function createPixelBurst(button) {
     const rect = button.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    
+
     for (let i = 0; i < 8; i++) {
         const particle = document.createElement('div');
         particle.style.cssText = `position: fixed; left: ${centerX}px; top: ${centerY}px; width: 8px; height: 8px; background: white; pointer-events: none; z-index: 1000;`;
         document.body.appendChild(particle);
-        
+
         const angle = (i / 8) * Math.PI * 2;
         const velocity = 60;
         const targetX = Math.round(Math.cos(angle) * velocity / 8) * 8;
         const targetY = Math.round(Math.sin(angle) * velocity / 8) * 8;
-        
+
         let frame = 0;
         const interval = setInterval(() => {
             frame++;
