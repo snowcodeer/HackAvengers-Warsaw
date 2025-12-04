@@ -251,21 +251,33 @@
         .practice-btn {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             margin-top: 12px;
-            padding: 8px 16px;
-            background: linear-gradient(135deg, rgba(244, 185, 66, 0.2), rgba(244, 185, 66, 0.1));
-            border: 1px solid rgba(244, 185, 66, 0.4);
-            border-radius: 20px;
-            color: var(--accent-gold);
-            font-size: 0.85rem;
+            padding: 12px 18px;
+            background: var(--cozy-yellow);
+            border: 4px solid var(--wood-dark);
+            box-shadow: 
+                4px 4px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-light);
+            color: var(--pixel-black);
+            font-size: 0.55rem;
+            font-family: 'Press Start 2P', cursive;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.05s;
         }
         
         .practice-btn:hover {
-            background: linear-gradient(135deg, rgba(244, 185, 66, 0.3), rgba(244, 185, 66, 0.2));
-            transform: scale(1.02);
+            transform: translateY(2px);
+            box-shadow: 
+                2px 2px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-light);
+        }
+
+        .practice-btn:active {
+            transform: translateY(4px);
+            box-shadow: 
+                0 0 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-dark);
         }
 
         /* Chat history container */
