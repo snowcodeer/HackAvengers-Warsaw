@@ -619,6 +619,42 @@ class LessonService:
                 return {"word": word, "mastery": w["mastery"]}
         
         return {"error": "Word not found"}
+
+    def add_vocabulary_word(
+        self,
+        user_id: str,
+        language: str,
+        word_data: Dict
+    ) -> Dict:
+        """Add a single vocabulary word from conversation"""
+        glossary = self.get_user_glossary(user_id, language)
+        
+        # Check if word already exists
+        existing_words = {w["word"] for w in glossary["words"]}
+        
+        word = word_data.get("word") if isinstance(word_data, dict) else word_data
+        
+        if word and word not in existing_words:
+            new_word = {
+                "word": word,
+                "translation": word_data.get("translation", "") if isinstance(word_data, dict) else "",
+                "pronunciation": word_data.get("pronunciation", "") if isinstance(word_data, dict) else "",
+                "context": word_data.get("context", "Learned in conversation") if isinstance(word_data, dict) else "Learned in conversation",
+                "times_seen": 1,
+                "times_correct": 0,
+                "mastery": 0.0,
+                "added_at": datetime.now().isoformat()
+            }
+            glossary["words"].append(new_word)
+            
+            # Update progress
+            progress = self.get_user_progress(user_id, language)
+            progress["words_learned"] = len(glossary["words"])
+            self._save_user_progress(user_id, language, progress)
+            
+            return {"success": True, "word": new_word}
+        
+        return {"success": False, "message": "Word already exists"}
     
     # ═══════════════════════════════════════════════════════════════════════════
     # AI-POWERED CONTENT GENERATION

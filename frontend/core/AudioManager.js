@@ -10,9 +10,9 @@ export class AudioManager {
     this.ambientSound = null;
     this.sfxPool = new Map();
     
-    // Volume settings (0-1)
-    this.musicVolume = 0.15;      // Quiet background music
-    this.ambientVolume = 0.1;     // Even quieter ambient
+    // Volume settings (0-1) - VERY quiet background
+    this.musicVolume = 0.05;      // Very quiet background music (was 0.15)
+    this.ambientVolume = 0.03;    // Barely audible ambient (was 0.1)
     this.sfxVolume = 0.4;         // Sound effects
     this.masterVolume = 1.0;
     

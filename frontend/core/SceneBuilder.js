@@ -1339,14 +1339,48 @@ export class SceneBuilder {
   }
 
   applyLighting() {
-    const lightingConfig = this.config.scene.lighting;
-    if (!lightingConfig) return;
+    const lightingConfig = this.config.scene?.lighting;
     
-    // Primary light
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ALWAYS ADD DEFAULT LIGHTING (prevents pitch black scenes)
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    // Default ambient light - always added
+    const defaultAmbient = new THREE.AmbientLight('#FFF5E6', 0.5);
+    this.scene.add(defaultAmbient);
+    this.lights.push(defaultAmbient);
+    
+    // Default directional light - always added
+    const defaultDirectional = new THREE.DirectionalLight('#FFFFFF', 0.8);
+    defaultDirectional.position.set(5, 10, 5);
+    defaultDirectional.castShadow = true;
+    defaultDirectional.shadow.mapSize.width = 2048;
+    defaultDirectional.shadow.mapSize.height = 2048;
+    this.scene.add(defaultDirectional);
+    this.lights.push(defaultDirectional);
+    
+    // Default warm fill light
+    const defaultFill = new THREE.PointLight('#FFAA44', 0.6, 20);
+    defaultFill.position.set(-3, 4, 0);
+    this.scene.add(defaultFill);
+    this.lights.push(defaultFill);
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // OVERRIDE WITH CONFIG LIGHTING (if available)
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    if (!lightingConfig) {
+      console.log('💡 Using default lighting (no config)');
+      return;
+    }
+    
+    console.log('💡 Applying config lighting');
+    
+    // Primary light from config
     if (lightingConfig.primary) {
       const primaryLight = new THREE.DirectionalLight(
-        lightingConfig.primary.color,
-        lightingConfig.primary.intensity
+        lightingConfig.primary.color || '#FFFFFF',
+        lightingConfig.primary.intensity || 0.8
       );
       primaryLight.position.set(5, 10, 5);
       primaryLight.castShadow = true;
@@ -1354,13 +1388,32 @@ export class SceneBuilder {
       this.lights.push(primaryLight);
     }
     
-    // Ambient light
+    // Ambient light from config
     if (lightingConfig.secondary) {
       const ambientLight = new THREE.AmbientLight(
-        lightingConfig.secondary.color,
-        lightingConfig.secondary.intensity
+        lightingConfig.secondary.color || '#FFF8DC',
+        lightingConfig.secondary.intensity || 0.4
       );
       this.scene.add(ambientLight);
+      this.lights.push(ambientLight);
+    }
+    
+    // Accent lights from config
+    if (lightingConfig.accent && Array.isArray(lightingConfig.accent)) {
+      lightingConfig.accent.forEach((accent, i) => {
+        const light = new THREE.PointLight(
+          accent.color || '#FFAA44',
+          accent.intensity || 0.5,
+          accent.distance || 15
+        );
+        if (accent.position) {
+          light.position.set(accent.position.x || 0, accent.position.y || 3, accent.position.z || 0);
+        } else {
+          light.position.set(i * 2 - 2, 3, -2);
+        }
+        this.scene.add(light);
+        this.lights.push(light);
+      });
     }
   }
 

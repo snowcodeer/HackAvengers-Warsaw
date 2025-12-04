@@ -1,60 +1,90 @@
 """
 ═══════════════════════════════════════════════════════════════════════════════
 LINGUAVERSE - Main Backend Application
-Full-featured language learning API with ElevenLabs integration
+Unified API for immersive language learning
+
+Endpoints:
+- /api/speak, /api/transcribe - Voice (ElevenLabs)
+- /api/conversation/* - Multi-turn AI conversations
+- /api/lessons/*, /api/progress/* - Learning content
+- /api/glossary/* - Vocabulary tracking
 ═══════════════════════════════════════════════════════════════════════════════
 """
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 import os
 
 # Import routers
-from routers import conversation, quest
+from routers import conversation, quest, voice
 from services.lesson_service import lesson_service
 from services.elevenlabs_service import elevenlabs_service
 
-# Create FastAPI app
+# ═══════════════════════════════════════════════════════════════════════════════
+# APP INITIALIZATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
 app = FastAPI(
     title="LinguaVerse API",
-    description="Immersive language learning with AI-powered conversations",
-    version="2.0.0"
+    description="Immersive language learning with AI conversations and ElevenLabs voice",
+    version="2.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
-# CORS middleware
+# CORS - Allow all origins for development
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Session-Id", "X-Transcription", "X-Response-Text", "X-Turn-Count"]
 )
 
-# Include routers
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INCLUDE ROUTERS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Voice API - TTS, STT, Pronunciation
+app.include_router(voice.router)
+
+# Conversation API - Multi-turn dialogue
 app.include_router(conversation.router)
+
+# Quest API - Game progression
 app.include_router(quest.router)
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
 # ROOT & HEALTH ENDPOINTS
-# ═══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
 
 @app.get("/")
 async def root():
-    """API root - health check and info"""
+    """API root - health check and feature list"""
     return {
         "name": "LinguaVerse API",
         "version": "2.0.0",
         "status": "running",
+        "endpoints": {
+            "voice": "/api/speak, /api/transcribe, /api/pronunciation/assess",
+            "conversation": "/api/conversation/start, /api/conversation/respond",
+            "lessons": "/api/lessons/{language}",
+            "progress": "/api/progress/{language}",
+            "glossary": "/api/glossary/{language}",
+            "docs": "/docs"
+        },
         "features": [
-            "Multi-turn AI conversations",
-            "ElevenLabs TTS/STT integration",
-            "Pronunciation feedback",
+            "ElevenLabs TTS with character voices",
+            "ElevenLabs STT for speech recognition", 
+            "Pronunciation assessment",
+            "Multi-turn AI conversations (Claude)",
             "Structured lesson plans",
             "Progress tracking",
-            "Glossary management"
+            "Vocabulary glossary"
         ]
     }
 
@@ -62,16 +92,16 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy"}
+    return {"status": "healthy", "service": "linguaverse"}
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
 # LESSON ENDPOINTS
-# ═══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
 
 @app.get("/api/lessons/{language}")
 async def get_lesson_plan(language: str):
-    """Get the full lesson plan for a language"""
+    """Get full lesson plan for a language"""
     lessons = lesson_service.get_lesson_plan(language)
     if not lessons:
         raise HTTPException(status_code=404, detail=f"No lessons found for {language}")
@@ -89,7 +119,7 @@ async def get_lesson(language: str, lesson_id: str):
 
 @app.get("/api/lessons/{language}/next")
 async def get_next_lesson(language: str, user_id: str = "default_user"):
-    """Get the next available lesson for a user"""
+    """Get next available lesson for user"""
     lesson = lesson_service.get_next_lesson(user_id, language)
     if not lesson:
         return {"message": "All lessons completed!", "completed": True}
@@ -103,244 +133,124 @@ async def complete_lesson(
     score: float = 100.0,
     time_spent: int = 600
 ):
-    """Mark a lesson as completed"""
+    """Mark lesson as completed"""
     result = lesson_service.complete_lesson(user_id, lesson_id, score, time_spent)
     return result
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
 # PROGRESS ENDPOINTS
-# ═══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
 
 @app.get("/api/progress/{language}")
 async def get_progress(language: str, user_id: str = "default_user"):
     """Get user's progress for a language"""
-    progress = lesson_service.get_user_progress(user_id, language)
-    return progress
+    return lesson_service.get_user_progress(user_id, language)
 
 
 @app.get("/api/progress")
 async def get_all_progress(user_id: str = "default_user"):
     """Get user's progress for all languages"""
     languages = ["french", "german", "spanish", "italian", "japanese", "mandarin", "polish"]
-    progress = {}
-    for lang in languages:
-        progress[lang] = lesson_service.get_user_progress(user_id, lang)
-    return progress
+    return {lang: lesson_service.get_user_progress(user_id, lang) for lang in languages}
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
 # GLOSSARY ENDPOINTS
-# ═══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
 
 @app.get("/api/glossary/{language}")
 async def get_glossary(language: str, user_id: str = "default_user"):
-    """Get user's vocabulary glossary for a language"""
-    glossary = lesson_service.get_user_glossary(user_id, language)
-    return glossary
+    """Get user's vocabulary glossary"""
+    return lesson_service.get_user_glossary(user_id, language)
 
 
 @app.post("/api/glossary/{language}/word/{word}/practice")
 async def practice_word(language: str, word: str, correct: bool, user_id: str = "default_user"):
     """Update word mastery after practice"""
-    result = lesson_service.update_word_mastery(user_id, language, word, correct)
-    return result
+    return lesson_service.update_word_mastery(user_id, language, word, correct)
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
+# LANGUAGE & CHARACTER INFO
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/languages")
+async def get_languages():
+    """Get available languages with metadata"""
+    return {
+        "languages": [
+            {
+                "code": "french", "name": "French", "native_name": "Français",
+                "flag": "🇫🇷", "scene": "Paris Boulangerie", "character": "Amélie",
+                "character_id": "amelie", "difficulty": "beginner-friendly"
+            },
+            {
+                "code": "german", "name": "German", "native_name": "Deutsch",
+                "flag": "🇩🇪", "scene": "Berlin Techno Club", "character": "Wolfgang",
+                "character_id": "wolfgang", "difficulty": "intermediate"
+            },
+            {
+                "code": "spanish", "name": "Spanish", "native_name": "Español",
+                "flag": "🇪🇸", "scene": "Madrid Tapas Bar", "character": "Carmen",
+                "character_id": "carmen", "difficulty": "beginner-friendly"
+            },
+            {
+                "code": "italian", "name": "Italian", "native_name": "Italiano",
+                "flag": "🇮🇹", "scene": "Rome Café", "character": "Marco",
+                "character_id": "marco", "difficulty": "beginner-friendly"
+            },
+            {
+                "code": "japanese", "name": "Japanese", "native_name": "日本語",
+                "flag": "🇯🇵", "scene": "Kyoto Tea House", "character": "Yuki",
+                "character_id": "yuki", "difficulty": "challenging"
+            },
+            {
+                "code": "mandarin", "name": "Mandarin Chinese", "native_name": "中文",
+                "flag": "🇨🇳", "scene": "Beijing Tea House", "character": "Mei Lin",
+                "character_id": "meilin", "difficulty": "challenging"
+            },
+            {
+                "code": "polish", "name": "Polish", "native_name": "Polski",
+                "flag": "🇵🇱", "scene": "Warsaw Milk Bar", "character": "Kasia",
+                "character_id": "kasia", "difficulty": "intermediate"
+            },
+            {
+                "code": "english", "name": "English", "native_name": "English",
+                "flag": "🇬🇧", "scene": "London Pub", "character": "Victoria",
+                "character_id": "victoria", "difficulty": "beginner-friendly"
+            }
+        ]
+    }
+
+
+@app.get("/api/difficulty")
+async def get_difficulty_levels():
+    """Get difficulty level configurations"""
+    return {
+        "levels": [
+            {"level": 1, "name": "Beginner", "description": "Mostly English with key target words", "english_percent": 85, "target_percent": 15},
+            {"level": 2, "name": "Elementary", "description": "More target language with English support", "english_percent": 65, "target_percent": 35},
+            {"level": 3, "name": "Intermediate", "description": "Half and half, building confidence", "english_percent": 45, "target_percent": 55},
+            {"level": 4, "name": "Advanced", "description": "Primarily target language", "english_percent": 20, "target_percent": 80},
+            {"level": 5, "name": "Fluent", "description": "Natural conversation in target language", "english_percent": 5, "target_percent": 95}
+        ]
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # PERSONALIZED PRACTICE
-# ═══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
 
 @app.get("/api/practice/{language}")
 async def get_practice(language: str, user_id: str = "default_user", focus: str = None):
     """Get personalized practice based on weak areas"""
-    practice = lesson_service.generate_personalized_practice(user_id, language, focus)
-    return practice
+    return lesson_service.generate_personalized_practice(user_id, language, focus)
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-# CHARACTER ENDPOINTS
-# ═══════════════════════════════════════════════════════════════════════════
-
-@app.get("/api/characters")
-async def list_characters():
-    """List all available language learning characters"""
-    return elevenlabs_service.list_characters()
-
-
-@app.get("/api/characters/{character_id}")
-async def get_character(character_id: str):
-    """Get details about a specific character"""
-    character = elevenlabs_service.get_character_info(character_id)
-    if not character:
-        raise HTTPException(status_code=404, detail="Character not found")
-    return character
-
-
-# ═══════════════════════════════════════════════════════════════════════════
-# VOICE ENDPOINTS
-# ═══════════════════════════════════════════════════════════════════════════
-
-@app.get("/api/voices")
-async def list_voices():
-    """List all available ElevenLabs voices"""
-    try:
-        voices = elevenlabs_service.list_available_voices()
-        return {"voices": voices}
-    except Exception as e:
-        return {"error": str(e)}
-
-
-@app.post("/api/tts")
-async def text_to_speech(
-    text: str,
-    character_id: str = "amelie",
-    expression: str = None
-):
-    """Generate speech from text (for testing)"""
-    try:
-        audio_bytes = elevenlabs_service.text_to_speech(text, character_id, expression)
-        
-        # Save to temp file and return URL
-        import tempfile
-        import uuid
-        filename = f"tts_{uuid.uuid4()}.mp3"
-        filepath = os.path.join(tempfile.gettempdir(), filename)
-        with open(filepath, "wb") as f:
-            f.write(audio_bytes)
-        
-        return {"audio_url": f"/api/conversation/audio/{filename}"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# ═══════════════════════════════════════════════════════════════════════════
-# LANGUAGE INFO ENDPOINTS
-# ═══════════════════════════════════════════════════════════════════════════
-
-@app.get("/api/languages")
-async def get_languages():
-    """Get list of available languages with metadata"""
-    return {
-        "languages": [
-            {
-                "code": "french",
-                "name": "French",
-                "native_name": "Français",
-                "flag": "🇫🇷",
-                "scene": "Paris Boulangerie",
-                "character": "Amélie",
-                "difficulty": "beginner-friendly"
-            },
-            {
-                "code": "german",
-                "name": "German",
-                "native_name": "Deutsch",
-                "flag": "🇩🇪",
-                "scene": "Berlin Techno Club",
-                "character": "Wolfgang",
-                "difficulty": "intermediate"
-            },
-            {
-                "code": "spanish",
-                "name": "Spanish",
-                "native_name": "Español",
-                "flag": "🇪🇸",
-                "scene": "Madrid Tapas Bar",
-                "character": "Carmen",
-                "difficulty": "beginner-friendly"
-            },
-            {
-                "code": "italian",
-                "name": "Italian",
-                "native_name": "Italiano",
-                "flag": "🇮🇹",
-                "scene": "Rome Café",
-                "character": "Marco",
-                "difficulty": "beginner-friendly"
-            },
-            {
-                "code": "japanese",
-                "name": "Japanese",
-                "native_name": "日本語",
-                "flag": "🇯🇵",
-                "scene": "Kyoto Tea House",
-                "character": "Yuki",
-                "difficulty": "challenging"
-            },
-            {
-                "code": "mandarin",
-                "name": "Mandarin Chinese",
-                "native_name": "中文",
-                "flag": "🇨🇳",
-                "scene": "Beijing Tea House",
-                "character": "Mei Lin",
-                "difficulty": "challenging"
-            },
-            {
-                "code": "polish",
-                "name": "Polish",
-                "native_name": "Polski",
-                "flag": "🇵🇱",
-                "scene": "Warsaw Milk Bar",
-                "character": "Kasia",
-                "difficulty": "intermediate"
-            }
-        ]
-    }
-
-
-# ═══════════════════════════════════════════════════════════════════════════
-# DIFFICULTY SETTINGS
-# ═══════════════════════════════════════════════════════════════════════════
-
-@app.get("/api/difficulty")
-async def get_difficulty_levels():
-    """Get information about difficulty levels"""
-    return {
-        "levels": [
-            {
-                "level": 1,
-                "name": "Beginner",
-                "description": "Mostly English with key target language words",
-                "english_percent": 85,
-                "target_percent": 15
-            },
-            {
-                "level": 2,
-                "name": "Elementary",
-                "description": "More target language with English support",
-                "english_percent": 65,
-                "target_percent": 35
-            },
-            {
-                "level": 3,
-                "name": "Intermediate",
-                "description": "Half and half, building confidence",
-                "english_percent": 45,
-                "target_percent": 55
-            },
-            {
-                "level": 4,
-                "name": "Advanced",
-                "description": "Primarily target language",
-                "english_percent": 20,
-                "target_percent": 80
-            },
-            {
-                "level": 5,
-                "name": "Fluent",
-                "description": "Natural conversation in target language",
-                "english_percent": 5,
-                "target_percent": 95
-            }
-        ]
-    }
-
-
-# ═══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
 # ERROR HANDLERS
-# ═══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
 
 @app.exception_handler(404)
 async def not_found_handler(request, exc):
@@ -358,6 +268,21 @@ async def server_error_handler(request, exc):
     )
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# STARTUP
+# ═══════════════════════════════════════════════════════════════════════════════
+
 if __name__ == "__main__":
     import uvicorn
+    print("═" * 60)
+    print("🌍 LINGUAVERSE API - Starting...")
+    print("═" * 60)
+    print("📚 Endpoints:")
+    print("   Voice:        /api/speak, /api/transcribe")
+    print("   Conversation: /api/conversation/*")
+    print("   Lessons:      /api/lessons/{language}")
+    print("   Progress:     /api/progress/{language}")
+    print("   Glossary:     /api/glossary/{language}")
+    print("   Docs:         /docs")
+    print("═" * 60)
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1223,11 +1223,12 @@ RESPONSE FORMAT (JSON):
 {
     "text": "Your response in the target language (with English mixed in based on difficulty)",
     "translation": "English translation if primarily in target language",
-    "correction": "Grammar correction if player made a mistake (or null)",
-    "newWords": [{"word": "new word", "meaning": "meaning", "pronunciation": "pronunciation guide"}],
+    "newWords": [{"word": "new word", "meaning": "meaning"}],
     "shouldIncreaseDifficulty": true/false (if player is doing well),
-    "expression": "greeting|teaching|correcting|praising"
-}`;
+    "expression": "greeting|teaching|praising"
+}
+
+NOTE: Do NOT provide pronunciation feedback or grammar corrections. Keep responses encouraging and conversational.`;
 
     const messages = isGreeting 
         ? [{ role: 'user', content: 'The player has just approached you. Greet them warmly and introduce yourself.' }]
@@ -1283,14 +1284,12 @@ RESPONSE FORMAT (JSON):
     }
 }
 
-function displayNPCMessage(text, translation, correction) {
+function displayNPCMessage(text, translation, correction = null) {
     elements.speechText.textContent = text;
     elements.speechTranslation.textContent = translation || '';
     
-    if (correction) {
-        elements.grammarCorrection.classList.remove('hidden');
-        elements.grammarText.textContent = correction;
-    } else {
+    // Pronunciation/grammar correction DISABLED - keep it hidden
+    if (elements.grammarCorrection) {
         elements.grammarCorrection.classList.add('hidden');
     }
 }
