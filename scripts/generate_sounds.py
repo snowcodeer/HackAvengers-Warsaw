@@ -95,52 +95,52 @@ SOUNDS = [
 # ═══════════════════════════════════════════════════════════════════════════════
 
 BACKGROUND_MUSIC = [
-    # 🇫🇷 FRENCH - Paris Boulangerie
+    # 🇫🇷 FRENCH - Paris Boulangerie (French radio playing in the shop)
     {
         "filename": "music_french.mp3",
-        "prompt": "Soft French café accordion music, gentle romantic Parisian melody, warm and cozy bakery atmosphere, peaceful musette waltz, loopable background music, quiet and nostalgic",
+        "prompt": "French radio music playing in a bakery, upbeat chanson française pop song, catchy French vocals with accordion and guitar, cheerful Parisian radio hit, warm lo-fi radio quality, nostalgic and joyful, like France Inter playing in the background",
         "duration": 30
     },
-    # 🇩🇪 GERMAN - Berlin Club (chill version)
+    # 🇩🇪 GERMAN - Berlin Club
     {
         "filename": "music_german.mp3",
-        "prompt": "Soft ambient electronic music, gentle Berlin lounge beats, minimal and relaxing, warm synth pads, chill downtempo, loopable background, peaceful and modern",
+        "prompt": "German indie pop radio song, catchy Berlin alternative rock melody with synths, upbeat modern German pop music, energetic and fun, radio quality warm sound, like playing on Radio Fritz",
         "duration": 30
     },
     # 🇪🇸 SPANISH - Madrid Tapas Bar
     {
         "filename": "music_spanish.mp3",
-        "prompt": "Soft Spanish guitar melody, gentle flamenco-inspired acoustic, warm and romantic, peaceful tapas bar atmosphere, relaxing classical guitar, loopable background music",
+        "prompt": "Spanish pop radio hit playing in tapas bar, catchy modern Spanish pop reggaeton fusion, upbeat flamenco-pop melody, warm radio quality, cheerful and danceable, like playing on Los 40 radio",
         "duration": 30
     },
     # 🇮🇹 ITALIAN - Rome Café
     {
         "filename": "music_italian.mp3",
-        "prompt": "Soft Italian mandolin and accordion, gentle Neapolitan melody, warm romantic Rome atmosphere, peaceful café music, nostalgic and cozy, loopable background",
+        "prompt": "Italian pop song playing on café radio, romantic modern Italian pop ballad with piano and strings, catchy Sanremo-style melody, warm and passionate vocals, nostalgic Italian radio atmosphere",
         "duration": 30
     },
-    # 🇯🇵 JAPANESE - Kyoto Tea House
+    # 🇯🇵 JAPANESE - Tokyo convenience store / J-pop
     {
         "filename": "music_japanese.mp3",
-        "prompt": "Soft Japanese koto and bamboo flute music, gentle zen garden melody, peaceful and meditative, warm traditional atmosphere, relaxing shamisen, loopable background",
+        "prompt": "Japanese pop music, catchy J-pop song with bright synths and cheerful melody, upbeat kawaii idol pop style, energetic and fun, like music playing in Tokyo convenience store or café",
         "duration": 30
     },
-    # 🇨🇳 MANDARIN - Beijing Tea House
+    # 🇨🇳 MANDARIN - Chinese pop / C-pop
     {
         "filename": "music_mandarin.mp3",
-        "prompt": "Soft Chinese guzheng and erhu music, gentle traditional melody, peaceful tea ceremony atmosphere, warm and contemplative, relaxing oriental, loopable background",
+        "prompt": "Chinese pop song, catchy modern C-pop with romantic Mandarin vocals, upbeat contemporary Chinese pop ballad, beautiful melody with piano and electronic beats, like popular Chinese radio hit, warm and emotional",
         "duration": 30
     },
-    # 🇵🇱 POLISH - Warsaw Milk Bar
+    # 🇵🇱 POLISH - Warsaw Milk Bar / Disco polo vibes
     {
         "filename": "music_polish.mp3",
-        "prompt": "Soft Polish folk-inspired piano melody, gentle nostalgic Eastern European atmosphere, warm and cozy, peaceful accordion accompaniment, heartwarming and homey, loopable background",
+        "prompt": "Polish pop radio song, catchy modern Polish pop melody with synthesizers, upbeat and cheerful Eastern European pop, warm nostalgic sound, like playing on Polish Radio RMF FM, fun and danceable",
         "duration": 30
     },
-    # 🇬🇧 ENGLISH - London Pub
+    # 🇬🇧 ENGLISH - London Pub / British Indie
     {
         "filename": "music_english.mp3",
-        "prompt": "Soft British pub acoustic guitar, gentle Celtic-inspired melody, warm and cozy fireplace atmosphere, peaceful folk, relaxing and nostalgic, loopable background music",
+        "prompt": "British indie rock song playing in pub, catchy UK alternative rock with guitars, upbeat modern British pop rock melody, warm and cool, like playing on BBC Radio 1, energetic and fun",
         "duration": 30
     },
 ]
@@ -150,53 +150,53 @@ BACKGROUND_MUSIC = [
 # ═══════════════════════════════════════════════════════════════════════════════
 
 AMBIENT_SOUNDS = [
-    # French bakery ambience
+    # French bakery ambience - morning boulangerie
     {
         "filename": "ambient_french.mp3",
-        "prompt": "Gentle French café ambience, soft coffee machine sounds, quiet conversation murmur, peaceful Parisian morning, birds outside, warm and cozy",
-        "duration": 20
+        "prompt": "French bakery morning ambience, coffee machine brewing, paper bags rustling, door chime ringing, French people chatting softly, coins on counter, warm croissant smell atmosphere, cozy Parisian boulangerie sounds",
+        "duration": 30
     },
-    # German club (chill ambience)
+    # German café/bar ambience
     {
         "filename": "ambient_german.mp3",
-        "prompt": "Soft Berlin lounge ambience, gentle electronic hum, distant city sounds, modern and peaceful, subtle bass vibration, relaxing urban night",
-        "duration": 20
+        "prompt": "Berlin café ambience, espresso machine hissing, soft German conversation, plates and cups clinking, modern urban coffee shop sounds, relaxed cosmopolitan atmosphere",
+        "duration": 30
     },
     # Spanish tapas bar
     {
         "filename": "ambient_spanish.mp3",
-        "prompt": "Warm Spanish tapas bar ambience, soft conversation, gentle clinking glasses, peaceful Madrid evening, distant guitar strumming",
-        "duration": 20
+        "prompt": "Madrid tapas bar ambience, lively Spanish conversation, glasses clinking, sizzling cooking sounds, cheerful busy restaurant atmosphere, warm Mediterranean evening",
+        "duration": 30
     },
     # Italian café
     {
         "filename": "ambient_italian.mp3",
-        "prompt": "Peaceful Italian café ambience, espresso machine hissing, soft Roman piazza sounds, gentle conversation, warm afternoon sun",
-        "duration": 20
+        "prompt": "Rome café ambience, espresso machine loud hiss, animated Italian conversation, ceramic cups on saucers, bustling Italian coffee bar atmosphere, warm and lively",
+        "duration": 30
     },
-    # Japanese tea house
+    # Japanese café/convenience store
     {
         "filename": "ambient_japanese.mp3",
-        "prompt": "Serene Japanese tea garden ambience, gentle bamboo water fountain, soft wind through trees, peaceful birds, zen meditation atmosphere",
-        "duration": 20
+        "prompt": "Tokyo café ambience, gentle Japanese conversation, tea pouring sounds, soft electronic beeps, convenience store door chime, peaceful modern Japan urban atmosphere",
+        "duration": 30
     },
-    # Chinese tea house
+    # Chinese restaurant/tea house
     {
         "filename": "ambient_mandarin.mp3",
-        "prompt": "Peaceful Chinese tea house ambience, gentle water pouring, soft wind chimes, quiet contemplative atmosphere, birds singing",
-        "duration": 20
+        "prompt": "Chinese restaurant ambience, tea pouring, soft Mandarin conversation, chopsticks on bowls, sizzling wok in background, warm bustling dim sum atmosphere",
+        "duration": 30
     },
     # Polish milk bar
     {
         "filename": "ambient_polish.mp3",
-        "prompt": "Cozy Polish restaurant ambience, gentle kitchen sounds, warm conversation murmur, homey and nostalgic atmosphere, peaceful dining",
-        "duration": 20
+        "prompt": "Polish milk bar ambience, plates and cutlery sounds, soft Polish conversation, cash register ding, warm nostalgic canteen atmosphere, home cooking sounds",
+        "duration": 30
     },
     # British pub
     {
         "filename": "ambient_english.mp3",
-        "prompt": "Cozy British pub ambience, gentle fireplace crackling, soft rain outside window, warm conversation murmur, peaceful evening",
-        "duration": 20
+        "prompt": "British pub ambience, pint glasses clinking, soft British conversation, fireplace crackling, darts hitting board, cozy traditional pub atmosphere, warm and inviting",
+        "duration": 30
     },
 ]
 

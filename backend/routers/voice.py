@@ -27,7 +27,7 @@ class SpeakRequest(BaseModel):
     voice_id: Optional[str] = None
     character_id: Optional[str] = "amelie"
     expression: Optional[str] = None
-    model: Optional[str] = "eleven_multilingual_v2"
+    model: Optional[str] = "eleven_v3"
     stability: Optional[float] = 0.65
     similarity_boost: Optional[float] = 0.8
 

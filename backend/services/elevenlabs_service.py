@@ -257,7 +257,7 @@ class ElevenLabsService:
             audio = self.client.text_to_speech.convert(
                 text=text,
                 voice_id=character.voice_id,
-                model_id="eleven_multilingual_v2",
+                model_id="eleven_v3",
                 voice_settings=VoiceSettings(
                     stability=character.stability,
                     similarity_boost=character.similarity_boost,
@@ -297,7 +297,7 @@ class ElevenLabsService:
             audio_stream = self.client.text_to_speech.convert_as_stream(
                 text=text,
                 voice_id=character.voice_id,
-                model_id="eleven_multilingual_v2",
+                model_id="eleven_v3",
                 voice_settings=VoiceSettings(
                     stability=character.stability,
                     similarity_boost=character.similarity_boost,
