@@ -1,4 +1,4 @@
-/* Cute Flower Garden with Snow - 8-Bit Style */
+/* Jazda! Landing Page - Pixel Art Style */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 * {
@@ -10,8 +10,9 @@
 }
 
 :root {
-    --sky-top: #4090d0;
-    --sky-bottom: #90d0f8;
+    --sky-top: #3878b8;
+    --sky-mid: #50a0d8;
+    --sky-light: #78c0e8;
     --grass-bright: #50c850;
     --grass-mid: #40a840;
     --grass-dark: #308830;
@@ -24,19 +25,21 @@
     --pixel-black: #181818;
     --cozy-yellow: #f8e038;
     --cozy-orange: #f8a800;
-    --snow-white: #f8f8f8;
-    --snow-shadow: #d0d8e0;
 }
 
-body {
+html, body {
     overflow: hidden;
     font-family: 'Press Start 2P', cursive;
     image-rendering: pixelated;
     background: var(--pixel-black);
+    height: 100vh;
+    width: 100vw;
 }
 
 .scene {
-    position: relative;
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
@@ -49,37 +52,14 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(180deg, #3878b8 0%, #50a0d8 30%, #78c0e8 60%, #a8d8f0 85%, #c8e8f8 100%);
-}
-
-/* Pixel clouds */
-.sky::before {
-    content: '';
-    position: absolute;
-    top: 8%;
-    left: 10%;
-    width: 96px;
-    height: 32px;
-    background: white;
-    box-shadow: -16px 8px 0 0 white, 16px 8px 0 0 white, -8px -8px 0 0 white, 8px -8px 0 0 white, 0 -16px 0 0 white, 280px 30px 0 0 white, 264px 38px 0 0 white, 296px 38px 0 0 white, 280px 22px 0 0 white;
-    animation: cloudDrift 25s linear infinite;
-}
-
-.sky::after {
-    content: '';
-    position: absolute;
-    top: 15%;
-    right: 12%;
-    width: 64px;
-    height: 24px;
-    background: white;
-    box-shadow: -12px 6px 0 0 white, 12px 6px 0 0 white, 0 -8px 0 0 white;
-    animation: cloudDrift 30s linear infinite reverse;
-}
-
-@keyframes cloudDrift {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(40px); }
+    background: linear-gradient(180deg, 
+        var(--sky-top) 0%, 
+        var(--sky-mid) 30%, 
+        var(--sky-light) 60%, 
+        #a8d8f0 85%, 
+        #c8e8f8 100%
+    );
+    z-index: 0;
 }
 
 /* Ground */
@@ -90,7 +70,7 @@ body {
     width: 100%;
     height: 80px;
     background: var(--ground-brown);
-    z-index: 10;
+    z-index: 5;
 }
 
 .grass-row {
@@ -100,213 +80,27 @@ body {
     width: 100%;
     height: 32px;
     background: var(--grass-mid);
-    box-shadow: 0 -8px 0 0 var(--grass-bright), 0 8px 0 0 var(--grass-dark);
-}
-
-.grass-row::before {
-    content: '';
-    position: absolute;
-    top: -16px;
-    left: 0;
-    width: 100%;
-    height: 16px;
-    background: repeating-linear-gradient(90deg, var(--grass-bright) 0px, var(--grass-bright) 8px, transparent 8px, transparent 16px);
-}
-
-/* Flowers container */
-.flowers-container {
-    position: absolute;
-    bottom: 80px;
-    left: 0;
-    width: 100%;
-    height: calc(100% - 80px);
-    pointer-events: none;
-    overflow: visible;
-}
-
-/* Z-INDEX ORDER: Trees (back) -> Flowers -> Bushes -> Rocks -> Bunnies (front) */
-
-/* Pixel Trees - BACK */
-.pixel-tree {
-    position: absolute;
-    bottom: 0;
-    transform-origin: bottom center;
-    z-index: 1;
-    overflow: visible;
-    opacity: 0;
-    animation: treeGrow 1.5s ease-out forwards;
-}
-
-@keyframes treeGrow {
-    0% { 
-        opacity: 0;
-        transform: scaleY(0) scaleX(0.8);
-    }
-    30% { 
-        opacity: 1;
-    }
-    80% { 
-        transform: scaleY(1.02) scaleX(1);
-    }
-    100% { 
-        opacity: 1;
-        transform: scaleY(1) scaleX(1);
-    }
-}
-
-.tree-trunk, .tree-foliage-row, .tree-snow-row {
-    /* Elements are positioned inline */
-}
-
-/* Flowers */
-.flower {
-    position: absolute;
-    bottom: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transform-origin: bottom center;
-    z-index: 2;
-    overflow: visible;
-    opacity: 0;
-    animation: flowerGrow 2s ease-out forwards;
-}
-
-@keyframes flowerGrow {
-    0% { 
-        opacity: 0;
-        transform: scaleY(0) scaleX(0.5);
-    }
-    20% { 
-        opacity: 1;
-    }
-    80% { 
-        transform: scaleY(1.02) scaleX(1);
-    }
-    100% { 
-        opacity: 1;
-        transform: scaleY(1) scaleX(1);
-    }
-}
-
-.flower-stem-container {
-    overflow: visible;
-}
-
-.stem-segment, .pixel-leaf {
-    /* Shown immediately, flower animates as whole */
-}
-
-.flower-head-wrapper {
-    overflow: visible;
-}
-
-.flower.sway {
-    animation: flowerGrow 2s ease-out forwards, flowerSway var(--sway-duration, 3s) ease-in-out infinite;
-    animation-delay: var(--grow-delay, 0s), calc(var(--grow-delay, 0s) + 2s);
-}
-
-@keyframes flowerSway {
-    0%, 100% { transform: scaleY(1) rotate(0deg); }
-    25% { transform: scaleY(1) rotate(var(--sway-amount, 2deg)); }
-    75% { transform: scaleY(1) rotate(calc(var(--sway-amount, 2deg) * -1)); }
-}
-
-.flower-head-wrapper {
-    overflow: visible;
-}
-
-.flower-head { 
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-    overflow: visible;
-}
-
-.flower-stem-container { 
-    display: flex; 
-    justify-content: center;
-    overflow: visible;
-}
-
-.stem-segment, .pixel-leaf, .flower-center, .flower-petals, .flower-snow-petals { 
-    image-rendering: pixelated; 
-}
-
-/* Pixel Bushes - IN FRONT OF TREES */
-.pixel-bush {
-    position: absolute;
-    bottom: 0;
-    transform-origin: bottom center;
-    animation: bushGrow 1s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
-    opacity: 0;
-    z-index: 3;
-}
-
-@keyframes bushGrow {
-    0% { transform: scaleY(0) scaleX(0.5); opacity: 0; }
-    50% { opacity: 1; }
-    100% { transform: scaleY(1) scaleX(1); opacity: 1; }
-}
-
-/* Pixel Rocks - IN FRONT OF BUSHES */
-.pixel-rock {
-    position: absolute;
-    bottom: 0;
-    animation: rockAppear 0.5s ease-out forwards;
-    opacity: 0;
-    z-index: 4;
-}
-
-@keyframes rockAppear {
-    0% { transform: scale(0); opacity: 0; }
-    60% { transform: scale(1.1); }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-/* Pixel Bunnies - MOST FRONT */
-.pixel-bunny {
-    position: absolute;
-    bottom: 8px;
-    z-index: 20;
-    transition: left 0.5s ease-out;
-}
-
-.pixel-bunny.hopping {
-    animation: bunnyJump 0.5s ease-out forwards;
-}
-
-@keyframes bunnyJump {
-    0% { transform: translateY(0); }
-    40% { transform: translateY(-40px); }
-    100% { transform: translateY(0); }
-}
-
-.pixel-bunny.idle {
-    animation: bunnyIdle 2s ease-in-out infinite;
-}
-
-@keyframes bunnyIdle {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
+    box-shadow: 
+        0 -8px 0 0 var(--grass-bright), 
+        0 8px 0 0 var(--grass-dark);
 }
 
 /* Snow Container */
 .snow-container {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 50;
+    z-index: 100;
 }
 
 .snowflake {
     position: absolute;
     background: white;
     box-shadow: 0 0 0 1px rgba(200, 220, 240, 0.5);
-    animation: pixelSnowfall steps(30) infinite;
+    animation: pixelSnowfall steps(40) infinite;
 }
 
 @keyframes pixelSnowfall {
@@ -316,151 +110,308 @@ body {
     100% { transform: translateY(100vh) translateX(var(--drift, 0px)); opacity: 0; }
 }
 
+/* Flowers Container */
+.flowers-container {
+    position: absolute;
+    bottom: 80px;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 80px);
+    z-index: 3;
+    pointer-events: none;
+}
+
+/* Flower base */
+.flower {
+    position: absolute;
+    bottom: 0;
+    transform-origin: bottom center;
+    animation: flowerGrow 2s ease-out forwards;
+    opacity: 0;
+}
+
+@keyframes flowerGrow {
+    0% { 
+        transform: scaleY(0) scaleX(0.8);
+        opacity: 0;
+    }
+    60% {
+        transform: scaleY(1.05) scaleX(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scaleY(1) scaleX(1);
+        opacity: 1;
+    }
+}
+
+.flower.sway {
+    animation: flowerSway var(--sway-duration, 3s) ease-in-out infinite;
+}
+
+@keyframes flowerSway {
+    0%, 100% { transform: rotate(calc(-1 * var(--sway-amount, 2deg))); }
+    50% { transform: rotate(var(--sway-amount, 2deg)); }
+}
+
+/* Pixel trees */
+.pixel-tree {
+    position: absolute;
+    bottom: 0;
+    animation: treeGrow 1.5s ease-out forwards;
+    opacity: 0;
+    z-index: 2;
+}
+
+@keyframes treeGrow {
+    0% { 
+        transform: scaleY(0) scaleX(0.5);
+        opacity: 0;
+    }
+    100% {
+        transform: scaleY(1) scaleX(1);
+        opacity: 1;
+    }
+}
+
+/* Pixel bushes */
+.pixel-bush {
+    position: absolute;
+    bottom: 0;
+    animation: bushGrow 1s ease-out forwards;
+    opacity: 0;
+    z-index: 4;
+}
+
+@keyframes bushGrow {
+    0% { 
+        transform: scale(0);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Pixel rocks */
+.pixel-rock {
+    position: absolute;
+    bottom: 0;
+    animation: rockAppear 0.5s ease-out forwards;
+    opacity: 0;
+    z-index: 4;
+}
+
+@keyframes rockAppear {
+    0% { 
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Pixel bunnies */
+.pixel-bunny {
+    position: absolute;
+    bottom: 20px;
+    z-index: 6;
+    transition: left 0.5s ease-out;
+}
+
+.pixel-bunny.hopping {
+    animation: bunnyHop 0.5s ease-out;
+}
+
+@keyframes bunnyHop {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-30px); }
+}
+
+.pixel-bunny.idle {
+    animation: bunnyIdle 1.5s ease-in-out infinite;
+}
+
+@keyframes bunnyIdle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+
 /* Main Content */
 .content {
     position: absolute;
-    top: 25%;
+    top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    text-align: center;
-    z-index: 100;
+    z-index: 50;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 30px;
+}
+
+.title-wrapper {
+    text-align: center;
 }
 
 .title {
-    font-family: 'Press Start 2P', cursive;
-    font-size: 6rem;
+    font-size: 4rem;
     color: var(--cream);
-    text-shadow: 6px 6px 0 var(--cozy-orange), 12px 12px 0 var(--wood-dark);
-    letter-spacing: 12px;
-    margin-bottom: 50px;
-    animation: titlePulse 4s ease-in-out infinite;
+    text-shadow: 
+        6px 6px 0 var(--cozy-orange), 
+        12px 12px 0 var(--wood-dark),
+        -2px -2px 0 var(--cozy-yellow);
+    letter-spacing: 8px;
+    margin-bottom: 16px;
+    animation: titleFloat 3s ease-in-out infinite;
 }
 
-@keyframes titlePulse {
-    0%, 100% { text-shadow: 6px 6px 0 var(--cozy-orange), 12px 12px 0 var(--wood-dark); }
-    50% { text-shadow: 6px 6px 0 #f8c848, 12px 12px 0 var(--wood-dark); }
+@keyframes titleFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
 }
 
-/* Button */
-.button-container { 
-    position: relative;
+.subtitle {
+    font-size: 0.9rem;
+    color: var(--cream);
+    text-shadow: 2px 2px 0 var(--wood-dark);
+    letter-spacing: 2px;
+    opacity: 0.9;
+}
+
+/* Begin Button */
+.button-container {
     display: flex;
     justify-content: center;
-    align-items: center;
-    width: 100%;
+    margin-top: 20px;
 }
 
 .begin-btn {
     font-family: 'Press Start 2P', cursive;
-    font-size: 1.2rem;
-    padding: 20px 48px;
+    font-size: 1.5rem;
+    padding: 24px 60px;
     background: var(--wood-main);
     border: none;
     color: var(--cream);
     cursor: pointer;
     position: relative;
-    box-shadow: 0 8px 0 0 var(--wood-shadow), 8px 0 0 0 var(--wood-dark), 8px 8px 0 0 var(--wood-shadow), inset 4px 4px 0 0 var(--wood-light), inset -4px -4px 0 0 var(--wood-dark);
+    box-shadow:
+        0 8px 0 0 var(--wood-shadow),
+        8px 0 0 0 var(--wood-dark),
+        8px 8px 0 0 var(--wood-shadow),
+        inset 6px 6px 0 0 var(--wood-light),
+        inset -6px -6px 0 0 var(--wood-dark);
     transition: all 0.05s ease;
     overflow: visible;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .begin-btn::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: repeating-linear-gradient(90deg, transparent 0px, transparent 24px, var(--wood-dark) 24px, var(--wood-dark) 28px);
+    background: repeating-linear-gradient(90deg, 
+        transparent 0px, transparent 24px, 
+        var(--wood-dark) 24px, var(--wood-dark) 28px
+    );
     opacity: 0.3;
     pointer-events: none;
 }
 
-.begin-btn::after {
-    content: '';
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    background: #888;
-    top: 8px;
-    left: 12px;
-    box-shadow: calc(100% + 68px) 0 0 0 #888, 0 calc(100% + 16px) 0 0 #888, calc(100% + 68px) calc(100% + 16px) 0 0 #888, 2px 2px 0 0 #aaa, calc(100% + 70px) 2px 0 0 #aaa;
-}
-
 .begin-btn:hover {
     transform: translateY(4px);
-    box-shadow: 0 4px 0 0 var(--wood-shadow), 4px 0 0 0 var(--wood-dark), 4px 4px 0 0 var(--wood-shadow), inset 4px 4px 0 0 var(--wood-light), inset -4px -4px 0 0 var(--wood-dark);
+    box-shadow:
+        0 4px 0 0 var(--wood-shadow),
+        4px 0 0 0 var(--wood-dark),
+        4px 4px 0 0 var(--wood-shadow),
+        inset 5px 5px 0 0 var(--wood-light),
+        inset -5px -5px 0 0 var(--wood-dark);
 }
 
 .begin-btn:active {
-    transform: translateY(8px);
-    box-shadow: 0 0 0 0 var(--wood-shadow), inset 4px 4px 0 0 var(--wood-dark), inset -4px -4px 0 0 var(--wood-light);
+    transform: translateY(7px);
+    box-shadow:
+        0 1px 0 0 var(--wood-shadow),
+        inset 4px 4px 0 0 var(--wood-dark),
+        inset -4px -4px 0 0 var(--wood-light);
 }
 
 .btn-text {
     position: relative;
     z-index: 2;
-    text-shadow: 2px 2px 0 var(--wood-shadow);
+    text-shadow: 3px 3px 0 var(--wood-shadow);
     letter-spacing: 4px;
-    display: block;
-    text-align: center;
-    width: 100%;
 }
 
-/* Snow pile - Static beautiful snow */
+/* Snow pile on button */
 .snow-pile {
     position: absolute;
     top: -16px;
-    left: -12px;
-    right: -12px;
-    height: 32px;
+    left: -8px;
+    right: -8px;
+    height: 24px;
     pointer-events: none;
 }
 
 .snow-chunk {
     position: absolute;
-    background: #ffffff;
-    box-shadow: 
-        0 4px 0 0 var(--snow-shadow), 
-        inset 2px 2px 0 0 #fff,
-        inset -2px -2px 0 0 #e8f0f8;
+    background: white;
+    box-shadow: 0 3px 0 0 #d0d8e0, inset 3px 3px 0 0 #fff;
 }
 
-/* Main snow layer - bigger chunks */
-.chunk-1 { width: 36px; height: 18px; left: 0%; top: 8px; border-radius: 0; }
-.chunk-2 { width: 44px; height: 22px; left: 18%; top: 2px; z-index: 3; }
-.chunk-3 { width: 40px; height: 20px; left: 40%; top: 4px; z-index: 2; }
-.chunk-4 { width: 38px; height: 18px; left: 62%; top: 6px; }
-.chunk-5 { width: 36px; height: 16px; right: 0%; top: 8px; }
+.chunk-1 { width: 40px; height: 16px; left: 10%; top: 8px; }
+.chunk-2 { width: 55px; height: 18px; left: 35%; top: 4px; z-index: 2; }
+.chunk-3 { width: 40px; height: 14px; right: 10%; top: 8px; }
 
-/* Top snow accents - smaller highlight chunks */
-.chunk-6 { width: 24px; height: 10px; left: 10%; top: 0px; z-index: 4; background: #fff; box-shadow: inset 2px 2px 0 0 #fff; }
-.chunk-7 { width: 28px; height: 12px; left: 48%; top: -2px; z-index: 4; background: #fff; box-shadow: inset 2px 2px 0 0 #fff; }
-.chunk-8 { width: 22px; height: 10px; right: 12%; top: 2px; z-index: 4; background: #fff; box-shadow: inset 2px 2px 0 0 #fff; }
+/* Features */
+.features-row {
+    display: flex;
+    gap: 40px;
+    margin-top: 30px;
+}
 
-/* Small sparkle effect on snow */
-.snow-chunk::after {
-    content: '';
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    background: #fff;
-    top: 2px;
-    left: 4px;
-    box-shadow: 8px 2px 0 0 #fff, 16px 4px 0 0 #fff;
+.feature-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: rgba(40, 30, 20, 0.85);
+    border: 4px solid var(--wood-dark);
+    padding: 16px 20px;
+    box-shadow: 4px 4px 0 0 var(--wood-shadow);
+}
+
+.feature-icon {
+    font-size: 2rem;
+}
+
+.feature-text {
+    font-size: 0.5rem;
+    color: var(--cozy-yellow);
+    text-shadow: 1px 1px 0 var(--wood-shadow);
+    text-align: center;
+    max-width: 100px;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .title { font-size: 3.5rem; letter-spacing: 6px; }
-    .begin-btn { font-size: 0.9rem; padding: 16px 32px; }
-    .content { top: 20%; }
-}
-
-@media (max-width: 480px) {
-    .title { font-size: 2.5rem; letter-spacing: 4px; }
-    .begin-btn { font-size: 0.7rem; padding: 12px 24px; }
+    .title {
+        font-size: 2.5rem;
+    }
+    
+    .subtitle {
+        font-size: 0.7rem;
+    }
+    
+    .begin-btn {
+        font-size: 1rem;
+        padding: 16px 40px;
+    }
+    
+    .features-row {
+        flex-direction: column;
+        gap: 16px;
+    }
 }

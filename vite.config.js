@@ -3,18 +3,23 @@ import { resolve } from 'path';
 
 export default defineConfig({
     root: 'frontend',
-    publicDir: '../public', // if you have a public folder in root
+    envDir: '..',
+    publicDir: '../public',
     build: {
         outDir: '../dist',
         emptyOutDir: true,
         rollupOptions: {
             input: {
                 main: resolve(__dirname, 'frontend/index.html'),
-                game: resolve(__dirname, 'frontend/game.html')
+                character: resolve(__dirname, 'frontend/character.html'),
+                lingua: resolve(__dirname, 'frontend/lingua.html'),
+                linguaWorld: resolve(__dirname, 'frontend/lingua-world.html'),
+                game: resolve(__dirname, 'frontend/game.html'),
             }
         }
     },
     server: {
-        open: true // automatically open browser
+        open: true,
+        port: 5173
     }
 });
