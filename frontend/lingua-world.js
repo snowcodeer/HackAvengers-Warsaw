@@ -1058,30 +1058,143 @@ function createNPC() {
         emoji: '👤'
     };
 
+    // Get visuals from config or use defaults
+    const visuals = character.visuals || {
+        skinColor: '#f5c09a',
+        hairColor: '#4a3728',
+        hairStyle: 'short',
+        outfitColor: '#4a90d9',
+        accessoryColor: '#ffffff',
+        style: 'casual'
+    };
+
     npc = new THREE.Group();
 
-    // Body
-    const bodyGeometry = new THREE.CapsuleGeometry(0.3, 0.8, 4, 8);
-    const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x4a90d9 });
-    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-    body.position.y = 1.0;
-    body.castShadow = true;
-    npc.add(body);
+    // Materials
+    const skinMat = new THREE.MeshStandardMaterial({ color: visuals.skinColor });
+    const outfitMat = new THREE.MeshStandardMaterial({ color: visuals.outfitColor });
+    const hairMat = new THREE.MeshStandardMaterial({ color: visuals.hairColor });
+    const accessoryMat = new THREE.MeshStandardMaterial({ color: visuals.accessoryColor });
+    const pantsMat = new THREE.MeshStandardMaterial({ color: 0x2c3e50 }); // Dark pants default
 
-    // Head
-    const headGeometry = new THREE.SphereGeometry(0.25, 16, 16);
-    const headMaterial = new THREE.MeshStandardMaterial({ color: 0xffd5b5 });
-    const head = new THREE.Mesh(headGeometry, headMaterial);
-    head.position.y = 1.7;
+    // 1. Legs (Cylinders)
+    const legGeo = new THREE.CylinderGeometry(0.12, 0.1, 0.9, 8);
+    const leftLeg = new THREE.Mesh(legGeo, pantsMat);
+    leftLeg.position.set(-0.2, 0.45, 0);
+    leftLeg.castShadow = true;
+    npc.add(leftLeg);
+
+    const rightLeg = new THREE.Mesh(legGeo, pantsMat);
+    rightLeg.position.set(0.2, 0.45, 0);
+    rightLeg.castShadow = true;
+    npc.add(rightLeg);
+
+    // 2. Torso (Box/Cylinder mix)
+    // Main body
+    const torsoGeo = new THREE.CylinderGeometry(0.25, 0.28, 0.7, 8);
+    const torso = new THREE.Mesh(torsoGeo, outfitMat);
+    torso.position.y = 1.25;
+    torso.castShadow = true;
+    npc.add(torso);
+
+    // 3. Arms (Cylinders)
+    const armGeo = new THREE.CylinderGeometry(0.08, 0.07, 0.7, 8);
+
+    // Left Arm
+    const leftArm = new THREE.Mesh(armGeo, outfitMat);
+    leftArm.position.set(-0.35, 1.3, 0);
+    leftArm.rotation.z = Math.PI / 8;
+    leftArm.castShadow = true;
+    npc.add(leftArm);
+
+    // Right Arm
+    const rightArm = new THREE.Mesh(armGeo, outfitMat);
+    rightArm.position.set(0.35, 1.3, 0);
+    rightArm.rotation.z = -Math.PI / 8;
+    rightArm.castShadow = true;
+    npc.add(rightArm);
+
+    // Hands
+    const handGeo = new THREE.SphereGeometry(0.08, 8, 8);
+    const leftHand = new THREE.Mesh(handGeo, skinMat);
+    leftHand.position.set(0, -0.4, 0);
+    leftArm.add(leftHand);
+
+    const rightHand = new THREE.Mesh(handGeo, skinMat);
+    rightHand.position.set(0, -0.4, 0);
+    rightArm.add(rightHand);
+
+    // 4. Head
+    const headGeo = new THREE.SphereGeometry(0.22, 16, 16);
+    const head = new THREE.Mesh(headGeo, skinMat);
+    head.position.y = 1.75;
     head.castShadow = true;
     npc.add(head);
 
-    // Simple hair
-    const hairGeometry = new THREE.SphereGeometry(0.27, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2);
-    const hairMaterial = new THREE.MeshStandardMaterial({ color: 0x4a3728 });
-    const hair = new THREE.Mesh(hairGeometry, hairMaterial);
-    hair.position.y = 1.75;
-    npc.add(hair);
+    // 5. Hair (Based on style)
+    let hairGeo;
+    if (visuals.hairStyle === 'bun' || visuals.hairStyle === 'bun_ornate') {
+        // Bun style
+        const mainHair = new THREE.Mesh(
+            new THREE.SphereGeometry(0.23, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2.5),
+            hairMat
+        );
+        mainHair.position.y = 1.78;
+        npc.add(mainHair);
+
+        const bun = new THREE.Mesh(
+            new THREE.SphereGeometry(0.12, 12, 12),
+            hairMat
+        );
+        bun.position.set(0, 1.95, -0.15);
+        npc.add(bun);
+    } else if (visuals.hairStyle === 'long_wavy') {
+        // Long hair
+        const mainHair = new THREE.Mesh(
+            new THREE.SphereGeometry(0.23, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2.5),
+            hairMat
+        );
+        mainHair.position.y = 1.78;
+        npc.add(mainHair);
+
+        const backHair = new THREE.Mesh(
+            new THREE.BoxGeometry(0.4, 0.5, 0.1),
+            hairMat
+        );
+        backHair.position.set(0, 1.6, -0.2);
+        npc.add(backHair);
+    } else if (visuals.hairStyle === 'bald') {
+        // No hair, maybe stubble texture later
+    } else {
+        // Default short hair
+        const shortHair = new THREE.Mesh(
+            new THREE.SphereGeometry(0.23, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2.2),
+            hairMat
+        );
+        shortHair.position.y = 1.78;
+        npc.add(shortHair);
+    }
+
+    // 6. Accessories (Apron, Scarf, etc.)
+    if (visuals.style === 'chef' || visuals.style === 'apron') {
+        // Apron
+        const apronGeo = new THREE.BoxGeometry(0.4, 0.5, 0.05);
+        const apron = new THREE.Mesh(apronGeo, accessoryMat);
+        apron.position.set(0, 1.1, 0.26);
+        npc.add(apron);
+
+        // Apron string (neck)
+        const stringGeo = new THREE.TorusGeometry(0.15, 0.02, 8, 16, Math.PI);
+        const string = new THREE.Mesh(stringGeo, accessoryMat);
+        string.position.set(0, 1.5, 0.2);
+        npc.add(string);
+    } else if (visuals.style === 'flamenco') {
+        // Flower
+        const flowerGeo = new THREE.SphereGeometry(0.08, 8, 8);
+        const flower = new THREE.Mesh(flowerGeo, accessoryMat);
+        flower.position.set(0.2, 1.85, 0.15);
+        npc.add(flower);
+    }
 
     // Position NPC
     npc.position.set(0, 0, -3.5);

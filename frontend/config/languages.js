@@ -12,7 +12,7 @@ export const LANGUAGE_CONFIG = {
     name: 'French',
     nativeName: 'Français',
     flag: '🇫🇷',
-    
+
     // ─────────────────────────────────────────────────────────────────────────
     // SCENE: Paris Boulangerie at Dawn
     // ─────────────────────────────────────────────────────────────────────────
@@ -21,13 +21,13 @@ export const LANGUAGE_CONFIG = {
       location: 'Montmartre, Paris',
       timeOfDay: 'early morning',
       weather: 'light fog lifting',
-      
+
       // Detailed Environment Description
       description: `A charming corner boulangerie in Montmartre. The shop has existed since 1892, 
         with original art nouveau tiles and hand-painted signage. Morning light streams through 
         tall windows, casting golden rectangles across the worn wooden floor. The aroma of fresh 
         croissants mingles with strong coffee. Outside, cobblestone streets glisten with morning dew.`,
-      
+
       // Ultra-Detailed Props
       props: {
         // Counter Area
@@ -44,7 +44,7 @@ export const LANGUAGE_CONFIG = {
             { name: 'tartes_aux_fruits', count: 8, fruits: ['fraises', 'framboises', 'myrtilles'] }
           ]
         },
-        
+
         // Bread Displays
         breadShelves: {
           type: 'wooden_shelving',
@@ -57,14 +57,14 @@ export const LANGUAGE_CONFIG = {
             { level: 4, items: ['fougasse', 'pain_aux_olives'], count: 10 }
           ]
         },
-        
+
         // Wicker Baskets
         baskets: [
           { type: 'large_wicker', position: { x: 2, y: 0.3, z: -2 }, contents: 'brioche_feuilletée', count: 8 },
           { type: 'medium_wicker', position: { x: -2, y: 0.8, z: -4 }, contents: 'petits_pains', count: 24 },
           { type: 'small_wicker', position: { x: 3, y: 1, z: -3 }, contents: 'chouquettes', count: 50 }
         ],
-        
+
         // Vintage Coffee Machine
         coffeeMachine: {
           type: 'vintage_brass_espresso',
@@ -72,7 +72,7 @@ export const LANGUAGE_CONFIG = {
           position: { x: 3, y: 1, z: -4 },
           details: ['polished brass handles', 'pressure gauges', 'steam wands', 'ceramic cups']
         },
-        
+
         // Decorative Elements
         decorations: [
           { type: 'art_nouveau_mirror', position: { x: 0, y: 2, z: -6 }, frame: 'gilded' },
@@ -82,7 +82,7 @@ export const LANGUAGE_CONFIG = {
           { type: 'antique_scales', position: { x: -1, y: 1, z: -3 }, material: 'brass' },
           { type: 'fresh_flowers', type: 'sunflowers', vase: 'blue_ceramic' }
         ],
-        
+
         // Floor & Ceiling
         architectural: {
           floor: { type: 'hexagonal_tiles', colors: ['cream', 'terracotta'], pattern: 'alternating' },
@@ -90,7 +90,7 @@ export const LANGUAGE_CONFIG = {
           windows: { type: 'tall_french', panes: 12, curtains: 'lace' },
           door: { type: 'glass_with_bell', frame: 'painted_green' }
         },
-        
+
         // Outside View (Through Windows)
         exterior: {
           street: 'cobblestone',
@@ -99,7 +99,7 @@ export const LANGUAGE_CONFIG = {
           skyline: 'sacre_coeur_in_distance'
         }
       },
-      
+
       // Atmospheric Sounds (ElevenLabs Sound Design)
       sounds: {
         ambient: [
@@ -120,7 +120,7 @@ export const LANGUAGE_CONFIG = {
           style: 'nostalgic musette'
         }
       },
-      
+
       // Lighting
       lighting: {
         primary: { type: 'directional', color: '#FFE4B5', intensity: 0.8, direction: 'east' },
@@ -132,66 +132,37 @@ export const LANGUAGE_CONFIG = {
         effects: ['dust_motes_in_sunbeams', 'warm_glow_on_pastries']
       }
     },
-    
+
     // ─────────────────────────────────────────────────────────────────────────
-    // CHARACTER: Amélie the Baker
+    // CHARACTER: Marie Dupont
     // ─────────────────────────────────────────────────────────────────────────
     character: {
-      name: 'Amélie Dubois',
-      role: 'Maître Boulangère',
-      age: 34,
+      name: 'Marie Dupont',
       emoji: '👩‍🍳',
-      
-      // Detailed Appearance
-      appearance: {
-        height: 'medium',
-        build: 'athletic',
-        hair: { color: 'chestnut_brown', style: 'messy_bun', accessories: ['flour_dusting'] },
-        eyes: { color: 'hazel', expression: 'warm_and_knowing' },
-        skin: { tone: 'fair_with_rosy_cheeks' },
-        outfit: {
-          top: 'white_chef_coat',
-          apron: 'navy_blue_linen',
-          accessories: ['vintage_watch', 'small_gold_earrings'],
-          footwear: 'practical_clogs'
-        },
-        signature: 'always_has_flour_on_nose'
+      role: 'Master Baker',
+      bio: 'Marie has been running this family boulangerie for 30 years. She is warm, patient, but very particular about bread crust.',
+      visuals: {
+        skinColor: '#f5c09a',
+        hairColor: '#8d5524',
+        hairStyle: 'bun',
+        outfitColor: '#ffffff', // Chef white
+        accessoryColor: '#e74c3c', // Red scarf
+        style: 'chef'
       },
-      
-      // Personality & Voice
-      personality: {
-        traits: ['warm', 'patient', 'passionate', 'slightly_perfectionist', 'good_humored'],
-        interests: ['baking_traditions', 'french_literature', 'morning_routines', 'local_gossip'],
-        quirks: ['hums_while_working', 'offers_extra_pastry_to_regulars', 'corrects_pronunciation_gently'],
-        backstory: `Third-generation baker, learned from her grandmother. Studied pastry in Lyon 
-          before returning to Paris. Dreams of publishing a cookbook. Has a cat named Croissant.`
-      },
-      
-      // Voice Configuration (ElevenLabs)
       voice: {
-        voiceId: 'ThT5KcBeYPX3keUQqHPh', // Charlotte - French accent
-        style: 'warm_and_melodic',
-        accent: 'Parisian',
-        speed: 0.95,
-        pitch: 1.05,
+        voiceId: 'EXAVITQu4vr4xnSDxMaL', // Bella (Soft, warm French)
+        style: 'warm',
+        speed: 1.0,
+        pitch: 1.0,
         expressionTags: {
-          greeting: '[warmly]',
-          teaching: '[patiently]',
-          excited: '[enthusiastically]',
-          correcting: '[gently]',
-          praising: '[delighted]'
+          greeting: 'warmly',
+          teaching: 'clearly',
+          correction: 'encouragingly',
+          praise: 'excitedly'
         }
-      },
-      
-      // Teaching Style
-      teachingStyle: {
-        approach: 'conversational_immersion',
-        corrections: 'gentle_modeling',
-        encouragement: 'frequent_and_genuine',
-        culturalTips: 'woven_into_conversation'
       }
     },
-    
+
     // ─────────────────────────────────────────────────────────────────────────
     // LESSON PLAN
     // ─────────────────────────────────────────────────────────────────────────
@@ -233,43 +204,43 @@ export const LANGUAGE_CONFIG = {
         ]
       }
     },
-    
+
     // ─────────────────────────────────────────────────────────────────────────
     // DIFFICULTY SCALING (Mostly English with bits of French)
     // ─────────────────────────────────────────────────────────────────────────
     difficultyScaling: {
-      level1: { 
-        english: 85, target: 15, 
+      level1: {
+        english: 85, target: 15,
         grammar: 'basic greetings',
         instruction: 'Speak mostly in English. Introduce key French words like "bonjour", "merci", "croissant". Translate immediately after saying the French word.',
         example: 'Ah, bonjour! That means "hello"! Welcome to my little bakery.'
       },
-      level2: { 
-        english: 70, target: 30, 
+      level2: {
+        english: 70, target: 30,
         grammar: 'ordering food',
         instruction: 'Mix more French into your English. Use French for common bakery items and greetings. Provide context clues.',
         example: 'Would you like un croissant? It\'s fresh from the oven - tout chaud!'
       },
-      level3: { 
-        english: 50, target: 50, 
+      level3: {
+        english: 50, target: 50,
         grammar: 'polite conversation',
         instruction: 'Speak half in French, half in English. Use French for complete simple phrases. Repeat in English only if they seem confused.',
         example: 'C\'est trois euros. That will be three euros. Voulez-vous autre chose?'
       },
-      level4: { 
-        english: 25, target: 75, 
+      level4: {
+        english: 25, target: 75,
         grammar: 'past tense',
         instruction: 'Speak primarily in French with simple sentences. Only switch to English for complex explanations or if they are stuck.',
         example: 'Aujourd\'hui, j\'ai fait ces croissants à cinq heures du matin. Ils sont parfaits!'
       },
-      level5: { 
-        english: 5, target: 95, 
+      level5: {
+        english: 5, target: 95,
         grammar: 'natural conversation',
         instruction: 'Speak naturally in French. Use English only as an absolute last resort.',
         example: 'Ah, vous parlez bien français maintenant! Qu\'est-ce que je vous sers aujourd\'hui?'
       }
     },
-    
+
     // False Friends (Words that look similar but mean different things)
     falseFriends: [
       { word: 'actuellement', looksLike: 'actually', actualMeaning: 'currently', warning: 'Use "en fait" for actually' },
@@ -278,7 +249,7 @@ export const LANGUAGE_CONFIG = {
       { word: 'pain', looksLike: 'pain', actualMeaning: 'bread', warning: 'Pain (hurt) is "douleur"' },
       { word: 'préservatif', looksLike: 'preservative', actualMeaning: 'condom', warning: 'Preservative is "conservateur"' }
     ],
-    
+
     // Starting Phrases for Quick Reference
     startingPhrases: [
       { phrase: 'Bonjour!', translation: 'Hello!', pronunciation: 'bon-ZHOOR' },
@@ -297,18 +268,18 @@ export const LANGUAGE_CONFIG = {
     name: 'Japanese',
     nativeName: '日本語',
     flag: '🇯🇵',
-    
+
     scene: {
       name: 'Sakura-an Tea House',
       location: 'Gion District, Kyoto',
       timeOfDay: 'spring afternoon',
       weather: 'cherry blossom petals falling',
-      
+
       description: `A traditional machiya tea house in Kyoto's historic Gion district. The space 
         embodies wabi-sabi aesthetics with carefully aged wood, paper shoji screens, and a 
         contemplative rock garden visible through open fusuma doors. Cherry blossoms drift past 
         the engawa veranda. The subtle fragrance of matcha and incense fills the air.`,
-      
+
       props: {
         mainRoom: {
           type: 'chashitsu_tea_room',
@@ -321,7 +292,7 @@ export const LANGUAGE_CONFIG = {
             { name: 'iron_kettle', type: 'tetsubin', steam: true }
           ]
         },
-        
+
         teaSetup: {
           type: 'tea_ceremony_arrangement',
           position: { x: 0, y: 0.3, z: -1.5 },
@@ -334,7 +305,7 @@ export const LANGUAGE_CONFIG = {
             { name: 'mizusashi', type: 'water_container', material: 'celadon_ceramic' }
           ]
         },
-        
+
         garden: {
           type: 'karesansui',
           visible: true,
@@ -347,7 +318,7 @@ export const LANGUAGE_CONFIG = {
             { name: 'stepping_stones', count: 7, arrangement: 'asymmetric' }
           ]
         },
-        
+
         decorations: [
           { type: 'shoji_screens', pattern: 'geometric', light: 'filtered' },
           { type: 'ikebana_arrangement', style: 'moribana', flowers: ['plum_blossom', 'pine'] },
@@ -355,7 +326,7 @@ export const LANGUAGE_CONFIG = {
           { type: 'zabuton_cushions', color: 'indigo', count: 4 },
           { type: 'paper_lantern', type: 'chochin', position: 'corner' }
         ],
-        
+
         architectural: {
           floor: { type: 'tatami', border: 'dark_cloth' },
           ceiling: { type: 'exposed_wood', style: 'sukiya' },
@@ -363,7 +334,7 @@ export const LANGUAGE_CONFIG = {
           entrance: { type: 'nijiriguchi', size: 'small_humble' }
         }
       },
-      
+
       sounds: {
         ambient: [
           { name: 'bamboo_fountain_click', volume: 0.4, interval: 15000 },
@@ -382,7 +353,7 @@ export const LANGUAGE_CONFIG = {
           style: 'traditional shamisen and koto'
         }
       },
-      
+
       lighting: {
         primary: { type: 'diffused', color: '#FFF5E6', intensity: 0.6, source: 'shoji_filtered' },
         secondary: { type: 'ambient', color: '#FAF0E6', intensity: 0.3 },
@@ -392,13 +363,13 @@ export const LANGUAGE_CONFIG = {
         effects: ['cherry_blossom_shadows', 'shoji_paper_glow']
       }
     },
-    
+
     character: {
       name: 'Yuki Tanaka',
       role: '茶道師範 (Tea Ceremony Master)',
       age: 45,
       emoji: '🍵',
-      
+
       appearance: {
         height: 'petite',
         build: 'graceful',
@@ -414,7 +385,7 @@ export const LANGUAGE_CONFIG = {
         },
         signature: 'movements_like_flowing_water'
       },
-      
+
       personality: {
         traits: ['serene', 'meticulous', 'wise', 'surprisingly_humorous', 'deeply_patient'],
         interests: ['tea_ceremony', 'zen_philosophy', 'seasonal_flowers', 'traditional_crafts'],
@@ -423,7 +394,7 @@ export const LANGUAGE_CONFIG = {
           studying in Uji. Now teaches foreigners to appreciate Japanese culture through tea.
           Believes language learning is like tea ceremony - mindful, patient, beautiful.`
       },
-      
+
       voice: {
         voiceId: 'pNInz6obpgDQGcFmaJgB', // Soft Japanese female
         style: 'gentle_and_measured',
@@ -438,40 +409,40 @@ export const LANGUAGE_CONFIG = {
         }
       }
     },
-    
+
     difficultyScaling: {
-      level1: { 
+      level1: {
         english: 90, target: 10,
         grammar: 'basic greetings and hiragana introduction',
         instruction: 'Speak almost entirely in English. Introduce basic Japanese words like "konnichiwa", "arigatou", "ocha". Always provide romaji and translation.',
         example: 'Welcome! Or as we say, いらっしゃいませ (irasshaimase)! Please, sit down.'
       },
-      level2: { 
+      level2: {
         english: 75, target: 25,
         grammar: 'polite forms and basic particles',
         instruction: 'Use Japanese for greetings and common tea ceremony terms. Explain politeness levels.',
         example: 'Now, let\'s enjoy some お茶 (ocha) - tea. どうぞ (douzo) - please, take a cup.'
       },
-      level3: { 
+      level3: {
         english: 55, target: 45,
         grammar: 'sentence structure and honorifics',
         instruction: 'Speak more Japanese, using complete simple sentences. Explain keigo (honorific speech) naturally.',
         example: 'このお茶は美味しいですね。This tea is delicious, isn\'t it? いかがですか？How do you like it?'
       },
-      level4: { 
+      level4: {
         english: 30, target: 70,
         grammar: 'casual vs formal speech',
         instruction: 'Speak primarily in Japanese with natural rhythm. Use English for complex cultural explanations only.',
         example: 'お茶の心は「和敬清寂」です。The spirit of tea is harmony, respect, purity, and tranquility.'
       },
-      level5: { 
+      level5: {
         english: 10, target: 90,
         grammar: 'natural conversation with cultural nuance',
         instruction: 'Speak naturally in Japanese, with all appropriate honorifics and cultural context.',
         example: '素晴らしいですね。日本語がお上手になりましたね。お茶をもう一杯いかがですか？'
       }
     },
-    
+
     lessonPlan: {
       unit1: {
         title: 'はじめまして - First Meeting',
@@ -484,13 +455,13 @@ export const LANGUAGE_CONFIG = {
         ]
       }
     },
-    
+
     falseFriends: [
       { word: 'スマート', looksLike: 'smart (intelligent)', actualMeaning: 'slim/stylish', warning: 'Use 頭がいい for intelligent' },
       { word: 'マンション', looksLike: 'mansion', actualMeaning: 'apartment building', warning: 'Not a large house!' },
       { word: 'ナイーブ', looksLike: 'naive', actualMeaning: 'sensitive/delicate', warning: 'Different nuance' }
     ],
-    
+
     startingPhrases: [
       { phrase: 'こんにちは', translation: 'Hello', pronunciation: 'kon-ni-chi-wa' },
       { phrase: 'お茶をどうぞ', translation: 'Please have some tea', pronunciation: 'o-cha wo dou-zo' },
@@ -506,18 +477,18 @@ export const LANGUAGE_CONFIG = {
     name: 'Spanish',
     nativeName: 'Español',
     flag: '🇪🇸',
-    
+
     scene: {
       name: 'Casa del Flamenco',
       location: 'La Latina, Madrid',
       timeOfDay: 'evening',
       weather: 'warm summer night',
-      
+
       description: `A vibrant tapas bar in Madrid's historic La Latina neighborhood. The space pulses 
         with energy - walls covered in hand-painted Talavera tiles, legs of jamón hanging from 
         the ceiling, and the passionate sounds of flamenco guitar filling the air. Locals and 
         tourists mix at the bar, sharing small plates and animated conversation.`,
-      
+
       props: {
         bar: {
           type: 'zinc_counter',
@@ -530,7 +501,7 @@ export const LANGUAGE_CONFIG = {
             { name: 'wine_bottles', types: ['rioja', 'ribera_del_duero', 'cava'] }
           ]
         },
-        
+
         tapasDisplay: {
           type: 'glass_case',
           position: { x: -3, y: 1, z: -3 },
@@ -543,7 +514,7 @@ export const LANGUAGE_CONFIG = {
             { name: 'boquerones_en_vinagre', presentation: 'traditional' }
           ]
         },
-        
+
         decorations: [
           { type: 'talavera_tiles', pattern: 'blue_white_yellow', wall: 'back' },
           { type: 'bullfighting_posters', vintage: true, count: 3 },
@@ -553,7 +524,7 @@ export const LANGUAGE_CONFIG = {
           { type: 'castanets_display', on_wall: true },
           { type: 'spanish_guitar', mounted: true, condition: 'well_played' }
         ],
-        
+
         stage: {
           type: 'small_tablao',
           position: { x: 4, y: 0.2, z: -5 },
@@ -564,7 +535,7 @@ export const LANGUAGE_CONFIG = {
           ]
         }
       },
-      
+
       sounds: {
         ambient: [
           { name: 'spanish_chatter', volume: 0.35, loop: true },
@@ -578,7 +549,7 @@ export const LANGUAGE_CONFIG = {
           style: 'passionate flamenco with palmas'
         }
       },
-      
+
       lighting: {
         primary: { type: 'warm', color: '#FFB347', intensity: 0.7 },
         accent: [
@@ -588,13 +559,13 @@ export const LANGUAGE_CONFIG = {
         effects: ['warm_glow', 'dancing_shadows']
       }
     },
-    
+
     character: {
       name: 'Carmen Reyes',
       role: 'Chef & Flamenco Enthusiast',
       age: 38,
       emoji: '💃',
-      
+
       appearance: {
         height: 'tall',
         build: 'athletic',
@@ -608,7 +579,7 @@ export const LANGUAGE_CONFIG = {
           signature: 'always_ready_to_dance'
         }
       },
-      
+
       personality: {
         traits: ['passionate', 'expressive', 'warm', 'dramatic', 'generous'],
         interests: ['flamenco', 'cooking', 'spanish_history', 'family'],
@@ -617,7 +588,7 @@ export const LANGUAGE_CONFIG = {
           a flamenco dancer before discovering her love for cooking. Believes food and dance 
           are the same - both expressions of the soul.`
       },
-      
+
       voice: {
         voiceId: 'XB0fDUnXU5powFXDhCwa', // Spanish female
         style: 'expressive_and_warm',
@@ -632,46 +603,46 @@ export const LANGUAGE_CONFIG = {
         }
       }
     },
-    
+
     difficultyScaling: {
-      level1: { 
+      level1: {
         english: 85, target: 15,
         grammar: 'basic greetings',
         instruction: 'Speak mostly in English, sprinkling in Spanish words like "hola", "gracias", "tapas". Always translate.',
         example: '¡Hola! That means hello! Welcome to my tapas bar! Would you like some jamón - that\'s ham!'
       },
-      level2: { 
+      level2: {
         english: 65, target: 35,
         grammar: 'ordering food',
         instruction: 'Use Spanish for food items and common phrases. Provide translations naturally.',
         example: '¡Muy bien! Would you like patatas bravas? They\'re spicy potatoes - muy deliciosas!'
       },
-      level3: { 
+      level3: {
         english: 45, target: 55,
         grammar: 'ser vs estar',
         instruction: 'Speak half in Spanish. Use complete sentences. Explain grammar naturally.',
         example: '¿Cómo está la comida? How is the food? ¡Las tapas están deliciosas hoy!'
       },
-      level4: { 
+      level4: {
         english: 20, target: 80,
         grammar: 'past tense',
         instruction: 'Speak primarily in Spanish. Use English only for complex explanations.',
         example: 'Hoy hice las croquetas con una receta de mi abuela. ¡Son las mejores de Madrid!'
       },
-      level5: { 
+      level5: {
         english: 5, target: 95,
         grammar: 'natural conversation',
         instruction: 'Speak naturally in Spanish with regional expressions.',
         example: '¡Qué maravilla! Tu español es increíble. ¿Quieres probar el vino? Es de la Rioja.'
       }
     },
-    
+
     falseFriends: [
       { word: 'embarazada', looksLike: 'embarrassed', actualMeaning: 'pregnant', warning: 'Very different! Use "avergonzado"' },
       { word: 'éxito', looksLike: 'exit', actualMeaning: 'success', warning: 'Exit is "salida"' },
       { word: 'constipado', looksLike: 'constipated', actualMeaning: 'have a cold', warning: 'Use "estreñido" for constipated' }
     ],
-    
+
     startingPhrases: [
       { phrase: '¡Hola!', translation: 'Hello!', pronunciation: 'OH-lah' },
       { phrase: 'Una cerveza, por favor', translation: 'A beer, please', pronunciation: 'OO-nah ser-VEH-sah' },
@@ -687,18 +658,18 @@ export const LANGUAGE_CONFIG = {
     name: 'German',
     nativeName: 'Deutsch',
     flag: '🇩🇪',
-    
+
     scene: {
       name: 'Klang Bunker',
       location: 'Kreuzberg, Berlin',
       timeOfDay: '3 AM',
       weather: 'city night',
-      
+
       description: `An underground techno club in a converted WWII bunker. Raw concrete walls absorb 
         the pulsing bass. Minimal lighting - mostly deep red and blue LEDs. The dance floor is 
         packed with people lost in the music. Industrial pipes run along the ceiling. There's a 
         mysterious, philosophical energy in the air.`,
-      
+
       props: {
         djBooth: {
           type: 'industrial_platform',
@@ -709,7 +680,7 @@ export const LANGUAGE_CONFIG = {
             { name: 'controller', model: 'Native Instruments' }
           ]
         },
-        
+
         speakers: {
           type: 'funktion_one',
           positions: [
@@ -718,14 +689,14 @@ export const LANGUAGE_CONFIG = {
           ],
           subwoofers: { position: 'under_booth', count: 4 }
         },
-        
+
         bar: {
           type: 'concrete_slab',
           position: { x: -8, y: 1, z: 0 },
           drinks: ['club_mate', 'berliner_pilsner', 'vodka', 'water'],
           style: 'minimal'
         },
-        
+
         decorations: [
           { type: 'exposed_pipes', material: 'rusty_steel' },
           { type: 'graffiti_art', style: 'abstract', artists: ['local'] },
@@ -733,7 +704,7 @@ export const LANGUAGE_CONFIG = {
           { type: 'strobe_lights', pattern: 'synchronized' }
         ]
       },
-      
+
       sounds: {
         ambient: [
           { name: 'crowd_ambient', volume: 0.3, loop: true },
@@ -746,7 +717,7 @@ export const LANGUAGE_CONFIG = {
           style: 'deep minimal techno'
         }
       },
-      
+
       lighting: {
         primary: { type: 'minimal', color: '#0D0D0D', intensity: 0.1 },
         accent: [
@@ -756,13 +727,13 @@ export const LANGUAGE_CONFIG = {
         ]
       }
     },
-    
+
     character: {
       name: 'Wolfgang Müller',
       role: 'DJ & Club Philosopher',
       age: 42,
       emoji: '🎧',
-      
+
       appearance: {
         height: 'tall',
         build: 'lean',
@@ -775,7 +746,7 @@ export const LANGUAGE_CONFIG = {
           footwear: 'black_boots'
         }
       },
-      
+
       personality: {
         traits: ['philosophical', 'mysterious', 'deep', 'dry_humor', 'intense'],
         interests: ['techno_music', 'philosophy', 'berlin_history', 'sound_design'],
@@ -783,7 +754,7 @@ export const LANGUAGE_CONFIG = {
         backstory: `Former philosophy student who found deeper truth in techno than in Hegel. 
           Has been DJing in Berlin for 20 years. Sees the dance floor as a collective consciousness.`
       },
-      
+
       voice: {
         voiceId: 'VR6AewLTigWG4xSOukaG', // Deep male German
         style: 'measured_and_deep',
@@ -798,46 +769,46 @@ export const LANGUAGE_CONFIG = {
         }
       }
     },
-    
+
     difficultyScaling: {
-      level1: { 
+      level1: {
         english: 80, target: 20,
         grammar: 'basic greetings',
         instruction: 'Speak mostly in English with key German words. "Guten Abend", "Bier", "Musik".',
         example: 'Guten Abend - good evening. Welcome to my... space. Would you like ein Bier?'
       },
-      level2: { 
+      level2: {
         english: 60, target: 40,
         grammar: 'ordering drinks',
         instruction: 'Mix German naturally. Use German for club and drink vocabulary.',
         example: 'Die Musik ist gut, ja? The beat... der Beat... it speaks to something deeper.'
       },
-      level3: { 
+      level3: {
         english: 40, target: 60,
         grammar: 'gendered articles',
         instruction: 'Speak more German. Explain der/die/das naturally through context.',
         example: 'Das ist der Sound von Berlin. Die Nacht ist jung. Was fühlst du?'
       },
-      level4: { 
+      level4: {
         english: 20, target: 80,
         grammar: 'compound words',
         instruction: 'Speak primarily German. Explain compound words as they come up.',
         example: 'Die Tanzfläche - the dance floor - ist ein Ort der Freiheit. Verstehst du?'
       },
-      level5: { 
+      level5: {
         english: 5, target: 95,
         grammar: 'philosophical discussion',
         instruction: 'Speak natural German with philosophical depth.',
         example: 'Die Musik ist eine Sprache ohne Worte. Hier sind wir alle gleich.'
       }
     },
-    
+
     falseFriends: [
       { word: 'Gift', looksLike: 'gift', actualMeaning: 'poison', warning: 'Use "Geschenk" for a present' },
       { word: 'bekommen', looksLike: 'become', actualMeaning: 'to receive/get', warning: 'Use "werden" for become' },
       { word: 'bald', looksLike: 'bald (hairless)', actualMeaning: 'soon', warning: 'Hairless is "kahl"' }
     ],
-    
+
     startingPhrases: [
       { phrase: 'Guten Abend', translation: 'Good evening', pronunciation: 'GOO-ten AH-bent' },
       { phrase: 'Ein Bier, bitte', translation: 'A beer, please', pronunciation: 'ine BEER, BIT-uh' },
@@ -853,18 +824,18 @@ export const LANGUAGE_CONFIG = {
     name: 'Italian',
     nativeName: 'Italiano',
     flag: '🇮🇹',
-    
+
     scene: {
       name: 'Caffè degli Artisti',
       location: 'Trastevere, Rome',
       timeOfDay: 'golden hour',
       weather: 'warm Mediterranean evening',
-      
+
       description: `A charming café in Rome's Trastevere neighborhood. Outdoor tables spill onto 
         cobblestone streets. The golden light of sunset illuminates ochre walls covered in climbing 
         ivy. The sound of a fountain mingles with animated Italian conversation. Ancient Roman 
         columns are visible in the distance. Vespas buzz past.`,
-      
+
       props: {
         outdoorTerrace: {
           type: 'cobblestone_seating',
@@ -874,7 +845,7 @@ export const LANGUAGE_CONFIG = {
           ],
           planters: ['geraniums', 'basil', 'rosemary']
         },
-        
+
         bar: {
           type: 'marble_counter',
           position: { x: 0, y: 1, z: -4 },
@@ -884,7 +855,7 @@ export const LANGUAGE_CONFIG = {
             { name: 'cups_display', type: 'ceramic', pattern: 'traditional' }
           ]
         },
-        
+
         pastriesDisplay: {
           type: 'glass_case',
           items: [
@@ -895,7 +866,7 @@ export const LANGUAGE_CONFIG = {
             { name: 'biscotti', varieties: ['mandorla', 'cioccolato'] }
           ]
         },
-        
+
         decorations: [
           { type: 'vintage_movie_posters', films: ['la_dolce_vita', 'roma'], framed: true },
           { type: 'hanging_plants', type: 'ivy_and_flowers' },
@@ -903,7 +874,7 @@ export const LANGUAGE_CONFIG = {
           { type: 'chalkboard_menu', handwritten: true }
         ]
       },
-      
+
       sounds: {
         ambient: [
           { name: 'vespa_passing', volume: 0.2, trigger: 'random', frequency: 45000 },
@@ -921,20 +892,20 @@ export const LANGUAGE_CONFIG = {
           style: 'romantic Italian melodies'
         }
       },
-      
+
       lighting: {
         primary: { type: 'golden_hour', color: '#FFD700', intensity: 0.8 },
         secondary: { type: 'string_lights', color: '#FFF5E1', intensity: 0.3 },
         effects: ['long_shadows', 'warm_glow_on_walls']
       }
     },
-    
+
     character: {
       name: 'Marco Benedetti',
       role: 'Barista & Art Lover',
       age: 35,
       emoji: '☕',
-      
+
       appearance: {
         height: 'medium',
         build: 'athletic',
@@ -947,7 +918,7 @@ export const LANGUAGE_CONFIG = {
           footwear: 'polished_loafers'
         }
       },
-      
+
       personality: {
         traits: ['animated', 'artistic', 'passionate', 'romantic', 'proud'],
         interests: ['art_history', 'coffee', 'roman_culture', 'football'],
@@ -956,7 +927,7 @@ export const LANGUAGE_CONFIG = {
           Sees making coffee as an art form. Dreams of opening a gallery. Knows every 
           ancient ruin in Rome by heart.`
       },
-      
+
       voice: {
         voiceId: 'IKne3meq5aSn9XLyUdCD', // Italian male
         style: 'animated_and_warm',
@@ -971,46 +942,46 @@ export const LANGUAGE_CONFIG = {
         }
       }
     },
-    
+
     difficultyScaling: {
-      level1: { 
+      level1: {
         english: 85, target: 15,
         grammar: 'basic greetings',
         instruction: 'Speak mostly English with Italian words like "buongiorno", "caffè", "grazie". Always translate.',
         example: 'Buongiorno! That means "good day"! Welcome to my little café. Un caffè?'
       },
-      level2: { 
+      level2: {
         english: 65, target: 35,
         grammar: 'ordering coffee',
         instruction: 'Use Italian for coffee and food terms. Explain Italian coffee culture.',
         example: 'Would you like un espresso? In Italia, we drink it standing at the bar - al banco!'
       },
-      level3: { 
+      level3: {
         english: 45, target: 55,
         grammar: 'gendered nouns',
         instruction: 'Speak half Italian. Explain il/la naturally.',
         example: 'Il caffè è pronto! La tazza - the cup - is beautiful, no? È italiana!'
       },
-      level4: { 
+      level4: {
         english: 20, target: 80,
         grammar: 'passato prossimo',
         instruction: 'Speak primarily Italian. Use English for complex history/culture.',
         example: 'Oggi ho fatto un caffè perfetto. La nonna mi ha insegnato i segreti.'
       },
-      level5: { 
+      level5: {
         english: 5, target: 95,
         grammar: 'natural conversation',
         instruction: 'Speak natural Italian with Roman expressions.',
         example: 'Ma dai! Il tuo italiano è bellissimo! Racconta, cosa hai visto oggi a Roma?'
       }
     },
-    
+
     falseFriends: [
       { word: 'camera', looksLike: 'camera', actualMeaning: 'room', warning: 'Camera (device) is "macchina fotografica"' },
       { word: 'pepperoni', looksLike: 'pepperoni', actualMeaning: 'peppers', warning: 'Salami is "salame piccante"' },
       { word: 'caldo', looksLike: 'cold', actualMeaning: 'hot', warning: 'Cold is "freddo"!' }
     ],
-    
+
     startingPhrases: [
       { phrase: 'Buongiorno!', translation: 'Good day!', pronunciation: 'bwon-JORN-oh' },
       { phrase: 'Un caffè, per favore', translation: 'A coffee, please', pronunciation: 'oon kaf-FEH, per fa-VOR-eh' },
@@ -1026,18 +997,18 @@ export const LANGUAGE_CONFIG = {
     name: 'Mandarin Chinese',
     nativeName: '中文',
     flag: '🇨🇳',
-    
+
     scene: {
       name: 'Dragon Well Tea House',
       location: 'Houhai, Beijing',
       timeOfDay: 'misty morning',
       weather: 'light mist over the lake',
-      
+
       description: `A traditional Beijing tea house overlooking Houhai Lake. Red lanterns sway 
         gently. Through the carved wooden windows, you see willows trailing into the misty water. 
         The air is fragrant with jasmine tea. Ancient calligraphy adorns the walls. A guzheng 
         plays softly in the background.`,
-      
+
       props: {
         teaRoom: {
           type: 'traditional_chinese',
@@ -1052,7 +1023,7 @@ export const LANGUAGE_CONFIG = {
             { name: 'tea_pets', figures: ['dragon', 'toad', 'elephant'] }
           ]
         },
-        
+
         decorations: [
           { type: 'red_lanterns', count: 8, size: 'large' },
           { type: 'calligraphy_scrolls', content: ['tea_poetry', 'proverbs'] },
@@ -1060,14 +1031,14 @@ export const LANGUAGE_CONFIG = {
           { type: 'bonsai_trees', varieties: ['pine', 'maple'] },
           { type: 'paper_windows', patterns: 'geometric_traditional' }
         ],
-        
+
         exterior: {
           view: 'houhai_lake',
           elements: ['willow_trees', 'lotus_flowers', 'stone_bridge'],
           boats: 'traditional_rowing'
         }
       },
-      
+
       sounds: {
         ambient: [
           { name: 'water_lapping', volume: 0.2, loop: true },
@@ -1080,7 +1051,7 @@ export const LANGUAGE_CONFIG = {
           style: 'classical Chinese strings'
         }
       },
-      
+
       lighting: {
         primary: { type: 'diffused_morning', color: '#FFF8DC', intensity: 0.5 },
         accent: [
@@ -1089,13 +1060,13 @@ export const LANGUAGE_CONFIG = {
         effects: ['mist_diffusion', 'soft_shadows']
       }
     },
-    
+
     character: {
       name: 'Mei Lin Wang',
       role: '茶艺师 (Tea Master)',
       age: 50,
       emoji: '🍵',
-      
+
       appearance: {
         height: 'medium',
         build: 'graceful',
@@ -1108,7 +1079,7 @@ export const LANGUAGE_CONFIG = {
           footwear: 'embroidered_slippers'
         }
       },
-      
+
       personality: {
         traits: ['wise', 'patient', 'philosophical', 'warm', 'storyteller'],
         interests: ['tea_culture', 'chinese_history', 'calligraphy', 'tai_chi'],
@@ -1117,7 +1088,7 @@ export const LANGUAGE_CONFIG = {
           Has spent her life studying the connection between tea, philosophy, and health. 
           Believes every cup of tea tells a story.`
       },
-      
+
       voice: {
         voiceId: 'jsCqWAovK2LkecY7zXl4', // Chinese female
         style: 'gentle_and_wise',
@@ -1132,45 +1103,45 @@ export const LANGUAGE_CONFIG = {
         }
       }
     },
-    
+
     difficultyScaling: {
-      level1: { 
+      level1: {
         english: 90, target: 10,
         grammar: 'tones introduction',
         instruction: 'Speak mostly English. Introduce basic Chinese words with pinyin and tones. "Nǐ hǎo", "xièxie", "chá".',
         example: 'Welcome! Or in Chinese, 欢迎 (huānyíng)! Would you like some 茶 (chá) - tea?'
       },
-      level2: { 
+      level2: {
         english: 75, target: 25,
         grammar: 'basic characters',
         instruction: 'Use more Chinese for tea and hospitality terms. Explain tones clearly.',
         example: 'This is 龙井茶 (Lóngjǐng chá) - Dragon Well tea. 好喝! (Hǎo hē!) - Delicious to drink!'
       },
-      level3: { 
+      level3: {
         english: 55, target: 45,
         grammar: 'measure words',
         instruction: 'Speak half Chinese. Introduce measure words naturally.',
         example: '请喝一杯茶。Please drink a cup of tea. 杯 (bēi) is the measure word for cups.'
       },
-      level4: { 
+      level4: {
         english: 30, target: 70,
         grammar: 'sentence structure',
         instruction: 'Speak primarily Chinese. Explain sentence structure as needed.',
         example: '这个茶很特别。今天天气很好，是喝茶的好日子。你觉得怎么样？'
       },
-      level5: { 
+      level5: {
         english: 10, target: 90,
         grammar: 'cultural expressions',
         instruction: 'Speak natural Chinese with idioms and cultural expressions.',
         example: '茶如人生，先苦后甜。慢慢品，不要急。你的中文进步很大啊！'
       }
     },
-    
+
     falseFriends: [
       { word: '手纸', looksLike: 'hand paper', actualMeaning: 'toilet paper', warning: 'Not for writing!' },
       { word: '小心', looksLike: 'small heart', actualMeaning: 'be careful', warning: 'Warning sign, not affection' }
     ],
-    
+
     startingPhrases: [
       { phrase: '你好', translation: 'Hello', pronunciation: 'nǐ hǎo' },
       { phrase: '谢谢', translation: 'Thank you', pronunciation: 'xiè xiè' },
@@ -1186,18 +1157,18 @@ export const LANGUAGE_CONFIG = {
     name: 'Polish',
     nativeName: 'Polski',
     flag: '🇵🇱',
-    
+
     scene: {
       name: 'Pierogi & Memories',
       location: 'Stare Miasto, Warsaw',
       timeOfDay: 'afternoon',
       weather: 'crisp autumn day',
-      
+
       description: `A cozy milk bar (bar mleczny) in Warsaw's reconstructed Old Town. The space 
         honors post-war Polish tradition with simple wooden tables and the comforting aroma of 
         home cooking. Through the window, colorful townhouses rebuilt from rubble line the square. 
         Steam rises from bowls of barszcz and plates of golden pierogi.`,
-      
+
       props: {
         servingCounter: {
           type: 'traditional_milk_bar',
@@ -1210,7 +1181,7 @@ export const LANGUAGE_CONFIG = {
             { name: 'placki_ziemniaczane', with: 'sour_cream' }
           ]
         },
-        
+
         dining: {
           tables: [
             { type: 'simple_wooden', seats: 4, cloth: 'checkered_red_white' },
@@ -1218,7 +1189,7 @@ export const LANGUAGE_CONFIG = {
           ],
           condiments: ['sour_cream', 'fried_onions', 'butter', 'sugar']
         },
-        
+
         decorations: [
           { type: 'vintage_posters', era: 'PRL', subject: 'polish_culture' },
           { type: 'amber_jewelry_display', style: 'baltic' },
@@ -1226,14 +1197,14 @@ export const LANGUAGE_CONFIG = {
           { type: 'photos', subject: 'old_warsaw', framed: true },
           { type: 'dried_flowers', type: 'wildflowers' }
         ],
-        
+
         exterior: {
           view: 'old_town_square',
           elements: ['colorful_townhouses', 'mermaid_statue', 'cobblestones'],
           activity: ['tourists', 'street_artists', 'cafe_terraces']
         }
       },
-      
+
       sounds: {
         ambient: [
           { name: 'kitchen_sounds', volume: 0.2, loop: true },
@@ -1247,19 +1218,19 @@ export const LANGUAGE_CONFIG = {
           style: 'modern Polish folk fusion'
         }
       },
-      
+
       lighting: {
         primary: { type: 'natural', color: '#FFF5E6', intensity: 0.7 },
         secondary: { type: 'warm', color: '#FFE4B5', intensity: 0.3 }
       }
     },
-    
+
     character: {
       name: 'Kasia Kowalska',
       role: 'Pani Kucharka (Lady Cook)',
       age: 55,
       emoji: '🥟',
-      
+
       appearance: {
         height: 'medium',
         build: 'warm_and_sturdy',
@@ -1272,7 +1243,7 @@ export const LANGUAGE_CONFIG = {
           footwear: 'practical_shoes'
         }
       },
-      
+
       personality: {
         traits: ['motherly', 'proud', 'warm', 'resilient', 'storyteller'],
         interests: ['polish_history', 'family_recipes', 'folk_traditions', 'gardening'],
@@ -1281,7 +1252,7 @@ export const LANGUAGE_CONFIG = {
           rebuild the Old Town. Every recipe carries family memory. Believes food connects 
           generations and teaches culture better than any book.`
       },
-      
+
       voice: {
         voiceId: 'onwK4e9ZLuTAKqWW03F9', // Polish female
         style: 'warm_and_nurturing',
@@ -1296,45 +1267,45 @@ export const LANGUAGE_CONFIG = {
         }
       }
     },
-    
+
     difficultyScaling: {
-      level1: { 
+      level1: {
         english: 85, target: 15,
         grammar: 'basic greetings',
         instruction: 'Speak mostly English with Polish words like "cześć", "dziękuję", "pierogi". Always translate.',
         example: 'Cześć! That means "hi"! Welcome to my little restaurant. Would you like pierogi?'
       },
-      level2: { 
+      level2: {
         english: 65, target: 35,
         grammar: 'ordering food',
         instruction: 'Use Polish for food items and common phrases. Provide context.',
         example: 'The pierogi ruskie are very popular - z ziemniakami i serem - with potatoes and cheese!'
       },
-      level3: { 
+      level3: {
         english: 45, target: 55,
         grammar: 'noun cases',
         instruction: 'Speak half Polish. Introduce cases naturally through food ordering.',
         example: 'Poproszę pierogi. "Proszę" means please. Smacznego! That means enjoy your meal!'
       },
-      level4: { 
+      level4: {
         english: 20, target: 80,
         grammar: 'verb conjugation',
         instruction: 'Speak primarily Polish. Explain verbs as they come up.',
         example: 'Dzisiaj zrobiłam pierogi rano. Są świeże i pyszne. Chcesz spróbować?'
       },
-      level5: { 
+      level5: {
         english: 5, target: 95,
         grammar: 'natural conversation',
         instruction: 'Speak natural Polish with Warsaw expressions.',
         example: 'Ale fajnie mówisz po polsku! Opowiedz mi o sobie. Skąd jesteś?'
       }
     },
-    
+
     falseFriends: [
       { word: 'aktualnie', looksLike: 'actually', actualMeaning: 'currently', warning: 'Use "właściwie" for actually' },
       { word: 'sympatyczny', looksLike: 'sympathetic', actualMeaning: 'nice/likeable', warning: 'Sympathetic is "współczujący"' }
     ],
-    
+
     startingPhrases: [
       { phrase: 'Cześć!', translation: 'Hi!', pronunciation: 'cheshch' },
       { phrase: 'Poproszę pierogi', translation: 'I\'d like pierogi please', pronunciation: 'po-PRO-sheh pyeh-RO-gee' },

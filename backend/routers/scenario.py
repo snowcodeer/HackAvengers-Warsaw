@@ -35,28 +35,30 @@ async def generate_scenario(request: ScenarioRequest):
         "flag": "🏳️",
         "description": "A custom generated scenario.",
         "vocab": ["word1", "word2", "word3", "word4"],
-        "character": {{
-            "name": "Guide",
-            "emoji": "👤",
-            "role": "Local Guide",
-            "bio": "A friendly local guide.",
-            "voice": {{
-                "voiceId": "ThT5KcBeYPX3keUQqHPh",
-                "style": "warm",
-                "accent": "neutral"
-            }}
-        }},
-        "scene": {{
-            "name": "Custom Scene",
-            "location": "Custom Location",
-            "timeOfDay": "day",
-            "weather": "clear",
-            "layout": {{
                 "floor": {{ "type": "wood", "color": "#8B4513" }},
                 "walls": {{ "type": "plaster", "color": "#F5F5F5" }},
                 "props": [
                     {{ "type": "counter", "position": {{ "x": 0, "y": 0, "z": -3 }}, "color": "#8B4513", "name": "counter" }}
                 ]
+            }}
+        }},
+        "character": {{
+            "name": "Guide",
+            "emoji": "👤",
+            "role": "Local Guide",
+            "bio": "A friendly local guide.",
+            "visuals": {{
+                "skinColor": "#f5c09a",
+                "hairColor": "#000000",
+                "hairStyle": "short",
+                "outfitColor": "#3498db",
+                "accessoryColor": "#ffffff",
+                "style": "casual"
+            }},
+            "voice": {{
+                "voiceId": "ThT5KcBeYPX3keUQqHPh",
+                "style": "warm",
+                "accent": "neutral"
             }}
         }},
         "falseFriends": [],
