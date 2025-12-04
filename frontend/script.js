@@ -1,13 +1,25 @@
 // Cute Flower Garden with Snow - 8-Bit Style
 
 document.addEventListener('DOMContentLoaded', () => {
-    createTallTrees();
-    createFlowerGarden();
-    createBushes();
-    createRocks();
-    createBunnies();
-    initPixelSnowfall();
-    initButtonEffects();
+    console.log('DOM Content Loaded');
+    try {
+        createTallTrees();
+        console.log('Trees created');
+        createFlowerGarden();
+        console.log('Garden created');
+        createBushes();
+        console.log('Bushes created');
+        createRocks();
+        console.log('Rocks created');
+        createBunnies();
+        console.log('Bunnies created');
+        initPixelSnowfall();
+        console.log('Snowfall initialized');
+        initButtonEffects();
+        console.log('Button effects initialized');
+    } catch (e) {
+        console.error('Error initializing:', e);
+    }
 });
 
 // Flower colors
