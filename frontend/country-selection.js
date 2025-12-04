@@ -1174,11 +1174,11 @@ function drawUKHouse(x, y, w, h, doorX, doorY, door) {
     ctx.closePath();
     ctx.fill();
     
-    // Chimney
+    // Chimney (lowered)
     ctx.fillStyle = '#8B4040';
-    ctx.fillRect(x + w/4, y - h/2 - 35, 15, 25);
+    ctx.fillRect(x + w/4, y - h/2 - 25, 15, 20);
     ctx.fillStyle = '#5A5A6A';
-    ctx.fillRect(x + w/4 - 2, y - h/2 - 38, 19, 5);
+    ctx.fillRect(x + w/4 - 2, y - h/2 - 28, 19, 5);
     
     // White door frame
     ctx.fillStyle = '#FFFFFF';
