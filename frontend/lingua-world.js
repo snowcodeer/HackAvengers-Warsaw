@@ -802,7 +802,18 @@ async function init() {
         // Use extensive config if available, or fallback to scenario character
         const characterConfig = langConfig?.character || gameState.scenario?.character;
 
-        mirageActive = await startMirageStream(scenarioId, 'gameCanvas', characterConfig);
+        // Prepare custom config if applicable
+        let customConfig = null;
+        if (scenarioId === 'custom_generated' && gameState.scenario) {
+            customConfig = {
+                vibe: gameState.scenario.vibe || 'cozy', // Fallback if not saved
+                description: gameState.scenario.description || ''
+            };
+            // If vibe wasn't saved directly in scenario root, try to infer or use default
+            // Note: We need to ensure 'vibe' is saved in scenarioGenerator.js or passed through
+        }
+
+        mirageActive = await startMirageStream(scenarioId, 'gameCanvas', characterConfig, customConfig);
         if (mirageActive) {
             console.log('🎨 Mirage MirageLSD activated - immersive world rendering');
         }

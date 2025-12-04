@@ -36,13 +36,25 @@ const STYLE_PROMPTS = {
     cafe: "Warm Renaissance-inspired atmosphere, soft Tuscan golden light, gentle ochre and terracotta palette, subtle classical painting style, cozy Italian piazza feel, warm inviting tones, painterly but recognizable, elegant and relaxed"
 };
 
+// Vibe prompts for custom scenarios
+const VIBE_PROMPTS = {
+    cozy: "Soft warm impressionist style, gentle golden light, cozy intimate atmosphere, soft focus, painterly but recognizable, calm and inviting, comfortable textures",
+    modern: "Sleek modern aesthetic, clean lines, cool neutral tones, architectural lighting, minimalist composition, sharp details, high fidelity, contemporary design",
+    bustling: "Dynamic energetic atmosphere, vibrant colors, motion blur suggestions, lively lighting, busy composition, street photography style, active and engaging",
+    historical: "Vintage film aesthetic, sepia or muted tones, grain texture, nostalgic atmosphere, classical composition, timeless feel, detailed period accuracy",
+    cyberpunk: "Cyberpunk aesthetic, neon lighting, dramatic shadows, high contrast, futuristic atmosphere, rain-slicked surfaces, vibrant blues and magentas, cinematic sci-fi look",
+    nature: "Organic natural style, soft sunlight, lush greens and earth tones, peaceful atmosphere, botanical details, fresh and airy, landscape painting aesthetic",
+    spooky: "Mysterious atmospheric style, dramatic chiaroscuro lighting, deep shadows, cool color palette, fog and mist, cinematic thriller mood, intriguing and slightly dark"
+};
+
 /**
  * Start the Mirage real-time video transformation stream
  * @param {string} scenario - The scenario ID to determine the style prompt
  * @param {string} canvasId - The ID of the canvas element to capture
  * @param {object} characterConfig - Optional character configuration for dynamic prompts
+ * @param {object} customConfig - Optional custom configuration (vibe, description) for custom scenarios
  */
-export async function startMirageStream(scenario = "boulangerie", canvasId = "gameCanvas", characterConfig = null) {
+export async function startMirageStream(scenario = "boulangerie", canvasId = "gameCanvas", characterConfig = null, customConfig = null) {
     try {
         const model = models.realtime("mirage_v2");
         const canvas = document.getElementById(canvasId);
@@ -83,7 +95,7 @@ export async function startMirageStream(scenario = "boulangerie", canvasId = "ga
         });
 
         // Set the style based on scenario and character
-        const prompt = generateDynamicPrompt(scenario, characterConfig);
+        const prompt = generateDynamicPrompt(scenario, characterConfig, customConfig);
         realtimeClient.setPrompt(prompt);
 
         // Show the video container
@@ -104,8 +116,18 @@ export async function startMirageStream(scenario = "boulangerie", canvasId = "ga
 /**
  * Generate a dynamic prompt combining scenario style and character visuals
  */
-function generateDynamicPrompt(scenario, character) {
-    const baseStyle = STYLE_PROMPTS[scenario] || STYLE_PROMPTS.boulangerie;
+function generateDynamicPrompt(scenario, character, customConfig) {
+    let baseStyle;
+
+    if (scenario === 'custom_generated' && customConfig) {
+        // Use custom vibe and description
+        const vibePrompt = VIBE_PROMPTS[customConfig.vibe] || VIBE_PROMPTS.cozy;
+        // Incorporate the user's description but keep it concise for the style prompt
+        // We assume customConfig.description is the user's prompt
+        baseStyle = `${vibePrompt}. Context: ${customConfig.description || 'Custom scene'}`;
+    } else {
+        baseStyle = STYLE_PROMPTS[scenario] || STYLE_PROMPTS.boulangerie;
+    }
 
     if (!character || !character.visuals) {
         return baseStyle + ", photorealistic, detailed textures, 8k resolution";
