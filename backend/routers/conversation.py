@@ -1,164 +1,431 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
-from services.voice_service import voice_service
-from services.npc_service import npc_service
+"""
+═══════════════════════════════════════════════════════════════════════════════
+LINGUAVERSE - Enhanced Conversation Router
+Full multi-turn conversation with ElevenLabs integration
+═══════════════════════════════════════════════════════════════════════════════
+"""
+
+import os
+import io
 import uuid
+import tempfile
+from datetime import datetime
+from typing import Optional, List, Dict, Any
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException
+from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel
 
-router = APIRouter(prefix="/api/conversation", tags=["conversation"])
+from services.elevenlabs_service import elevenlabs_service
+from services.lesson_service import lesson_service
+from services.npc_service import npc_service
 
-class ConversationStartRequest(BaseModel):
-    npc_id: str
+router = APIRouter(prefix="/api/conversation", tags=["Conversation"])
 
-class ConversationResponseRequest(BaseModel):
-    npc_id: str
-    text: str # For text-based testing, eventually will use audio
+# In-memory conversation storage (use database in production)
+active_conversations: Dict[str, Dict] = {}
 
-# Global Game State (MVP)
-game_state = {
-    "quest_step": 1,
-    "difficulty": 1,
-    "conversation_history": {}
-}
 
-# Simple in-memory cache for audio generation parameters
-# Format: {uuid: (text, voice_id)}
-audio_cache = {}
+class ConversationStart(BaseModel):
+    """Request to start a conversation"""
+    character_id: str
+    language: str
+    user_id: Optional[str] = "default_user"
+    difficulty_level: int = 1
 
-@router.get("/audio/{audio_id}")
-async def stream_audio(audio_id: str):
-    if audio_id not in audio_cache:
-        raise HTTPException(status_code=404, detail="Audio not found or expired")
-    
-    text, voice_id = audio_cache.pop(audio_id)
-    
-    def iterfile():
-        stream = voice_service.generate_audio_stream(text, voice_id)
-        if stream:
-            yield from stream
-            
-    return StreamingResponse(iterfile(), media_type="audio/mpeg")
 
-@router.post("/transcribe")
-async def transcribe_audio(audio: UploadFile = File(...)):
-    content = await audio.read()
-    text = voice_service.speech_to_text(content)
-    if not text:
-        raise HTTPException(status_code=400, detail="Failed to transcribe audio (too short or corrupted)")
-    return {"text": text}
+class TextMessage(BaseModel):
+    """Text-only message (for testing/fallback)"""
+    conversation_id: str
+    text: str
+
+
+class ConversationResponse(BaseModel):
+    """Response from conversation"""
+    conversation_id: str
+    transcription: Optional[str] = None
+    response: str
+    audio_url: Optional[str] = None
+    character_name: str
+    expression: Optional[str] = None
+    pronunciation_feedback: Optional[Dict] = None
+    new_words: List[Dict] = []
+    xp_earned: int = 0
+    teaching_moment: Optional[str] = None
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CONVERSATION MANAGEMENT
+# ═══════════════════════════════════════════════════════════════════════════
 
 @router.post("/start")
-async def start_conversation(request: ConversationStartRequest):
-    # Reset history for this NPC
-    game_state["conversation_history"][request.npc_id] = []
+async def start_conversation(request: ConversationStart) -> Dict:
+    """
+    Start a new conversation with a character.
     
-    # Get initial greeting from NPC (Dynamic but goal-oriented)
-    initial_prompt = "The player has just approached you. Greet them warmly and hint at the current objective immediately."
-    greeting = npc_service.get_response(
-        request.npc_id, 
-        initial_prompt, 
-        [], 
-        game_state["quest_step"], 
-        game_state["difficulty"]
-    )
+    Returns the character's greeting with audio.
+    """
+    conversation_id = str(uuid.uuid4())
     
-    # Store greeting
-    game_state["conversation_history"][request.npc_id].append({"role": "assistant", "content": greeting})
+    # Get character info
+    character_info = elevenlabs_service.get_character_info(request.character_id)
+    if not character_info:
+        raise HTTPException(status_code=404, detail="Character not found")
     
-    # Prepare Audio (Lazy Generation)
-    voice_id = npc_service.get_voice_id(request.npc_id)
-    audio_id = str(uuid.uuid4())
-    audio_cache[audio_id] = (greeting, voice_id)
-    audio_url = f"/api/conversation/audio/{audio_id}"
+    # Get greeting based on character
+    greetings = {
+        "amelie": "Bonjour! Welcome to my little bakery! I'm Amélie. Comment allez-vous?",
+        "yuki": "こんにちは。Welcome to my tea house. I am Yuki. Please, sit down.",
+        "carmen": "¡Hola! Bienvenido to Casa del Flamenco! I'm Carmen. ¿Qué tal?",
+        "wolfgang": "Guten Abend. Welcome to the bunker. I'm Wolfgang. The night is young.",
+        "marco": "Buongiorno! Welcome to my café! I'm Marco. Un caffè?",
+        "meilin": "欢迎！Welcome to my tea house. I am Mei Lin. Please, have some tea.",
+        "kasia": "Cześć! Welcome to my restaurant! I'm Kasia. Hungry? We have fresh pierogi!"
+    }
+    
+    greeting_text = greetings.get(request.character_id, "Hello! Welcome!")
+    
+    # Generate audio for greeting
+    try:
+        audio_bytes = elevenlabs_service.text_to_speech(
+            greeting_text,
+            request.character_id,
+            expression="warmly"
+        )
+        
+        # Save audio to temp file
+        audio_filename = f"greeting_{conversation_id}.mp3"
+        audio_path = os.path.join(tempfile.gettempdir(), audio_filename)
+        with open(audio_path, "wb") as f:
+            f.write(audio_bytes)
+        
+        audio_url = f"/api/conversation/audio/{audio_filename}"
+    except Exception as e:
+        print(f"Audio generation error: {e}")
+        audio_url = None
+    
+    # Store conversation state
+    active_conversations[conversation_id] = {
+        "id": conversation_id,
+        "character_id": request.character_id,
+        "character_name": character_info["name"],
+        "language": request.language,
+        "user_id": request.user_id,
+        "difficulty_level": request.difficulty_level,
+        "messages": [
+            {
+                "role": "assistant",
+                "content": greeting_text,
+                "timestamp": datetime.now().isoformat()
+            }
+        ],
+        "words_practiced": [],
+        "started_at": datetime.now().isoformat()
+    }
+    
+    # Update user streak
+    lesson_service.update_streak(request.user_id, request.language)
     
     return {
-        "message": f"Conversation started with {request.npc_id}",
-        "greeting": greeting,
-        "audio_url": audio_url
+        "conversation_id": conversation_id,
+        "character_name": character_info["name"],
+        "greeting": greeting_text,
+        "audio_url": audio_url,
+        "language": request.language,
+        "difficulty_level": request.difficulty_level
     }
+
 
 @router.post("/respond")
 async def respond_to_conversation(
-    npc_id: str = Form(...),
-    audio: UploadFile = File(None),
-    text: str = Form(None)
-):
-    if not audio and not text:
-        raise HTTPException(status_code=400, detail="Either audio or text is required")
+    audio: UploadFile = File(...),
+    conversation_id: str = Form(None),
+    npc_id: str = Form(None)
+) -> ConversationResponse:
+    """
+    Process user's voice input and generate character response.
     
-    player_text = text
-    if audio:
-        content = await audio.read()
-        player_text = voice_service.speech_to_text(content)
-        if not player_text:
-             # Fallback or error? Let's return a helpful error
-             raise HTTPException(status_code=400, detail="Could not understand audio. Please try again.")
+    1. Transcribe user's speech
+    2. Generate character response (with teaching moments)
+    3. Convert response to speech
+    4. Return everything
+    """
+    # Get or create conversation
+    if conversation_id and conversation_id in active_conversations:
+        conversation = active_conversations[conversation_id]
+    else:
+        # Create new conversation on the fly
+        conversation_id = str(uuid.uuid4())
+        character_id = npc_id or "amelie"
+        character_info = elevenlabs_service.get_character_info(character_id)
+        
+        conversation = {
+            "id": conversation_id,
+            "character_id": character_id,
+            "character_name": character_info["name"] if character_info else "Assistant",
+            "language": "french",
+            "user_id": "default_user",
+            "difficulty_level": 1,
+            "messages": [],
+            "words_practiced": [],
+            "started_at": datetime.now().isoformat()
+        }
+        active_conversations[conversation_id] = conversation
     
-    # Retrieve history
-    history = game_state["conversation_history"].get(npc_id, [])
+    character_id = conversation.get("character_id", npc_id or "amelie")
+    language = conversation.get("language", "french")
+    difficulty = conversation.get("difficulty_level", 1)
     
-    # Get NPC response
-    npc_response = npc_service.get_response(
-        npc_id, 
-        player_text, 
-        history,
-        game_state["quest_step"],
-        game_state["difficulty"]
+    # Read audio file
+    audio_content = await audio.read()
+    
+    # Transcribe user's speech
+    transcription_result = elevenlabs_service.speech_to_text(
+        audio_content,
+        language_hint=language[:2] if language else None
     )
     
-    # Check for Quest Completion Tag
-    quest_advanced = False
+    user_text = transcription_result.get("text", "")
+    if not user_text:
+        user_text = "(unclear speech)"
     
-    # Clean bracketed expressions (e.g., [happy], [sad])
-    import re
-    clean_response = re.sub(r'\[.*?\]', '', npc_response).strip()
+    # Pronunciation assessment
+    pronunciation_feedback = None
+    if user_text and user_text != "(unclear speech)":
+        # Simple feedback for now
+        pronunciation_feedback = {
+            "transcribed": user_text,
+            "confidence": transcription_result.get("confidence", 1.0)
+        }
     
-    # Check for [DONE] specifically in the original response if logic depends on it
-    if "[DONE]" in npc_response:
-        # Advance Quest State if valid transition
-        if npc_id == "child" and game_state["quest_step"] == 1:
-            game_state["quest_step"] = 2
-            quest_advanced = True
-        elif npc_id == "mati" and game_state["quest_step"] == 2:
-            game_state["quest_step"] = 3
-            quest_advanced = True
-        elif npc_id == "jade" and game_state["quest_step"] == 3:
-            game_state["quest_step"] = 4
-            quest_advanced = True
-        elif npc_id == "kitty" and game_state["quest_step"] == 4:
-            game_state["quest_step"] = 5
-            quest_advanced = True
-        elif npc_id == "child" and game_state["quest_step"] == 5:
-            # Quest Complete
-            pass
-            
-    npc_response = clean_response
+    # Add user message to history
+    conversation["messages"].append({
+        "role": "user",
+        "content": user_text,
+        "timestamp": datetime.now().isoformat()
+    })
     
-    # Update history
-    history.append({"role": "user", "content": player_text})
-    history.append({"role": "assistant", "content": npc_response})
-    game_state["conversation_history"][npc_id] = history
+    # Generate character response using NPC service
+    conversation_history = [
+        {"role": msg["role"], "content": msg["content"]}
+        for msg in conversation["messages"][-10:]  # Last 10 messages
+    ]
+    
+    response_text = npc_service.get_response(
+        npc_id=character_id,
+        player_text=user_text,
+        conversation_history=conversation_history[:-1],  # Exclude current message
+        quest_state=1,
+        difficulty_level=difficulty
+    )
+    
+    # Determine expression based on response
+    expression = "warmly"
+    if "?" in response_text:
+        expression = "curious"
+    elif any(word in response_text.lower() for word in ["correct", "almost", "try"]):
+        expression = "encouraging"
+    elif any(word in response_text.lower() for word in ["excellent", "perfect", "great"]):
+        expression = "excited"
+    
+    # Generate audio for response
+    audio_url = None
+    try:
+        audio_bytes = elevenlabs_service.text_to_speech(
+            response_text,
+            character_id,
+            expression=expression
+        )
         
-    # Difficulty Scaling (Simple)
-    # Increase difficulty every 2 turns (DEMO MODE: fast progression)
-    if len(history) % 2 == 0 and game_state["difficulty"] < 5:
-        game_state["difficulty"] += 1
+        audio_filename = f"response_{conversation_id}_{len(conversation['messages'])}.mp3"
+        audio_path = os.path.join(tempfile.gettempdir(), audio_filename)
+        with open(audio_path, "wb") as f:
+            f.write(audio_bytes)
+        
+        audio_url = f"/api/conversation/audio/{audio_filename}"
+    except Exception as e:
+        print(f"Audio generation error: {e}")
     
-    # Prepare Audio (Lazy Generation)
-    voice_id = npc_service.get_voice_id(npc_id)
-    audio_id = str(uuid.uuid4())
-    audio_cache[audio_id] = (npc_response, voice_id)
-    audio_url = f"/api/conversation/audio/{audio_id}"
+    # Add assistant message to history
+    conversation["messages"].append({
+        "role": "assistant",
+        "content": response_text,
+        "expression": expression,
+        "timestamp": datetime.now().isoformat()
+    })
+    
+    # Check for teaching moments (new vocabulary)
+    teaching_moment = None
+    new_words = []
+    
+    # Extract any vocabulary being taught
+    if difficulty <= 2:
+        # At lower levels, highlight vocabulary
+        for word_data in get_vocabulary_from_response(response_text, language):
+            new_words.append(word_data)
+            lesson_service._add_vocabulary_to_glossary(
+                conversation["user_id"],
+                language,
+                [word_data]
+            )
+    
+    # Calculate XP earned
+    xp_earned = 5  # Base XP per turn
+    if pronunciation_feedback and pronunciation_feedback.get("confidence", 0) > 0.8:
+        xp_earned += 5  # Bonus for good pronunciation
+    
+    return ConversationResponse(
+        conversation_id=conversation_id,
+        transcription=user_text,
+        response=response_text,
+        audio_url=audio_url,
+        character_name=conversation["character_name"],
+        expression=expression,
+        pronunciation_feedback=pronunciation_feedback,
+        new_words=new_words,
+        xp_earned=xp_earned,
+        teaching_moment=teaching_moment
+    )
+
+
+@router.post("/text")
+async def respond_text(message: TextMessage) -> ConversationResponse:
+    """
+    Handle text-only message (for testing or typing mode).
+    """
+    conversation = active_conversations.get(message.conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    character_id = conversation["character_id"]
+    language = conversation["language"]
+    difficulty = conversation["difficulty_level"]
+    
+    # Add user message
+    conversation["messages"].append({
+        "role": "user",
+        "content": message.text,
+        "timestamp": datetime.now().isoformat()
+    })
+    
+    # Generate response
+    conversation_history = [
+        {"role": msg["role"], "content": msg["content"]}
+        for msg in conversation["messages"][-10:]
+    ]
+    
+    response_text = npc_service.get_response(
+        npc_id=character_id,
+        player_text=message.text,
+        conversation_history=conversation_history[:-1],
+        quest_state=1,
+        difficulty_level=difficulty
+    )
+    
+    # Generate audio
+    audio_url = None
+    try:
+        audio_bytes = elevenlabs_service.text_to_speech(
+            response_text,
+            character_id,
+            expression="warmly"
+        )
+        
+        audio_filename = f"response_{message.conversation_id}_{len(conversation['messages'])}.mp3"
+        audio_path = os.path.join(tempfile.gettempdir(), audio_filename)
+        with open(audio_path, "wb") as f:
+            f.write(audio_bytes)
+        
+        audio_url = f"/api/conversation/audio/{audio_filename}"
+    except Exception as e:
+        print(f"Audio generation error: {e}")
+    
+    # Add assistant message
+    conversation["messages"].append({
+        "role": "assistant",
+        "content": response_text,
+        "timestamp": datetime.now().isoformat()
+    })
+    
+    return ConversationResponse(
+        conversation_id=message.conversation_id,
+        transcription=message.text,
+        response=response_text,
+        audio_url=audio_url,
+        character_name=conversation["character_name"],
+        xp_earned=5
+    )
+
+
+@router.get("/audio/{filename}")
+async def get_audio(filename: str):
+    """Serve generated audio files."""
+    audio_path = os.path.join(tempfile.gettempdir(), filename)
+    
+    if not os.path.exists(audio_path):
+        raise HTTPException(status_code=404, detail="Audio not found")
+    
+    return FileResponse(
+        audio_path,
+        media_type="audio/mpeg",
+        filename=filename
+    )
+
+
+@router.get("/{conversation_id}")
+async def get_conversation(conversation_id: str) -> Dict:
+    """Get conversation history."""
+    conversation = active_conversations.get(conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
     
     return {
-        "transcription": player_text,
-        "response": npc_response,
-        "audio_url": audio_url,
-        "quest_state": game_state["quest_step"],
-        "difficulty": game_state["difficulty"],
-        "quest_advanced": quest_advanced
+        "id": conversation_id,
+        "character_name": conversation["character_name"],
+        "language": conversation["language"],
+        "messages": conversation["messages"],
+        "started_at": conversation["started_at"]
     }
 
-@router.post("/end")
-async def end_conversation(npc_id: str):
-    return {"message": f"Conversation ended with {npc_id}"}
+
+@router.post("/{conversation_id}/end")
+async def end_conversation(conversation_id: str) -> Dict:
+    """End a conversation and calculate final stats."""
+    conversation = active_conversations.get(conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    # Calculate stats
+    total_turns = len([m for m in conversation["messages"] if m["role"] == "user"])
+    total_xp = total_turns * 5
+    
+    # Update user progress
+    lesson_service.update_streak(conversation["user_id"], conversation["language"])
+    
+    # Clean up
+    ended_at = datetime.now().isoformat()
+    conversation["ended_at"] = ended_at
+    
+    return {
+        "conversation_id": conversation_id,
+        "total_turns": total_turns,
+        "xp_earned": total_xp,
+        "words_practiced": len(conversation.get("words_practiced", [])),
+        "ended_at": ended_at
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# HELPER FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════════════
+
+def get_vocabulary_from_response(response: str, language: str) -> List[Dict]:
+    """Extract vocabulary words being taught in a response."""
+    # This would be enhanced with NLP in production
+    # For now, return empty list
+    return []
+
+
+@router.get("/characters/list")
+async def list_characters() -> List[Dict]:
+    """List all available characters."""
+    return elevenlabs_service.list_characters()

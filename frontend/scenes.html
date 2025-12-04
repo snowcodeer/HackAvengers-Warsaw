@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinguaWorlds - Choose Your Journey</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: #1a1a24;
+      --accent-gold: #d4af37;
+      --accent-rose: #e74c5e;
+      --accent-blue: #4a90d9;
+      --text-primary: #f5f5f5;
+      --text-secondary: #a0a0a8;
+      --text-muted: #606068;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --glow-gold: 0 0 40px rgba(212, 175, 55, 0.3);
+      --glow-rose: 0 0 40px rgba(231, 76, 94, 0.3);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Crimson Pro', Georgia, serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(ellipse at 20% 0%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(231, 76, 94, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(74, 144, 217, 0.04) 0%, transparent 70%);
+    }
+
+    /* Animated background particles */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--accent-gold);
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: float 15s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.3; }
+      90% { opacity: 0.3; }
+      100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, var(--bg-primary) 0%, transparent 100%);
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 2px;
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .stat-icon {
+      font-size: 1.2rem;
+    }
+
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent-gold);
+      font-weight: 600;
+    }
+
+    /* Main Content */
+    .main-content {
+      position: relative;
+      z-index: 1;
+      padding: 8rem 3rem 4rem;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .hero-section {
+      text-align: center;
+      margin-bottom: 4rem;
+      animation: fadeInDown 0.8s ease-out;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem;
+      font-weight: 900;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 1.3rem;
+      color: var(--text-secondary);
+      font-weight: 300;
+      letter-spacing: 1px;
+    }
+
+    /* Language Grid */
+    .language-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 2rem;
+      perspective: 1000px;
+    }
+
+    .language-card {
+      position: relative;
+      background: var(--bg-card);
+      border-radius: 20px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+      border: 1px solid var(--border-subtle);
+      animation: cardFadeIn 0.6s ease-out backwards;
+    }
+
+    .language-card:nth-child(1) { animation-delay: 0.1s; }
+    .language-card:nth-child(2) { animation-delay: 0.2s; }
+    .language-card:nth-child(3) { animation-delay: 0.3s; }
+    .language-card:nth-child(4) { animation-delay: 0.4s; }
+    .language-card:nth-child(5) { animation-delay: 0.5s; }
+    .language-card:nth-child(6) { animation-delay: 0.6s; }
+    .language-card:nth-child(7) { animation-delay: 0.7s; }
+    .language-card:nth-child(8) { animation-delay: 0.8s; }
+
+    @keyframes cardFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(40px) rotateX(-10deg);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) rotateX(0);
+      }
+    }
+
+    .language-card:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: var(--glow-gold);
+      border-color: var(--accent-gold);
+    }
+
+    .card-visual {
+      position: relative;
+      height: 200px;
+      overflow: hidden;
+    }
+
+    .card-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      transition: transform 0.5s ease;
+    }
+
+    .language-card:hover .card-bg {
+      transform: scale(1.1);
+    }
+
+    .card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.7) 100%);
+    }
+
+    .card-flag {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 2rem;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    }
+
+    .card-icon {
+      position: absolute;
+      bottom: 1rem;
+      left: 1rem;
+      font-size: 3rem;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+    }
+
+    .progress-ring {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      width: 50px;
+      height: 50px;
+    }
+
+    .progress-ring circle {
+      fill: none;
+      stroke-width: 4;
+      transform: rotate(-90deg);
+      transform-origin: center;
+    }
+
+    .progress-ring .bg {
+      stroke: rgba(255,255,255,0.1);
+    }
+
+    .progress-ring .progress {
+      stroke: var(--accent-gold);
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.5s ease;
+    }
+
+    .progress-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .card-content {
+      padding: 1.5rem;
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .card-native {
+      font-size: 1rem;
+      color: var(--accent-gold);
+      margin-bottom: 0.75rem;
+      font-style: italic;
+    }
+
+    .card-location {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-location::before {
+      content: '📍';
+    }
+
+    .card-character {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: var(--bg-secondary);
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .character-avatar {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .character-info {
+      flex: 1;
+    }
+
+    .character-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .character-role {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .difficulty-stars {
+      display: flex;
+      gap: 2px;
+    }
+
+    .star {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .star.filled {
+      color: var(--accent-gold);
+    }
+
+    .start-btn {
+      background: linear-gradient(135deg, var(--accent-gold), #c9a227);
+      color: var(--bg-primary);
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 20px;
+      font-family: 'Crimson Pro', serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .start-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
+    }
+
+    /* Card-specific themes */
+    .card-french .card-bg { background: linear-gradient(135deg, #1e3a5f 0%, #2a4a7f 100%); }
+    .card-german .card-bg { background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); }
+    .card-polish .card-bg { background: linear-gradient(135deg, #7f1d1d 0%, #9f2d2d 100%); }
+    .card-english .card-bg { background: linear-gradient(135deg, #2c1810 0%, #4c2820 100%); }
+    .card-mandarin .card-bg { background: linear-gradient(135deg, #8b0000 0%, #ab2020 100%); }
+    .card-spanish .card-bg { background: linear-gradient(135deg, #c2410c 0%, #e2612c 100%); }
+    .card-japanese .card-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+    .card-italian .card-bg { background: linear-gradient(135deg, #1e3a24 0%, #2e5a34 100%); }
+
+    /* Completed badge */
+    .completed-badge {
+      position: absolute;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      z-index: 10;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .footer a {
+      color: var(--accent-gold);
+      text-decoration: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header {
+        padding: 1rem 1.5rem;
+      }
+
+      .stats-bar {
+        display: none;
+      }
+
+      .main-content {
+        padding: 6rem 1.5rem 2rem;
+      }
+
+      .hero-title {
+        font-size: 2.5rem;
+      }
+
+      .hero-subtitle {
+        font-size: 1.1rem;
+      }
+
+      .language-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated Particles Background -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">LINGUAWORLDS</div>
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-icon">🔥</span>
+        <span class="stat-value" id="streakCount">0</span>
+        <span>day streak</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">⭐</span>
+        <span>Level</span>
+        <span class="stat-value" id="levelCount">1</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">📚</span>
+        <span class="stat-value" id="wordCount">0</span>
+        <span>words</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <section class="hero-section">
+      <h1 class="hero-title">Choose Your Journey</h1>
+      <p class="hero-subtitle">Step into culturally immersive worlds and learn languages through conversation</p>
+    </section>
+
+    <div class="language-grid" id="languageGrid">
+      <!-- Cards will be generated by JavaScript -->
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>Built with ❤️ using <a href="https://elevenlabs.io" target="_blank">ElevenLabs</a> Voice AI</p>
+  </footer>
+
+  <script type="module">
+    import { LANGUAGE_CONFIG } from './config/languages.js';
+    import { EXTENDED_LANGUAGES } from './config/languages-extended.js';
+    
+    // Merge all languages
+    const ALL_LANGUAGES = { ...LANGUAGE_CONFIG, ...EXTENDED_LANGUAGES };
+    
+    // Load saved progress
+    function getProgress(langId) {
+      try {
+        const saved = localStorage.getItem('linguaWorlds_sceneState');
+        if (saved) {
+          const state = JSON.parse(saved);
+          const config = ALL_LANGUAGES[langId];
+          if (config && config.scenarios) {
+            const completed = config.scenarios.filter(s => 
+              (state.visitedScenarios || []).includes(`${langId}_${s.id}`)
+            ).length;
+            return Math.round((completed / config.scenarios.length) * 100);
+          }
+        }
+      } catch (e) {}
+      return 0;
+    }
+    
+    function getStats() {
+      try {
+        const progress = localStorage.getItem('linguaWorlds_progress');
+        const glossary = localStorage.getItem('linguaWorlds_glossary');
+        
+        let stats = { level: 1, streak: 0, words: 0 };
+        
+        if (progress) {
+          const p = JSON.parse(progress);
+          stats.level = p.level || 1;
+          stats.streak = p.streaks?.current || 0;
+        }
+        
+        if (glossary) {
+          const g = JSON.parse(glossary);
+          stats.words = Object.values(g.vocabulary || {}).reduce((sum, arr) => sum + arr.length, 0);
+        }
+        
+        return stats;
+      } catch (e) {
+        return { level: 1, streak: 0, words: 0 };
+      }
+    }
+    
+    function createProgressRing(progress) {
+      const circumference = 2 * Math.PI * 20;
+      const offset = circumference - (progress / 100) * circumference;
+      
+      return `
+        <svg class="progress-ring" viewBox="0 0 50 50">
+          <circle class="bg" cx="25" cy="25" r="20"/>
+          <circle class="progress" cx="25" cy="25" r="20" 
+            stroke-dasharray="${circumference}" 
+            stroke-dashoffset="${offset}"/>
+        </svg>
+        <span class="progress-text">${progress}%</span>
+      `;
+    }
+    
+    function createLanguageCard(id, config) {
+      const progress = getProgress(id);
+      const isCompleted = progress === 100;
+      const character = config.character;
+      
+      return `
+        <article class="language-card card-${id}" data-lang="${id}">
+          ${isCompleted ? '<div class="completed-badge">✓ Complete</div>' : ''}
+          <div class="card-visual">
+            <div class="card-bg"></div>
+            <div class="card-overlay"></div>
+            <span class="card-flag">${config.flag}</span>
+            <span class="card-icon">${character?.emoji || '🌍'}</span>
+            <div class="progress-ring-container">
+              ${createProgressRing(progress)}
+            </div>
+          </div>
+          <div class="card-content">
+            <h2 class="card-title">${config.name}</h2>
+            <p class="card-native">${config.nativeName}</p>
+            <p class="card-location">${config.scene?.name || config.scene?.id || 'Cultural Scene'}</p>
+            <div class="card-character">
+              <div class="character-avatar">${character?.emoji || '👤'}</div>
+              <div class="character-info">
+                <div class="character-name">Meet: ${character?.name || 'Character'}</div>
+                <div class="character-role">${character?.role || ''}</div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <div class="difficulty-stars">
+                ${[1,2,3,4,5].map(i => `<span class="star ${i <= Math.ceil(progress/20) || i === 1 ? 'filled' : ''}">★</span>`).join('')}
+              </div>
+              <button class="start-btn">${progress > 0 ? 'Continue' : 'Start'}</button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+    
+    function generateParticles() {
+      const container = document.getElementById('particles');
+      for (let i = 0; i < 30; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 15 + 's';
+        particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+        container.appendChild(particle);
+      }
+    }
+    
+    function initialize() {
+      // Generate particles
+      generateParticles();
+      
+      // Update stats
+      const stats = getStats();
+      document.getElementById('streakCount').textContent = stats.streak;
+      document.getElementById('levelCount').textContent = stats.level;
+      document.getElementById('wordCount').textContent = stats.words;
+      
+      // Generate language cards
+      const grid = document.getElementById('languageGrid');
+      grid.innerHTML = Object.entries(ALL_LANGUAGES)
+        .map(([id, config]) => createLanguageCard(id, config))
+        .join('');
+      
+      // Add click handlers
+      grid.querySelectorAll('.language-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const lang = card.dataset.lang;
+          // Store selected language and navigate to game
+          localStorage.setItem('selectedLanguage', lang);
+          window.location.href = 'game.html';
+        });
+      });
+    }
+    
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', initialize);
+  </script>
+</body>
+</html>
+
