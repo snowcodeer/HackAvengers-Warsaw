@@ -875,8 +875,8 @@ function initButtonEffects() {
         createPixelBurst(beginBtn);
         setTimeout(() => {
             beginBtn.style.transform = '';
-            // Show language selection modal instead of direct navigation
-            languageModal.classList.add('active');
+            // Navigate to country selection game
+            window.location.href = 'country-selection.html';
         }, 300);
     });
 

@@ -6,29 +6,38 @@
     <title>LinguaVerse - World</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;600;800&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-deep: #0a0a0f;
-            --accent-gold: #f4b942;
-            --accent-coral: #ff6b6b;
-            --accent-teal: #4ecdc4;
-            --accent-violet: #a855f7;
-            --text-primary: #fafafa;
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-        }
-
+        /* 8-Bit Pixel Art Style - Matching Main Theme */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        :root {
+            --grass-bright: #50c850;
+            --grass-mid: #40a840;
+            --grass-dark: #308830;
+            --ground-brown: #8b6914;
+            --wood-main: #a86020;
+            --wood-light: #c88838;
+            --wood-dark: #684010;
+            --wood-shadow: #402808;
+            --cream: #f8f0d8;
+            --pixel-black: #181818;
+            --cozy-yellow: #f8e038;
+            --cozy-orange: #f8a800;
+            --panel-bg: rgba(40, 30, 20, 0.95);
+            --panel-border: #684010;
         }
 
         body {
             overflow: hidden;
-            font-family: 'Bricolage Grotesque', sans-serif;
-            background: var(--bg-deep);
+            font-family: 'Press Start 2P', cursive;
+            background: var(--pixel-black);
         }
 
         #gameContainer {
@@ -80,12 +89,13 @@
             position: absolute;
             top: 20px;
             left: 20px;
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
+            background: var(--panel-bg);
+            border: 4px solid var(--panel-border);
             padding: 20px;
             max-width: 300px;
+            box-shadow: 
+                4px 4px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-light);
         }
 
         .scenario-title {
@@ -100,15 +110,17 @@
         }
 
         .scenario-name {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--accent-gold);
+            font-size: 0.7rem;
+            color: var(--cozy-yellow);
+            text-shadow: 2px 2px 0 var(--wood-dark);
+            letter-spacing: 1px;
         }
 
         .scenario-level {
-            font-size: 0.85rem;
-            color: var(--accent-teal);
+            font-size: 0.5rem;
+            color: var(--cream);
             margin-bottom: 12px;
+            text-shadow: 1px 1px 0 var(--wood-dark);
         }
 
         .difficulty-bar {
@@ -118,13 +130,16 @@
 
         .difficulty-pip {
             width: 24px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
+            height: 8px;
+            background: var(--wood-dark);
+            border: 2px solid var(--wood-shadow);
+            box-shadow: inset 1px 1px 0 0 var(--wood-main);
         }
 
         .difficulty-pip.active {
-            background: linear-gradient(90deg, var(--accent-teal), var(--accent-violet));
+            background: var(--cozy-yellow);
+            border-color: var(--cozy-orange);
+            box-shadow: inset 1px 1px 0 0 var(--cozy-yellow);
         }
 
         /* Glossary button */
@@ -132,10 +147,8 @@
             position: absolute;
             top: 20px;
             right: 20px;
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 50%;
+            background: var(--panel-bg);
+            border: 4px solid var(--panel-border);
             width: 60px;
             height: 60px;
             cursor: pointer;
@@ -144,13 +157,24 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
+            transition: all 0.05s;
+            box-shadow: 
+                4px 4px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-light);
         }
 
         .glossary-btn:hover {
-            transform: scale(1.1);
-            background: rgba(244, 185, 66, 0.2);
-            border-color: var(--accent-gold);
+            transform: translateY(2px);
+            box-shadow: 
+                2px 2px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-light);
+        }
+
+        .glossary-btn:active {
+            transform: translateY(4px);
+            box-shadow: 
+                0 0 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-dark);
         }
 
         /* Conversation panel */
@@ -159,15 +183,55 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(to top, rgba(10, 10, 15, 0.95), transparent);
+            background: linear-gradient(to top, rgba(24, 24, 24, 0.98), rgba(24, 24, 24, 0.85));
             padding: 40px 20px 30px;
             transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.4s ease-out;
+            border-top: 4px solid var(--panel-border);
         }
 
         .conversation-panel.active {
             transform: translateY(0);
             pointer-events: auto;
+        }
+
+        /* Conversation close button */
+        .conversation-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--wood-main);
+            border: 4px solid var(--wood-dark);
+            color: var(--cream);
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.05s;
+            box-shadow: 
+                3px 3px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-light);
+            font-family: 'Press Start 2P', cursive;
+            z-index: 10;
+        }
+
+        .conversation-close:hover {
+            transform: translateY(2px);
+            box-shadow: 
+                1px 1px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-light);
+            background: var(--cozy-orange);
+            border-color: var(--cozy-yellow);
+        }
+
+        .conversation-close:active {
+            transform: translateY(4px);
+            box-shadow: 
+                0 0 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-dark);
         }
 
         .conversation-content {
@@ -185,51 +249,57 @@
         .character-avatar-small {
             width: 60px;
             height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-coral), var(--accent-violet));
+            background: var(--wood-main);
+            border: 4px solid var(--wood-dark);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 2rem;
             flex-shrink: 0;
+            box-shadow: 
+                3px 3px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-light);
         }
 
         .speech-bubble {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
+            background: var(--panel-bg);
+            border: 4px solid var(--panel-border);
             padding: 20px;
             flex: 1;
+            box-shadow: 
+                4px 4px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-light);
         }
 
         .speech-text {
-            font-size: 1.2rem;
-            line-height: 1.6;
+            font-size: 0.6rem;
+            line-height: 1.8;
             margin-bottom: 8px;
+            color: var(--cream);
+            text-shadow: 1px 1px 0 var(--wood-dark);
+            letter-spacing: 1px;
         }
 
         .speech-translation {
-            font-family: 'Crimson Pro', serif;
-            font-style: italic;
-            color: var(--accent-teal);
-            font-size: 1rem;
+            font-size: 0.5rem;
+            color: var(--cozy-yellow);
+            text-shadow: 1px 1px 0 var(--wood-dark);
         }
 
         /* Grammar correction highlight */
         .grammar-correction {
-            background: rgba(255, 107, 107, 0.2);
-            border: 1px solid var(--accent-coral);
-            border-radius: 12px;
+            background: rgba(248, 160, 0, 0.2);
+            border: 2px solid var(--cozy-orange);
             padding: 12px 16px;
             margin-top: 12px;
-            font-size: 0.9rem;
+            font-size: 0.5rem;
+            box-shadow: inset 2px 2px 0 0 rgba(248, 160, 0, 0.3);
         }
 
         .grammar-correction-title {
-            color: var(--accent-coral);
-            font-weight: 600;
+            color: var(--cozy-orange);
             margin-bottom: 4px;
+            text-shadow: 1px 1px 0 var(--wood-dark);
         }
 
         /* Voice input */
@@ -242,75 +312,87 @@
         .voice-btn {
             width: 70px;
             height: 70px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-gold), var(--accent-coral));
-            border: none;
+            background: var(--wood-main);
+            border: 4px solid var(--wood-dark);
             cursor: pointer;
             font-size: 2rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
-            box-shadow: 0 8px 30px rgba(244, 185, 66, 0.3);
+            transition: all 0.05s;
+            box-shadow: 
+                4px 4px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-light);
         }
 
         .voice-btn:hover {
-            transform: scale(1.1);
+            transform: translateY(2px);
+            box-shadow: 
+                2px 2px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-light);
         }
 
         .voice-btn.recording {
+            background: var(--cozy-orange);
+            border-color: var(--cozy-yellow);
             animation: pulse 1s infinite;
-            background: linear-gradient(135deg, var(--accent-coral), var(--accent-violet));
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.5); }
-            50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(255, 107, 107, 0); }
+            0%, 100% { 
+                box-shadow: 
+                    4px 4px 0 0 var(--wood-shadow),
+                    inset 2px 2px 0 0 var(--cozy-yellow);
+            }
+            50% { 
+                box-shadow: 
+                    4px 4px 0 0 var(--wood-shadow),
+                    inset 2px 2px 0 0 var(--cozy-yellow),
+                    0 0 20px rgba(248, 168, 0, 0.6);
+            }
         }
 
-        .voice-hint {
-            flex: 1;
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 35px;
-            padding: 20px 24px;
-            font-size: 1rem;
-            color: var(--text-primary);
-        }
-
-        .voice-hint-suggestion {
-            color: var(--accent-gold);
-            font-weight: 600;
-        }
-
-        /* Text input fallback */
         .text-input {
             flex: 1;
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 35px;
+            background: var(--panel-bg);
+            border: 4px solid var(--panel-border);
             padding: 20px 24px;
-            font-size: 1rem;
-            color: var(--text-primary);
-            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 0.6rem;
+            color: var(--cream);
+            font-family: 'Press Start 2P', cursive;
             outline: none;
+            box-shadow: 
+                inset 3px 3px 0 0 var(--wood-shadow),
+                3px 3px 0 0 var(--wood-dark);
         }
 
         .text-input:focus {
-            border-color: var(--accent-gold);
+            border-color: var(--cozy-yellow);
+        }
+
+        .text-input::placeholder {
+            color: #666;
         }
 
         .send-btn {
             width: 50px;
             height: 50px;
-            border-radius: 50%;
-            background: var(--accent-teal);
-            border: none;
+            background: var(--cozy-yellow);
+            border: 4px solid var(--cozy-orange);
             cursor: pointer;
             font-size: 1.5rem;
-            color: var(--bg-deep);
+            color: var(--pixel-black);
+            transition: all 0.05s;
+            box-shadow: 
+                3px 3px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--cozy-yellow);
+        }
+
+        .send-btn:hover {
+            transform: translateY(2px);
+            box-shadow: 
+                1px 1px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--cozy-yellow);
         }
 
         /* Glossary modal */
@@ -320,8 +402,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(10, 10, 15, 0.9);
-            backdrop-filter: blur(10px);
+            background: rgba(24, 24, 24, 0.95);
             display: none;
             align-items: center;
             justify-content: center;
@@ -334,15 +415,16 @@
         }
 
         .glossary-content {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
+            background: var(--panel-bg);
+            border: 8px solid var(--panel-border);
             width: 90%;
             max-width: 700px;
             max-height: 80vh;
             overflow-y: auto;
             padding: 30px;
+            box-shadow: 
+                8px 8px 0 0 var(--wood-shadow),
+                inset 4px 4px 0 0 var(--wood-light);
         }
 
         .glossary-header {
@@ -353,17 +435,34 @@
         }
 
         .glossary-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--accent-gold);
+            font-size: 1rem;
+            color: var(--cozy-yellow);
+            text-shadow: 2px 2px 0 var(--wood-dark);
+            letter-spacing: 2px;
         }
 
         .glossary-close {
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 1.5rem;
+            background: var(--wood-main);
+            border: 4px solid var(--wood-dark);
+            color: var(--cream);
+            font-size: 1.2rem;
             cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.05s;
+            box-shadow: 
+                3px 3px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-light);
+        }
+
+        .glossary-close:hover {
+            transform: translateY(2px);
+            box-shadow: 
+                1px 1px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-light);
         }
 
         .glossary-section {
@@ -371,11 +470,12 @@
         }
 
         .glossary-section-title {
-            font-size: 1rem;
-            color: var(--accent-teal);
+            font-size: 0.6rem;
+            color: var(--cozy-yellow);
             margin-bottom: 16px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 0 var(--wood-dark);
         }
 
         .glossary-grid {
@@ -385,41 +485,43 @@
         }
 
         .glossary-item {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
+            background: var(--wood-dark);
+            border: 3px solid var(--wood-shadow);
             padding: 16px;
+            box-shadow: inset 2px 2px 0 0 var(--wood-main);
         }
 
         .glossary-word {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--accent-gold);
+            font-size: 0.6rem;
+            color: var(--cozy-yellow);
             margin-bottom: 4px;
+            text-shadow: 1px 1px 0 var(--wood-dark);
         }
 
         .glossary-meaning {
-            color: var(--text-primary);
+            font-size: 0.5rem;
+            color: var(--cream);
             margin-bottom: 4px;
+            text-shadow: 1px 1px 0 var(--wood-dark);
         }
 
         .glossary-pronunciation {
-            font-family: 'Crimson Pro', serif;
-            font-style: italic;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.9rem;
+            font-size: 0.4rem;
+            color: rgba(248, 240, 216, 0.7);
+            text-shadow: 1px 1px 0 var(--wood-dark);
         }
 
         /* False friends warning */
         .false-friend-item {
-            border-color: var(--accent-coral);
-            background: rgba(255, 107, 107, 0.1);
+            border-color: var(--cozy-orange);
+            background: rgba(248, 160, 0, 0.2);
         }
 
         .false-friend-warning {
-            color: var(--accent-coral);
-            font-size: 0.85rem;
+            color: var(--cozy-orange);
+            font-size: 0.45rem;
             margin-top: 8px;
+            text-shadow: 1px 1px 0 var(--wood-dark);
         }
 
         /* Interaction prompt */
@@ -428,22 +530,33 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--accent-gold);
-            border-radius: 16px;
+            background: var(--panel-bg);
+            border: 4px solid var(--cozy-yellow);
             padding: 16px 24px;
             display: none;
             animation: float 2s ease-in-out infinite;
+            box-shadow: 
+                4px 4px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-light);
         }
 
         .interact-prompt.active {
             display: block;
         }
 
+        .interact-prompt kbd {
+            background: var(--wood-main);
+            border: 2px solid var(--wood-dark);
+            padding: 4px 8px;
+            margin: 0 2px;
+            box-shadow: 2px 2px 0 0 var(--wood-shadow);
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.5rem;
+        }
+
         @keyframes float {
             0%, 100% { transform: translate(-50%, -50%); }
-            50% { transform: translate(-50%, calc(-50% - 10px)); }
+            50% { transform: translate(-50%, calc(-50% - 8px)); }
         }
 
         /* Loading screen */
@@ -453,7 +566,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: var(--bg-deep);
+            background: var(--pixel-black);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -479,14 +592,18 @@
         }
 
         .loading-text {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--accent-gold);
+            font-size: 0.9rem;
+            color: var(--cozy-yellow);
             margin-bottom: 8px;
+            text-shadow: 2px 2px 0 var(--wood-dark);
+            letter-spacing: 2px;
         }
 
         .loading-subtext {
-            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.5rem;
+            color: var(--cream);
+            opacity: 0.8;
+            text-shadow: 1px 1px 0 var(--wood-dark);
         }
 
         /* Controls hint */
@@ -494,20 +611,25 @@
             position: absolute;
             bottom: 20px;
             left: 20px;
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
+            background: var(--panel-bg);
+            border: 4px solid var(--panel-border);
             padding: 12px 16px;
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.5rem;
+            color: var(--cream);
+            box-shadow: 
+                4px 4px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-light);
+            text-shadow: 1px 1px 0 var(--wood-dark);
         }
 
         .controls-hint kbd {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
+            background: var(--wood-main);
+            border: 2px solid var(--wood-dark);
+            padding: 4px 8px;
             margin: 0 2px;
+            box-shadow: 2px 2px 0 0 var(--wood-shadow);
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.5rem;
         }
     </style>
 </head>
@@ -525,9 +647,9 @@
             <div class="scenario-info" id="scenarioInfo">
                 <div class="scenario-title">
                     <span class="scenario-emoji" id="scenarioEmoji">🥐</span>
-                    <span class="scenario-name" id="scenarioName">La Boulangerie</span>
+                    <span class="scenario-name" id="scenarioName">LA BOULANGERIE</span>
                 </div>
-                <div class="scenario-level" id="scenarioLevel">Level 1: First Contact</div>
+                <div class="scenario-level" id="scenarioLevel">LEVEL 1: FIRST CONTACT</div>
                 <div class="difficulty-bar" id="difficultyBar">
                     <div class="difficulty-pip active"></div>
                     <div class="difficulty-pip"></div>
@@ -542,24 +664,25 @@
             
             <!-- Interaction Prompt -->
             <div class="interact-prompt" id="interactPrompt">
-                Press <kbd>E</kbd> to talk
+                PRESS <kbd>E</kbd> TO TALK
             </div>
             
             <!-- Controls Hint -->
             <div class="controls-hint" id="controlsHint">
-                <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move · <kbd>E</kbd> Talk · <kbd>G</kbd> Glossary
+                <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> MOVE · <kbd>E</kbd> TALK · <kbd>G</kbd> GLOSSARY · <kbd>ESC</kbd> EXIT
             </div>
             
             <!-- Conversation Panel -->
             <div class="conversation-panel" id="conversationPanel">
+                <button class="conversation-close" id="conversationClose" title="Exit Conversation">✕</button>
                 <div class="conversation-content">
                     <div class="character-speaking" id="characterSpeaking">
                         <div class="character-avatar-small" id="charAvatarSmall">👩‍🍳</div>
                         <div class="speech-bubble">
-                            <div class="speech-text" id="speechText">Bonjour! Bienvenue à ma boulangerie!</div>
-                            <div class="speech-translation" id="speechTranslation">Hello! Welcome to my bakery!</div>
+                            <div class="speech-text" id="speechText">BONJOUR! BIENVENUE À MA BOULANGERIE!</div>
+                            <div class="speech-translation" id="speechTranslation">HELLO! WELCOME TO MY BAKERY!</div>
                             <div class="grammar-correction hidden" id="grammarCorrection">
-                                <div class="grammar-correction-title">💡 Correction</div>
+                                <div class="grammar-correction-title">💡 CORRECTION</div>
                                 <div id="grammarText"></div>
                             </div>
                         </div>
@@ -567,7 +690,7 @@
                     
                     <div class="voice-input-area">
                         <button class="voice-btn" id="voiceBtn">🎤</button>
-                        <input type="text" class="text-input" id="textInput" placeholder="Type your response or click the mic to speak...">
+                        <input type="text" class="text-input" id="textInput" placeholder="TYPE YOUR RESPONSE OR CLICK THE MIC TO SPEAK...">
                         <button class="send-btn" id="sendBtn">→</button>
                     </div>
                 </div>
@@ -578,19 +701,19 @@
         <div class="glossary-modal" id="glossaryModal">
             <div class="glossary-content">
                 <div class="glossary-header">
-                    <h2 class="glossary-title">📖 Your Glossary</h2>
+                    <h2 class="glossary-title">📖 YOUR GLOSSARY</h2>
                     <button class="glossary-close" id="glossaryClose">✕</button>
                 </div>
                 
                 <div class="glossary-section">
-                    <h3 class="glossary-section-title">Words Learned</h3>
+                    <h3 class="glossary-section-title">WORDS LEARNED</h3>
                     <div class="glossary-grid" id="glossaryWords">
                         <!-- Populated by JS -->
                     </div>
                 </div>
                 
                 <div class="glossary-section">
-                    <h3 class="glossary-section-title">⚠️ False Friends</h3>
+                    <h3 class="glossary-section-title">⚠️ FALSE FRIENDS</h3>
                     <div class="glossary-grid" id="glossaryFalseFriends">
                         <!-- Populated by JS -->
                     </div>
@@ -601,12 +724,11 @@
         <!-- Loading Screen -->
         <div class="loading-screen" id="loadingScreen">
             <div class="loading-emoji" id="loadingEmoji">🥐</div>
-            <div class="loading-text">Entering La Boulangerie...</div>
-            <div class="loading-subtext">Preparing your immersive experience</div>
+            <div class="loading-text">ENTERING LA BOULANGERIE...</div>
+            <div class="loading-subtext">PREPARING YOUR IMMERSIVE EXPERIENCE</div>
         </div>
     </div>
     
     <script type="module" src="lingua-world.js"></script>
 </body>
 </html>
-

@@ -554,6 +554,7 @@ function setupJournal() {
     const journalBtnChat = document.getElementById('journalBtnChat');
     const journalModal = document.getElementById('journalModal');
     const journalClose = document.getElementById('journalClose');
+    const chatClose = document.getElementById('chatClose');
 
     // Main journal button (when not in dialogue)
     journalBtn.addEventListener('click', () => {
@@ -576,6 +577,11 @@ function setupJournal() {
             journalModal.classList.remove('active');
         }
     });
+
+    // Chat close button (exit conversation/shop)
+    if (chatClose) {
+        chatClose.addEventListener('click', endDialogue);
+    }
 }
 
 function populateJournal() {
@@ -1734,9 +1740,17 @@ function setupControls() {
             startRecording();
         }
 
-        // Close journal with Escape
+        // Close journal with Escape, or exit to country selection if nothing is open
         if (e.key === 'Escape') {
-            document.getElementById('journalModal').classList.remove('active');
+            const journalModal = document.getElementById('journalModal');
+            if (journalModal && journalModal.classList.contains('active')) {
+                journalModal.classList.remove('active');
+                return;
+            }
+            // If no modals are open, exit to country selection
+            if (!currentDialogue) {
+                window.location.href = 'country-selection.html';
+            }
         }
 
         // Open journal with F

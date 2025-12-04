@@ -15,6 +15,7 @@ export default defineConfig({
                 lingua: resolve(__dirname, 'frontend/lingua.html'),
                 linguaWorld: resolve(__dirname, 'frontend/lingua-world.html'),
                 game: resolve(__dirname, 'frontend/game.html'),
+                countrySelection: resolve(__dirname, 'frontend/country-selection.html'),
             }
         }
     },
