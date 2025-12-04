@@ -101,6 +101,7 @@ body {
     background: white;
     box-shadow: 0 0 0 1px rgba(200, 220, 240, 0.5);
     animation: pixelSnowfall steps(40) infinite;
+    pointer-events: none;
 }
 
 @keyframes pixelSnowfall {
@@ -321,6 +322,8 @@ body {
     display: flex;
     justify-content: center;
     margin-top: 20px;
+    position: relative;
+    z-index: 100;
 }
 
 .begin-btn {
@@ -329,6 +332,9 @@ body {
     padding: 24px 60px;
     background: var(--wood-main);
     border: none;
+    position: relative;
+    z-index: 9999;
+    pointer-events: auto !important;
     color: var(--cream);
     cursor: pointer;
     position: relative;

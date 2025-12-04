@@ -1,48 +1,72 @@
+/* 8-Bit Pixel Art Style - Mic Button */
+:root {
+    --wood-main: #a86020;
+    --wood-light: #c88838;
+    --wood-dark: #684010;
+    --wood-shadow: #402808;
+    --cream: #f8f0d8;
+    --cozy-yellow: #f8e038;
+    --cozy-orange: #f8a800;
+}
+
 .mic-btn {
     width: 50px;
     height: 50px;
-    border-radius: 50%;
-    background: #4a90d9;
-    border: 4px solid #2a5089;
-    color: white;
+    background: var(--wood-main);
+    border: 4px solid var(--wood-dark);
+    color: var(--cream);
     font-size: 1.5rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 4px 4px 0 0 #203050;
-    transition: all 0.1s;
+    box-shadow: 
+        4px 4px 0 0 var(--wood-shadow),
+        inset 2px 2px 0 0 var(--wood-light);
+    transition: all 0.05s;
     user-select: none;
     -webkit-user-select: none;
+    font-family: 'Press Start 2P', cursive;
 }
 
 .mic-btn:hover {
-    transform: scale(1.05);
-    background: #5aa0e9;
+    transform: translateY(2px);
+    box-shadow: 
+        2px 2px 0 0 var(--wood-shadow),
+        inset 2px 2px 0 0 var(--wood-light);
 }
 
 .mic-btn:active {
-    transform: scale(0.95);
-    box-shadow: 2px 2px 0 0 #203050;
+    transform: translateY(4px);
+    box-shadow: 
+        0 0 0 0 var(--wood-shadow),
+        inset 2px 2px 0 0 var(--wood-dark);
 }
 
 .mic-btn.recording {
-    background: #e74c3c;
-    border-color: #c0392b;
+    background: var(--cozy-orange);
+    border-color: var(--cozy-yellow);
     animation: pulse-red 1.5s infinite;
 }
 
 @keyframes pulse-red {
     0% {
-        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+        box-shadow: 
+            4px 4px 0 0 var(--wood-shadow),
+            inset 2px 2px 0 0 var(--cozy-yellow),
+            0 0 0 0 rgba(248, 168, 0, 0.7);
     }
-
     70% {
-        box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
+        box-shadow: 
+            4px 4px 0 0 var(--wood-shadow),
+            inset 2px 2px 0 0 var(--cozy-yellow),
+            0 0 20px rgba(248, 168, 0, 0);
     }
-
     100% {
-        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+        box-shadow: 
+            4px 4px 0 0 var(--wood-shadow),
+            inset 2px 2px 0 0 var(--cozy-yellow),
+            0 0 0 0 rgba(248, 168, 0, 0);
     }
 }
 
@@ -55,10 +79,11 @@
 }
 
 .recording-status {
-    color: #e74c3c;
-    font-size: 0.8rem;
-    font-weight: bold;
+    color: var(--cozy-orange);
+    font-size: 0.6rem;
+    font-family: 'Press Start 2P', cursive;
     animation: blink 1s infinite;
+    text-shadow: 1px 1px 0 var(--wood-dark);
 }
 
 @keyframes blink {
