@@ -105,7 +105,8 @@ const elements = {
     glossaryClose: document.getElementById('glossaryClose'),
     glossaryWords: document.getElementById('glossaryWords'),
     glossaryFalseFriends: document.getElementById('glossaryFalseFriends'),
-    controlsHint: document.getElementById('controlsHint')
+    controlsHint: document.getElementById('controlsHint'),
+    conversationClose: document.getElementById('conversationClose')
 };
 
 // ==================== INITIALIZATION ====================
@@ -884,12 +885,17 @@ function setupControls() {
         }
         
         if (e.code === 'Escape') {
+            // Priority: Close active modals/conversations first
             if (isConversationActive) {
                 endConversation();
+                return;
             }
             if (elements.glossaryModal.classList.contains('active')) {
                 elements.glossaryModal.classList.remove('active');
+                return;
             }
+            // If nothing is open, exit to country selection
+            window.location.href = 'country-selection.html';
         }
     });
     
@@ -924,6 +930,7 @@ function setupConversationUI() {
     elements.textInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendTextMessage();
     });
+    elements.conversationClose.addEventListener('click', endConversation);
 }
 
 async function startConversation() {
