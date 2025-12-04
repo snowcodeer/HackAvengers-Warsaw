@@ -16,9 +16,6 @@ export class RealtimeVoiceFeedback {
         this.mediaRecorder = null;
         this.recordedChunks = [];
         
-        // WebSocket for real-time transcription
-        this.ws = null;
-        
         // State
         this.isListening = false;
         this.isRecording = false;
@@ -129,8 +126,11 @@ export class RealtimeVoiceFeedback {
                 this.setupRecording();
             }
             
-            // We'll transcribe after recording stops (REST API)
-            // No WebSocket needed - more reliable
+            // Connect to ElevenLabs for real-time transcription
+            await this.connectTranscriptionWebSocket();
+            
+            // Setup audio processing for WebSocket
+            this.setupAudioProcessing();
             
             this.isListening = true;
             console.log('🎤 Real-time voice feedback started');
@@ -200,7 +200,28 @@ export class RealtimeVoiceFeedback {
         this.isRecording = true;
     }
     
-    // REST API transcription is handled in stopListening() -> transcribeRecording()
+    // ═══════════════════════════════════════════════════════════════════════════
+    // GET BACKEND URL
+    // ═══════════════════════════════════════════════════════════════════════════
+    getBackendUrl() {
+        if (typeof window !== 'undefined' && window.BACKEND_URL) {
+            return window.BACKEND_URL;
+        }
+        if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_BACKEND_URL) {
+            return import.meta.env.VITE_BACKEND_URL;
+        }
+        return 'http://localhost:8000';
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CONNECT TO TRANSCRIPTION (placeholder for compatibility)
+    // ═══════════════════════════════════════════════════════════════════════════
+    connectTranscriptionWebSocket() {
+        // We'll use batch transcription via backend instead of WebSocket
+        // This is called for compatibility but doesn't actually connect
+        console.log('🎤 Using backend transcription API (batch mode)');
+        return Promise.resolve();
+    }
     
     // ═══════════════════════════════════════════════════════════════════════════
     // CHECK PRONUNCIATION AGAINST EXPECTED
@@ -334,7 +355,14 @@ export class RealtimeVoiceFeedback {
         return suggestions;
     }
     
-    // Audio recording handled by MediaRecorder (no streaming needed)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SETUP AUDIO PROCESSING (Recording only, no WebSocket)
+    // ═══════════════════════════════════════════════════════════════════════════
+    setupAudioProcessing() {
+        // Audio is already being captured by MediaRecorder in setupRecording()
+        // This method is kept for compatibility but doesn't need to do anything extra
+        console.log('🎤 Audio processing ready (using MediaRecorder)');
+    }
     
     // ═══════════════════════════════════════════════════════════════════════════
     // STOP LISTENING
@@ -350,9 +378,9 @@ export class RealtimeVoiceFeedback {
             this.animationFrame = null;
         }
         
-        // Stop recording and wait for data
+        // Stop recording and wait for final data
         if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
-            await new Promise(resolve => {
+            await new Promise((resolve) => {
                 this.mediaRecorder.onstop = resolve;
                 this.mediaRecorder.stop();
             });
@@ -361,86 +389,84 @@ export class RealtimeVoiceFeedback {
         this.isListening = false;
         this.isRecording = false;
         
-        // Transcribe the recording using REST API
-        await this.transcribeRecording();
+        // Transcribe via backend
+        if (this.recordedChunks.length > 0) {
+            await this.transcribeViaBackend();
+        }
         
-        // Cleanup
-        this.cleanup();
+        // Small delay then cleanup
+        setTimeout(() => this.cleanup(), 500);
         
         return {
             transcribedWords: this.transcribedWords,
             pronunciationErrors: this.pronunciationErrors,
-            recording: this.getRecording(),
-            overallScore: this.getOverallScore()
+            recording: this.getRecording()
         };
     }
     
     // ═══════════════════════════════════════════════════════════════════════════
-    // TRANSCRIBE RECORDING USING REST API
+    // TRANSCRIBE VIA BACKEND API
     // ═══════════════════════════════════════════════════════════════════════════
-    async transcribeRecording() {
-        const recording = this.getRecording();
-        if (!recording || !this.elevenLabsApiKey) {
-            console.warn('No recording or API key for transcription');
-            return;
-        }
-        
-        console.log('📝 Transcribing recording with ElevenLabs STT...');
-        
+    async transcribeViaBackend() {
         try {
-            const formData = new FormData();
-            formData.append('audio', recording, 'recording.webm');
+            const audioBlob = this.getRecording();
+            if (!audioBlob) return;
             
-            const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+            const backendUrl = this.getBackendUrl();
+            console.log('📤 Sending audio to backend for transcription...');
+            
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
+            formData.append('language', this.language);
+            
+            const response = await fetch(`${backendUrl}/api/transcribe`, {
                 method: 'POST',
-                headers: {
-                    'xi-api-key': this.elevenLabsApiKey
-                },
                 body: formData
             });
             
-            if (response.ok) {
-                const data = await response.json();
-                const text = data.text || '';
-                
-                console.log('📝 Transcribed:', text);
-                
-                // Parse words
-                const words = text.split(/\s+/).filter(w => w);
-                words.forEach((wordText, index) => {
+            if (!response.ok) {
+                throw new Error(`Transcription failed: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            const transcribedText = result.text || result.transcription || '';
+            
+            console.log('✅ Transcribed:', transcribedText);
+            
+            // Process words and check pronunciation
+            if (transcribedText) {
+                const words = transcribedText.split(/\s+/).filter(w => w);
+                words.forEach((text, idx) => {
                     const word = {
-                        text: wordText,
-                        confidence: 0.85,
-                        start: index * 0.3,
-                        end: (index + 1) * 0.3,
+                        text: text,
+                        confidence: result.confidence || 0.85,
+                        start: idx * 0.5,
+                        end: (idx + 1) * 0.5,
                         isFinal: true
                     };
                     
-                    // Check pronunciation
-                    const pronunciationResult = this.checkPronunciation(word, index);
+                    const pronunciationResult = this.checkPronunciation(word, idx);
                     word.pronunciationResult = pronunciationResult;
-                    
                     this.transcribedWords.push(word);
                     
-                    // Callback
                     if (this.onWordTranscribed) {
-                        this.onWordTranscribed(word, index, pronunciationResult);
+                        this.onWordTranscribed(word, idx, pronunciationResult);
                     }
                     
                     if (!pronunciationResult.isCorrect && this.onPronunciationError) {
                         this.onPronunciationError(pronunciationResult);
                     }
                 });
-                
-                // Final callback
-                if (this.onTranscriptComplete) {
-                    this.onTranscriptComplete(this.transcribedWords, this.pronunciationErrors);
-                }
-            } else {
-                console.error('STT failed:', await response.text());
             }
+            
+            // Final callback
+            if (this.onTranscriptComplete) {
+                this.onTranscriptComplete(this.transcribedWords, this.pronunciationErrors);
+            }
+            
         } catch (error) {
             console.error('Transcription error:', error);
+            if (this.onError) this.onError(error);
         }
     }
     

@@ -16,9 +16,10 @@ const CONFIG = {
     BACKEND_URL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
 };
 
-// Make API key available globally for RealtimeVoice module
+// Make API keys and config available globally for RealtimeVoice module
 if (typeof window !== 'undefined') {
     window.ELEVENLABS_API_KEY = CONFIG.ELEVENLABS_API_KEY;
+    window.BACKEND_URL = CONFIG.BACKEND_URL;
 }
 
 // ==================== GLOBAL STATE ====================
@@ -1725,10 +1726,9 @@ function setupRealtimeVoiceCallbacks() {
         console.log('🛑 Listening stopped. Transcript:', transcript);
         elements.textInput.placeholder = 'Type your response or click the mic to speak...';
         
-        // If we have a transcript, process it
-        if (transcript && transcript.trim()) {
-            processRealtimeTranscript(transcript, words);
-        }
+        // Note: Don't call processRealtimeTranscript here!
+        // It's already called from onTranscriptUpdate when isFinal=true
+        // Calling it twice causes duplicate TTS responses
         
         // Hide real-time UI after a delay
         setTimeout(() => {
@@ -1848,8 +1848,20 @@ function updateAverageScore() {
 // ═══════════════════════════════════════════════════════════════════════════════
 // PROCESS FINAL REAL-TIME TRANSCRIPT
 // ═══════════════════════════════════════════════════════════════════════════════
+let lastProcessedTranscript = '';
+let isProcessingTranscript = false;
+
 async function processRealtimeTranscript(transcript, words) {
     if (!transcript || !transcript.trim()) return;
+    
+    // Prevent duplicate processing of the same transcript
+    if (isProcessingTranscript || transcript === lastProcessedTranscript) {
+        console.log('⏭️ Skipping duplicate transcript processing');
+        return;
+    }
+    
+    isProcessingTranscript = true;
+    lastProcessedTranscript = transcript;
     
     console.log('📝 Processing transcript:', transcript);
     console.log('📊 Words with scores:', words);
@@ -1890,6 +1902,9 @@ async function processRealtimeTranscript(transcript, words) {
     elements.textInput.disabled = false;
     elements.sendBtn.disabled = false;
     elements.textInput.focus();
+    
+    // Reset processing flag
+    isProcessingTranscript = false;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

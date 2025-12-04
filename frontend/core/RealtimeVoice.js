@@ -1,29 +1,27 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// REALTIME VOICE - ElevenLabs Scribe v2 WebSocket Real-time Speech Recognition
-// Words appear as you speak with confidence scores
+// REALTIME VOICE - Speech Recognition via Backend API
+// Records audio and sends to backend for transcription
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Get API key from environment or window config
-const getApiKey = () => {
-    // Try window config first (set by lingua-world.js)
-    if (typeof window !== 'undefined' && window.ELEVENLABS_API_KEY) {
-        return window.ELEVENLABS_API_KEY;
+// Get backend URL from environment or window config
+const getBackendUrl = () => {
+    if (typeof window !== 'undefined' && window.BACKEND_URL) {
+        return window.BACKEND_URL;
     }
-    // Try Vite env
-    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ELEVENLABS_API_KEY) {
-        return import.meta.env.VITE_ELEVENLABS_API_KEY;
+    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_BACKEND_URL) {
+        return import.meta.env.VITE_BACKEND_URL;
     }
-    return '';
+    return 'http://localhost:8000';
 };
 
 export class RealtimeVoice {
     constructor() {
-        this.ws = null;
         this.mediaRecorder = null;
         this.audioContext = null;
-        this.workletNode = null;
+        this.analyser = null;
         this.sourceNode = null;
         this.stream = null;
+        this.audioChunks = [];
         
         // State
         this.isListening = false;
@@ -37,17 +35,23 @@ export class RealtimeVoice {
         this.onListeningStart = null;
         this.onListeningStop = null;
         this.onError = null;
+        this.onAmplitudeUpdate = null;   // Called with amplitude for visualization
         
         // Settings
         this.language = 'en';
         this.sampleRate = 16000;
+        this.backendUrl = getBackendUrl();
+        
+        // Amplitude visualization
+        this.amplitudeData = new Uint8Array(256);
+        this.animationFrame = null;
     }
     
     // ═══════════════════════════════════════════════════════════════════════════
     // SET LANGUAGE
     // ═══════════════════════════════════════════════════════════════════════════
     setLanguage(langCode) {
-        // Map our codes to ElevenLabs language codes
+        // Map our codes to language codes
         const langMap = {
             'french': 'fr',
             'fr': 'fr',
@@ -70,7 +74,7 @@ export class RealtimeVoice {
     }
     
     // ═══════════════════════════════════════════════════════════════════════════
-    // START REAL-TIME LISTENING
+    // START LISTENING (Record audio)
     // ═══════════════════════════════════════════════════════════════════════════
     async startListening() {
         if (this.isListening) return;
@@ -80,6 +84,7 @@ export class RealtimeVoice {
             this.currentTranscript = '';
             this.words = [];
             this.confidenceScores = [];
+            this.audioChunks = [];
             
             // Get microphone access
             this.stream = await navigator.mediaDevices.getUserMedia({
@@ -91,279 +96,115 @@ export class RealtimeVoice {
                 }
             });
             
-            // Setup AudioContext for raw PCM data
+            // Setup AudioContext for amplitude analysis
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
                 sampleRate: this.sampleRate
             });
             
-            // Connect WebSocket to ElevenLabs Scribe v2 Realtime
-            await this.connectWebSocket();
+            this.analyser = this.audioContext.createAnalyser();
+            this.analyser.fftSize = 512;
+            this.analyser.smoothingTimeConstant = 0.8;
+            this.amplitudeData = new Uint8Array(this.analyser.frequencyBinCount);
             
-            // Setup audio processing
-            await this.setupAudioProcessing();
+            this.sourceNode = this.audioContext.createMediaStreamSource(this.stream);
+            this.sourceNode.connect(this.analyser);
+            
+            // Start amplitude visualization
+            this.startAmplitudeVisualization();
+            
+            // Setup MediaRecorder for audio capture
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
+                ? 'audio/webm;codecs=opus' 
+                : 'audio/webm';
+            
+            this.mediaRecorder = new MediaRecorder(this.stream, { mimeType });
+            
+            this.mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) {
+                    this.audioChunks.push(e.data);
+                }
+            };
+            
+            this.mediaRecorder.start(100); // Collect data every 100ms
             
             this.isListening = true;
             if (this.onListeningStart) this.onListeningStart();
             
-            console.log('🎤 Real-time listening started');
+            console.log('🎤 Recording started - speak now');
             
         } catch (error) {
-            console.error('Failed to start real-time listening:', error);
+            console.error('Failed to start listening:', error);
             if (this.onError) this.onError(error);
             this.cleanup();
         }
     }
     
     // ═══════════════════════════════════════════════════════════════════════════
-    // CONNECT WEBSOCKET TO ELEVENLABS
+    // AMPLITUDE VISUALIZATION
     // ═══════════════════════════════════════════════════════════════════════════
-    connectWebSocket() {
-        return new Promise((resolve, reject) => {
-            const apiKey = getApiKey();
+    startAmplitudeVisualization() {
+        const updateAmplitude = () => {
+            if (!this.analyser || !this.isListening) return;
             
-            if (!apiKey) {
-                console.error('❌ No ElevenLabs API key found');
-                reject(new Error('Missing ElevenLabs API key'));
-                return;
+            this.analyser.getByteFrequencyData(this.amplitudeData);
+            
+            // Calculate average amplitude
+            let sum = 0;
+            for (let i = 0; i < this.amplitudeData.length; i++) {
+                sum += this.amplitudeData[i];
+            }
+            const avgAmplitude = sum / this.amplitudeData.length;
+            const normalizedAmplitude = avgAmplitude / 255;
+            
+            // Calculate peak amplitude
+            const peakAmplitude = Math.max(...this.amplitudeData) / 255;
+            
+            // Callback with amplitude data
+            if (this.onAmplitudeUpdate) {
+                this.onAmplitudeUpdate({
+                    average: normalizedAmplitude,
+                    peak: peakAmplitude,
+                    data: Array.from(this.amplitudeData),
+                    isSpeaking: normalizedAmplitude > 0.1
+                });
             }
             
-            // API key must be in the URL for WebSocket auth (browser doesn't support headers)
-            const wsUrl = `wss://api.elevenlabs.io/v1/speech-to-text/realtime?` + 
-                `model_id=scribe_v1` +
-                `&language_code=${this.language}` +
-                `&xi_api_key=${apiKey}`;
-            
-            console.log('🔌 Connecting to ElevenLabs STT WebSocket...');
-            
-            this.ws = new WebSocket(wsUrl);
-            
-            this.ws.onopen = () => {
-                console.log('✅ ElevenLabs WebSocket connected');
-                resolve();
-            };
-            
-            this.ws.onmessage = (event) => {
-                this.handleWebSocketMessage(event);
-            };
-            
-            this.ws.onerror = (error) => {
-                console.error('❌ WebSocket error:', error);
-                if (this.onError) this.onError(error);
-                reject(error);
-            };
-            
-            this.ws.onclose = (event) => {
-                console.log('🔌 WebSocket closed:', event.code, event.reason);
-                if (this.isListening) {
-                    this.stopListening();
-                }
-            };
-        });
-    }
-    
-    // ═══════════════════════════════════════════════════════════════════════════
-    // HANDLE WEBSOCKET MESSAGES
-    // ═══════════════════════════════════════════════════════════════════════════
-    handleWebSocketMessage(event) {
-        try {
-            const data = JSON.parse(event.data);
-            
-            switch (data.type) {
-                case 'transcript':
-                case 'partial_transcript':
-                    // Partial transcript (words appearing as spoken)
-                    this.handlePartialTranscript(data);
-                    break;
-                    
-                case 'committed_transcript':
-                case 'committed_transcript_with_timestamps':
-                    // Final committed transcript with timestamps
-                    this.handleFinalTranscript(data);
-                    break;
-                    
-                case 'word':
-                case 'word_with_confidence':
-                    // Individual word with confidence
-                    this.handleWord(data);
-                    break;
-                    
-                case 'error':
-                    console.error('ElevenLabs error:', data.message);
-                    if (this.onError) this.onError(new Error(data.message));
-                    break;
-                    
-                default:
-                    console.log('📨 Received:', data.type, data);
-            }
-            
-        } catch (error) {
-            console.error('Error parsing WebSocket message:', error);
-        }
-    }
-    
-    // ═══════════════════════════════════════════════════════════════════════════
-    // HANDLE PARTIAL TRANSCRIPT (REAL-TIME)
-    // ═══════════════════════════════════════════════════════════════════════════
-    handlePartialTranscript(data) {
-        const text = data.text || data.transcript || '';
-        this.currentTranscript = text;
+            this.animationFrame = requestAnimationFrame(updateAmplitude);
+        };
         
-        // Extract words if available
-        if (data.words && Array.isArray(data.words)) {
-            data.words.forEach(wordData => {
-                const word = {
-                    text: wordData.word || wordData.text,
-                    start: wordData.start || wordData.start_time,
-                    end: wordData.end || wordData.end_time,
-                    confidence: wordData.confidence || 0.9,
-                    isNew: true
-                };
-                
-                // Check if we already have this word
-                const existingIndex = this.words.findIndex(w => 
-                    w.start === word.start && w.text === word.text
-                );
-                
-                if (existingIndex === -1) {
-                    this.words.push(word);
-                    
-                    // Callback for new word
-                    if (this.onWordReceived) {
-                        this.onWordReceived(word, this.words.length - 1);
-                    }
-                }
+        updateAmplitude();
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // STOP LISTENING AND TRANSCRIBE
+    // ═══════════════════════════════════════════════════════════════════════════
+    async stopListening() {
+        if (!this.isListening) return;
+        
+        console.log('🛑 Stopping recording...');
+        
+        // Stop amplitude visualization
+        if (this.animationFrame) {
+            cancelAnimationFrame(this.animationFrame);
+            this.animationFrame = null;
+        }
+        
+        // Stop MediaRecorder and wait for final data
+        if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+            await new Promise((resolve) => {
+                this.mediaRecorder.onstop = resolve;
+                this.mediaRecorder.stop();
             });
         }
         
-        // Callback for transcript update
-        if (this.onTranscriptUpdate) {
-            this.onTranscriptUpdate(this.currentTranscript, this.words, false);
-        }
-    }
-    
-    // ═══════════════════════════════════════════════════════════════════════════
-    // HANDLE FINAL TRANSCRIPT
-    // ═══════════════════════════════════════════════════════════════════════════
-    handleFinalTranscript(data) {
-        const text = data.text || data.transcript || '';
-        this.currentTranscript = text;
+        this.isListening = false;
         
-        // Process final words with timestamps
-        if (data.words && Array.isArray(data.words)) {
-            this.words = data.words.map(wordData => ({
-                text: wordData.word || wordData.text,
-                start: wordData.start || wordData.start_time,
-                end: wordData.end || wordData.end_time,
-                confidence: wordData.confidence || 0.9,
-                isFinal: true
-            }));
-        }
-        
-        // Callback for final transcript
-        if (this.onTranscriptUpdate) {
-            this.onTranscriptUpdate(this.currentTranscript, this.words, true);
-        }
-    }
-    
-    // ═══════════════════════════════════════════════════════════════════════════
-    // HANDLE INDIVIDUAL WORD
-    // ═══════════════════════════════════════════════════════════════════════════
-    handleWord(data) {
-        const word = {
-            text: data.word || data.text,
-            start: data.start || data.start_time || 0,
-            end: data.end || data.end_time || 0,
-            confidence: data.confidence || 0.9,
-            isNew: true
-        };
-        
-        this.words.push(word);
-        this.currentTranscript += (this.currentTranscript ? ' ' : '') + word.text;
-        
-        if (this.onWordReceived) {
-            this.onWordReceived(word, this.words.length - 1);
-        }
-        
-        if (this.onTranscriptUpdate) {
-            this.onTranscriptUpdate(this.currentTranscript, this.words, false);
-        }
-    }
-    
-    // ═══════════════════════════════════════════════════════════════════════════
-    // SETUP AUDIO PROCESSING (SEND RAW PCM TO WEBSOCKET)
-    // ═══════════════════════════════════════════════════════════════════════════
-    async setupAudioProcessing() {
-        // Create source from microphone
-        this.sourceNode = this.audioContext.createMediaStreamSource(this.stream);
-        
-        // Use ScriptProcessor for compatibility (AudioWorklet preferred in production)
-        const bufferSize = 4096;
-        const scriptProcessor = this.audioContext.createScriptProcessor(bufferSize, 1, 1);
-        
-        scriptProcessor.onaudioprocess = (event) => {
-            if (!this.isListening || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
-                return;
-            }
-            
-            const inputData = event.inputBuffer.getChannelData(0);
-            
-            // Convert Float32 to Int16 PCM
-            const pcmData = this.float32ToInt16(inputData);
-            
-            // Send as base64
-            const base64Audio = this.arrayBufferToBase64(pcmData.buffer);
-            
-            this.ws.send(JSON.stringify({
-                type: 'input_audio_chunk',
-                audio: base64Audio
-            }));
-        };
-        
-        this.sourceNode.connect(scriptProcessor);
-        scriptProcessor.connect(this.audioContext.destination);
-        
-        this.workletNode = scriptProcessor;
-    }
-    
-    // ═══════════════════════════════════════════════════════════════════════════
-    // UTILITY: CONVERT FLOAT32 TO INT16
-    // ═══════════════════════════════════════════════════════════════════════════
-    float32ToInt16(float32Array) {
-        const int16Array = new Int16Array(float32Array.length);
-        for (let i = 0; i < float32Array.length; i++) {
-            const s = Math.max(-1, Math.min(1, float32Array[i]));
-            int16Array[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-        }
-        return int16Array;
-    }
-    
-    // ═══════════════════════════════════════════════════════════════════════════
-    // UTILITY: ARRAY BUFFER TO BASE64
-    // ═══════════════════════════════════════════════════════════════════════════
-    arrayBufferToBase64(buffer) {
-        const bytes = new Uint8Array(buffer);
-        let binary = '';
-        for (let i = 0; i < bytes.byteLength; i++) {
-            binary += String.fromCharCode(bytes[i]);
-        }
-        return btoa(binary);
-    }
-    
-    // ═══════════════════════════════════════════════════════════════════════════
-    // STOP LISTENING
-    // ═══════════════════════════════════════════════════════════════════════════
-    stopListening() {
-        if (!this.isListening) return;
-        
-        console.log('🛑 Stopping real-time listening');
-        
-        // Send end of stream
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify({ type: 'end_of_stream' }));
+        // Send to backend for transcription
+        if (this.audioChunks.length > 0) {
+            await this.transcribeAudio();
         }
         
         this.cleanup();
-        this.isListening = false;
         
         if (this.onListeningStop) {
             this.onListeningStop(this.currentTranscript, this.words);
@@ -371,12 +212,69 @@ export class RealtimeVoice {
     }
     
     // ═══════════════════════════════════════════════════════════════════════════
+    // TRANSCRIBE AUDIO VIA BACKEND
+    // ═══════════════════════════════════════════════════════════════════════════
+    async transcribeAudio() {
+        try {
+            const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+            
+            console.log('📤 Sending audio to backend for transcription...');
+            
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
+            formData.append('language', this.language);
+            
+            const response = await fetch(`${this.backendUrl}/api/transcribe`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Transcription failed: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            this.currentTranscript = result.text || result.transcription || '';
+            
+            // Parse words from transcript
+            if (this.currentTranscript) {
+                this.words = this.currentTranscript.split(/\s+/).filter(w => w).map((word, idx) => ({
+                    text: word,
+                    start: idx * 0.3,
+                    end: (idx + 1) * 0.3,
+                    confidence: result.confidence || 0.9,
+                    isFinal: true
+                }));
+                
+                // Notify about words
+                this.words.forEach((word, idx) => {
+                    if (this.onWordReceived) {
+                        this.onWordReceived(word, idx);
+                    }
+                });
+            }
+            
+            // Notify about transcript update
+            if (this.onTranscriptUpdate) {
+                this.onTranscriptUpdate(this.currentTranscript, this.words, true);
+            }
+            
+            console.log('✅ Transcription complete:', this.currentTranscript);
+            
+        } catch (error) {
+            console.error('Transcription error:', error);
+            if (this.onError) this.onError(error);
+        }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
     // CLEANUP RESOURCES
     // ═══════════════════════════════════════════════════════════════════════════
     cleanup() {
-        if (this.workletNode) {
-            this.workletNode.disconnect();
-            this.workletNode = null;
+        if (this.animationFrame) {
+            cancelAnimationFrame(this.animationFrame);
+            this.animationFrame = null;
         }
         
         if (this.sourceNode) {
@@ -384,7 +282,12 @@ export class RealtimeVoice {
             this.sourceNode = null;
         }
         
-        if (this.audioContext) {
+        if (this.analyser) {
+            this.analyser.disconnect();
+            this.analyser = null;
+        }
+        
+        if (this.audioContext && this.audioContext.state !== 'closed') {
             this.audioContext.close();
             this.audioContext = null;
         }
@@ -394,10 +297,7 @@ export class RealtimeVoice {
             this.stream = null;
         }
         
-        if (this.ws) {
-            this.ws.close();
-            this.ws = null;
-        }
+        this.mediaRecorder = null;
     }
     
     // ═══════════════════════════════════════════════════════════════════════════
@@ -415,6 +315,14 @@ export class RealtimeVoice {
         if (this.words.length === 0) return 0;
         const sum = this.words.reduce((acc, w) => acc + (w.confidence || 0), 0);
         return sum / this.words.length;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // GET RECORDING BLOB
+    // ═══════════════════════════════════════════════════════════════════════════
+    getRecording() {
+        if (this.audioChunks.length === 0) return null;
+        return new Blob(this.audioChunks, { type: 'audio/webm' });
     }
 }
 
