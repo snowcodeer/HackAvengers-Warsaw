@@ -1,51 +1,73 @@
 // Country Selection - Stardew Valley Style Neighborhood
 
-// ==================== COUNTRY DATA (5 COUNTRIES) ====================
+// ==================== COUNTRY DATA (8 COUNTRIES) ====================
 const COUNTRIES = [
+    // Top row (3 houses)
     {
         id: 'france',
         name: 'FRANCE',
         flag: '🇫🇷',
         lang: 'french',
-        // Neighborhood position (top-left)
         posX: 150,
-        posY: 120
+        posY: 130
     },
     {
         id: 'germany',
         name: 'GERMANY',
         flag: '🇩🇪',
         lang: 'german',
-        // Neighborhood position (top-right)
-        posX: 450,
-        posY: 120
+        posX: 400,
+        posY: 130
     },
+    {
+        id: 'uk',
+        name: 'UK',
+        flag: '🇬🇧',
+        lang: 'english',
+        posX: 650,
+        posY: 130
+    },
+    // Middle row (2 houses)
     {
         id: 'spain',
         name: 'SPAIN',
         flag: '🇪🇸',
         lang: 'spanish',
-        // Neighborhood position (center)
-        posX: 300,
-        posY: 280
+        posX: 275,
+        posY: 310
     },
+    {
+        id: 'italy',
+        name: 'ITALY',
+        flag: '🇮🇹',
+        lang: 'italian',
+        posX: 525,
+        posY: 310
+    },
+    // Bottom row (3 houses)
     {
         id: 'japan',
         name: 'JAPAN',
         flag: '🇯🇵',
         lang: 'japanese',
-        // Neighborhood position (bottom-left)
         posX: 150,
-        posY: 440
+        posY: 490
+    },
+    {
+        id: 'china',
+        name: 'CHINA',
+        flag: '🇨🇳',
+        lang: 'mandarin',
+        posX: 400,
+        posY: 490
     },
     {
         id: 'poland',
         name: 'POLAND',
         flag: '🇵🇱',
         lang: 'polish',
-        // Neighborhood position (bottom-right)
-        posX: 450,
-        posY: 440
+        posX: 650,
+        posY: 490
     }
 ];
 
@@ -61,13 +83,13 @@ canvas.height = window.innerHeight;
 let cameraX = 0;
 let cameraY = 0;
 const TILE_SIZE = 32;
-const WORLD_WIDTH = 600;
-const WORLD_HEIGHT = 600;
+const WORLD_WIDTH = 800;
+const WORLD_HEIGHT = 700;
 
 // ==================== GAME STATE ====================
 let player = {
-    worldX: 300,  // Start in center of neighborhood
-    worldY: 350,
+    worldX: 400,  // Start in center of neighborhood
+    worldY: 400,
     width: 24,
     height: 32,
     speed: 3,
@@ -116,15 +138,15 @@ function createWorld() {
     // Add trees around the neighborhood perimeter
     const treePositions = [
         // Top edge
-        { x: 50, y: 50 }, { x: 130, y: 30 }, { x: 250, y: 40 }, { x: 350, y: 30 }, { x: 470, y: 40 }, { x: 550, y: 50 },
+        { x: 50, y: 50 }, { x: 150, y: 30 }, { x: 280, y: 40 }, { x: 400, y: 30 }, { x: 520, y: 40 }, { x: 650, y: 30 }, { x: 750, y: 50 },
         // Bottom edge
-        { x: 50, y: 550 }, { x: 150, y: 560 }, { x: 300, y: 550 }, { x: 450, y: 560 }, { x: 550, y: 550 },
+        { x: 50, y: 650 }, { x: 180, y: 660 }, { x: 320, y: 650 }, { x: 480, y: 660 }, { x: 620, y: 650 }, { x: 750, y: 650 },
         // Left edge
-        { x: 30, y: 150 }, { x: 40, y: 300 }, { x: 30, y: 450 },
+        { x: 30, y: 150 }, { x: 40, y: 310 }, { x: 30, y: 490 },
         // Right edge
-        { x: 570, y: 150 }, { x: 560, y: 300 }, { x: 570, y: 450 },
-        // Scattered around
-        { x: 80, y: 280 }, { x: 520, y: 280 }
+        { x: 770, y: 150 }, { x: 760, y: 310 }, { x: 770, y: 490 },
+        // Scattered between houses
+        { x: 275, y: 210 }, { x: 525, y: 210 }, { x: 80, y: 310 }, { x: 720, y: 310 }, { x: 275, y: 410 }, { x: 525, y: 410 }
     ];
     
     treePositions.forEach(pos => {
@@ -391,8 +413,8 @@ function drawTerrain() {
 
 function drawPaths() {
     // Central plaza/intersection
-    const centerX = 300 - cameraX;
-    const centerY = 300 - cameraY;
+    const centerX = 400 - cameraX;
+    const centerY = 310 - cameraY;
     
     // Plaza (circular dirt area in center)
     ctx.fillStyle = '#C4A55A';
@@ -498,6 +520,15 @@ function drawHouse(house, x, y) {
             break;
         case 'poland':
             drawPolishHouse(x, y, w, h, doorX, doorY, door);
+            break;
+        case 'uk':
+            drawUKHouse(x, y, w, h, doorX, doorY, door);
+            break;
+        case 'italy':
+            drawItalianHouse(x, y, w, h, doorX, doorY, door);
+            break;
+        case 'china':
+            drawChineseHouse(x, y, w, h, doorX, doorY, door);
             break;
         default:
             drawDefaultHouse(x, y, w, h, doorX, doorY, door);
@@ -948,6 +979,252 @@ function drawPolishWindow(x, y, w, h) {
     // Lace curtain effect
     ctx.fillStyle = 'rgba(255,255,255,0.5)';
     ctx.fillRect(x + 1, y + 1, w - 2, 6);
+}
+
+// ==================== UK HOUSE ====================
+// Classic British cottage - red brick, white trim, chimney
+function drawUKHouse(x, y, w, h, doorX, doorY, door) {
+    // Red brick walls
+    ctx.fillStyle = '#B85C5C';
+    ctx.fillRect(x - w/2, y - h/2, w, h);
+    
+    // Brick pattern
+    ctx.fillStyle = '#A04040';
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 6; col++) {
+            const offset = row % 2 === 0 ? 0 : 7;
+            ctx.fillRect(x - w/2 + col * 15 + offset + 1, y - h/2 + row * 12 + 1, 13, 10);
+        }
+    }
+    
+    // Gray slate roof
+    ctx.fillStyle = '#5A5A6A';
+    ctx.beginPath();
+    ctx.moveTo(x - w/2 - 8, y - h/2 + 8);
+    ctx.lineTo(x, y - h/2 - 30);
+    ctx.lineTo(x + w/2 + 8, y - h/2 + 8);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Chimney
+    ctx.fillStyle = '#8B4040';
+    ctx.fillRect(x + w/4, y - h/2 - 35, 15, 25);
+    ctx.fillStyle = '#5A5A6A';
+    ctx.fillRect(x + w/4 - 2, y - h/2 - 38, 19, 5);
+    
+    // White door frame
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(doorX - door.width/2 - 4, doorY - door.height/2 - 4, door.width + 8, door.height + 4);
+    
+    // Door (British racing green or red)
+    ctx.fillStyle = '#1A4D2E';
+    ctx.fillRect(doorX - door.width/2, doorY - door.height/2, door.width, door.height);
+    
+    // Door knocker
+    ctx.fillStyle = '#C9A227';
+    ctx.beginPath();
+    ctx.arc(doorX, doorY - 5, 4, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Windows with white frames
+    const windowY = y - h/4;
+    
+    // Left window
+    drawBritishWindow(x - w/3, windowY, 18, 22);
+    
+    // Right window
+    drawBritishWindow(x + w/3, windowY, 18, 22);
+}
+
+function drawBritishWindow(x, y, w, h) {
+    // White frame
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(x - w/2 - 3, y - h/2 - 3, w + 6, h + 6);
+    
+    // Glass
+    ctx.fillStyle = '#6BA3D6';
+    ctx.fillRect(x - w/2, y - h/2, w, h);
+    
+    // Window panes (4 panes)
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(x - 1, y - h/2, 2, h);
+    ctx.fillRect(x - w/2, y - 1, w, 2);
+}
+
+// ==================== ITALIAN HOUSE ====================
+// Tuscan villa - ochre/terracotta, green shutters, terracotta roof
+function drawItalianHouse(x, y, w, h, doorX, doorY, door) {
+    // Ochre/yellow stucco walls
+    ctx.fillStyle = '#E8C47C';
+    ctx.fillRect(x - w/2, y - h/2, w, h);
+    
+    // Wall texture
+    ctx.fillStyle = '#D4A860';
+    for (let i = 0; i < 5; i++) {
+        ctx.fillRect(x - w/2 + i * 18 + 2, y - h/2 + 10, 2, h - 20);
+    }
+    
+    // Terracotta tile roof
+    ctx.fillStyle = '#C8563D';
+    ctx.beginPath();
+    ctx.moveTo(x - w/2 - 10, y - h/2 + 8);
+    ctx.lineTo(x, y - h/2 - 28);
+    ctx.lineTo(x + w/2 + 10, y - h/2 + 8);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Roof tiles detail
+    ctx.fillStyle = '#B84530';
+    for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        ctx.arc(x - w/3 + i * 15, y - h/2 - 5 + Math.abs(i - 2) * 5, 6, Math.PI, 0);
+        ctx.fill();
+    }
+    
+    // Stone archway door frame
+    ctx.fillStyle = '#A08060';
+    ctx.beginPath();
+    ctx.moveTo(doorX - door.width/2 - 6, doorY + door.height/2);
+    ctx.lineTo(doorX - door.width/2 - 6, doorY - door.height/4);
+    ctx.quadraticCurveTo(doorX - door.width/2 - 6, doorY - door.height/2 - 8, doorX, doorY - door.height/2 - 8);
+    ctx.quadraticCurveTo(doorX + door.width/2 + 6, doorY - door.height/2 - 8, doorX + door.width/2 + 6, doorY - door.height/4);
+    ctx.lineTo(doorX + door.width/2 + 6, doorY + door.height/2);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Wooden door
+    ctx.fillStyle = '#6B4423';
+    ctx.fillRect(doorX - door.width/2, doorY - door.height/2, door.width, door.height);
+    
+    // Door details
+    ctx.fillStyle = '#4A2F15';
+    ctx.fillRect(doorX - door.width/2 + 3, doorY - door.height/2 + 3, door.width - 6, 3);
+    ctx.fillRect(doorX - door.width/2 + 3, doorY, door.width - 6, 3);
+    
+    // Windows with green shutters
+    const windowY = y - h/4;
+    drawItalianWindow(x - w/3, windowY, 16, 24);
+    drawItalianWindow(x + w/3, windowY, 16, 24);
+}
+
+function drawItalianWindow(x, y, w, h) {
+    // Green shutters
+    ctx.fillStyle = '#2E5E3E';
+    ctx.fillRect(x - w/2 - 8, y - h/2, 7, h);
+    ctx.fillRect(x + w/2 + 1, y - h/2, 7, h);
+    
+    // Shutter slats
+    ctx.fillStyle = '#1A3A24';
+    for (let i = 0; i < 4; i++) {
+        ctx.fillRect(x - w/2 - 7, y - h/2 + i * 6 + 2, 5, 2);
+        ctx.fillRect(x + w/2 + 2, y - h/2 + i * 6 + 2, 5, 2);
+    }
+    
+    // Window
+    ctx.fillStyle = '#6BA3D6';
+    ctx.fillRect(x - w/2, y - h/2, w, h);
+    
+    // Window cross
+    ctx.fillStyle = '#F5E6D3';
+    ctx.fillRect(x - 1, y - h/2, 2, h);
+    ctx.fillRect(x - w/2, y - 1, w, 2);
+}
+
+// ==================== CHINESE HOUSE ====================
+// Traditional Chinese courtyard house - red walls, curved roof, gold details
+function drawChineseHouse(x, y, w, h, doorX, doorY, door) {
+    // Red/crimson walls
+    ctx.fillStyle = '#B83232';
+    ctx.fillRect(x - w/2, y - h/2, w, h);
+    
+    // Wall lattice pattern
+    ctx.fillStyle = '#8B2020';
+    for (let i = 0; i < 4; i++) {
+        ctx.fillRect(x - w/2 + 5 + i * 22, y - h/2 + 5, 2, h - 10);
+    }
+    for (let i = 0; i < 3; i++) {
+        ctx.fillRect(x - w/2 + 5, y - h/2 + 20 + i * 25, w - 10, 2);
+    }
+    
+    // Curved green/teal roof
+    ctx.fillStyle = '#2A6B5E';
+    ctx.beginPath();
+    ctx.moveTo(x - w/2 - 12, y - h/2 + 10);
+    ctx.quadraticCurveTo(x - w/4, y - h/2 - 35, x, y - h/2 - 25);
+    ctx.quadraticCurveTo(x + w/4, y - h/2 - 35, x + w/2 + 12, y - h/2 + 10);
+    ctx.lineTo(x - w/2 - 12, y - h/2 + 10);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Roof edge detail (gold)
+    ctx.strokeStyle = '#C9A227';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x - w/2 - 12, y - h/2 + 10);
+    ctx.quadraticCurveTo(x - w/4, y - h/2 - 35, x, y - h/2 - 25);
+    ctx.quadraticCurveTo(x + w/4, y - h/2 - 35, x + w/2 + 12, y - h/2 + 10);
+    ctx.stroke();
+    
+    // Roof tiles
+    ctx.fillStyle = '#1A4A40';
+    for (let i = 0; i < 5; i++) {
+        const tileX = x - w/3 + i * 15;
+        const tileY = y - h/2 - 10 + Math.abs(i - 2) * 4;
+        ctx.beginPath();
+        ctx.arc(tileX, tileY, 5, Math.PI, 0);
+        ctx.fill();
+    }
+    
+    // Gold door frame
+    ctx.fillStyle = '#C9A227';
+    ctx.fillRect(doorX - door.width/2 - 5, doorY - door.height/2 - 5, door.width + 10, door.height + 5);
+    
+    // Red door
+    ctx.fillStyle = '#D43C3C';
+    ctx.fillRect(doorX - door.width/2, doorY - door.height/2, door.width, door.height);
+    
+    // Door studs (gold)
+    ctx.fillStyle = '#C9A227';
+    for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 2; col++) {
+            ctx.beginPath();
+            ctx.arc(doorX - 5 + col * 10, doorY - door.height/4 + row * 12, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    
+    // Traditional windows (circular)
+    const windowY = y - h/4;
+    drawChineseWindow(x - w/3, windowY, 20);
+    drawChineseWindow(x + w/3, windowY, 20);
+}
+
+function drawChineseWindow(x, y, size) {
+    // Circular window frame (gold)
+    ctx.fillStyle = '#C9A227';
+    ctx.beginPath();
+    ctx.arc(x, y, size/2 + 3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Window opening
+    ctx.fillStyle = '#1A1A2E';
+    ctx.beginPath();
+    ctx.arc(x, y, size/2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Lattice pattern inside
+    ctx.strokeStyle = '#C9A227';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x - size/3, y - size/3);
+    ctx.lineTo(x + size/3, y + size/3);
+    ctx.moveTo(x + size/3, y - size/3);
+    ctx.lineTo(x - size/3, y + size/3);
+    ctx.moveTo(x, y - size/2 + 2);
+    ctx.lineTo(x, y + size/2 - 2);
+    ctx.moveTo(x - size/2 + 2, y);
+    ctx.lineTo(x + size/2 - 2, y);
+    ctx.stroke();
 }
 
 // ==================== DEFAULT HOUSE ====================
