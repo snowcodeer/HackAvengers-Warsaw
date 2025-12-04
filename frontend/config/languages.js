@@ -212,20 +212,20 @@ export const LANGUAGE_CONFIG = {
       level1: {
         english: 85, target: 15,
         grammar: 'basic greetings',
-        instruction: 'Speak mostly in English. Introduce key French words like "bonjour", "merci", "croissant". Translate immediately after saying the French word.',
-        example: 'Ah, bonjour! That means "hello"! Welcome to my little bakery.'
+        instruction: 'Speak mostly in English. Introduce key French words using the format: "word (translation)". Example: "bonjour (hello)", "merci (thank you)", "croissant (croissant)".',
+        example: 'Ah, bonjour (hello)! Welcome to my little bakery. Would you like un croissant (a croissant)?'
       },
       level2: {
         english: 70, target: 30,
         grammar: 'ordering food',
-        instruction: 'Mix more French into your English. Use French for common bakery items and greetings. Provide context clues.',
-        example: 'Would you like un croissant? It\'s fresh from the oven - tout chaud!'
+        instruction: 'Mix more French into your English. Use the format "word (translation)" for French words. Example: "croissant (croissant)", "baguette (baguette)", "café (coffee)".',
+        example: 'Would you like un croissant (a croissant)? It\'s fresh from the oven - tout chaud (very hot)!'
       },
       level3: {
         english: 50, target: 50,
         grammar: 'polite conversation',
-        instruction: 'Speak half in French, half in English. Use French for complete simple phrases. Repeat in English only if they seem confused.',
-        example: 'C\'est trois euros. That will be three euros. Voulez-vous autre chose?'
+        instruction: 'Speak half in French, half in English. Use the format "word (translation)" when introducing new vocabulary. Example: "trois euros (three euros)", "autre chose (something else)".',
+        example: 'C\'est trois euros (three euros). That will be three euros. Voulez-vous autre chose (something else)?'
       },
       level4: {
         english: 25, target: 75,
@@ -328,10 +328,20 @@ export const LANGUAGE_CONFIG = {
         ],
 
         architectural: {
-          floor: { type: 'tatami', border: 'dark_cloth' },
-          ceiling: { type: 'exposed_wood', style: 'sukiya' },
-          walls: { type: 'clay_plaster', color: 'warm_grey' },
-          entrance: { type: 'nijiriguchi', size: 'small_humble' }
+          floor: { type: 'tatami', border: 'dark_cloth', condition: 'perfectly_aligned' },
+          ceiling: { type: 'exposed_wood', style: 'sukiya', beams: 'dark_cypress' },
+          walls: { type: 'clay_plaster', color: 'warm_grey', texture: 'hand_applied' },
+          windows: { type: 'shoji_screens', panes: 'translucent_paper', frames: 'bamboo' },
+          entrance: { type: 'nijiriguchi', size: 'small_humble', purpose: 'humility_entrance' },
+          roof: { type: 'traditional_tile', style: 'kyoto', eaves: 'deep_overhang' }
+        },
+
+        exterior: {
+          view: 'gion_street',
+          elements: ['traditional_machiya_facades', 'stone_lanterns', 'narrow_cobblestone_path'],
+          activity: ['geisha_walking', 'tourists_with_cameras', 'local_shopkeepers'],
+          skyline: 'mountains_in_distance',
+          season: 'cherry_blossom_peak'
         }
       },
 
@@ -414,20 +424,20 @@ export const LANGUAGE_CONFIG = {
       level1: {
         english: 90, target: 10,
         grammar: 'basic greetings and hiragana introduction',
-        instruction: 'Speak almost entirely in English. Introduce basic Japanese words like "konnichiwa", "arigatou", "ocha". Always provide romaji and translation.',
-        example: 'Welcome! Or as we say, いらっしゃいませ (irasshaimase)! Please, sit down.'
+        instruction: 'Speak almost entirely in English. Introduce basic Japanese words using the format: "word (translation)". Example: "こんにちは (konnichiwa - hello)", "ありがとう (arigatou - thank you)", "お茶 (ocha - tea)".',
+        example: 'Welcome! Or as we say, いらっしゃいませ (irasshaimase - welcome)! Please, sit down.'
       },
       level2: {
         english: 75, target: 25,
         grammar: 'polite forms and basic particles',
-        instruction: 'Use Japanese for greetings and common tea ceremony terms. Explain politeness levels.',
-        example: 'Now, let\'s enjoy some お茶 (ocha) - tea. どうぞ (douzo) - please, take a cup.'
+        instruction: 'Use Japanese for greetings and common tea ceremony terms. Use the format "word (translation)". Example: "お茶 (ocha - tea)", "どうぞ (douzo - please)".',
+        example: 'Now, let\'s enjoy some お茶 (ocha - tea). どうぞ (douzo - please), take a cup.'
       },
       level3: {
         english: 55, target: 45,
         grammar: 'sentence structure and honorifics',
-        instruction: 'Speak more Japanese, using complete simple sentences. Explain keigo (honorific speech) naturally.',
-        example: 'このお茶は美味しいですね。This tea is delicious, isn\'t it? いかがですか？How do you like it?'
+        instruction: 'Speak more Japanese, using complete simple sentences. Use the format "word (translation)" for new vocabulary. Example: "美味しい (oishii - delicious)", "いかが (ikaga - how)".',
+        example: 'このお茶 (kono ocha - this tea) は美味しい (oishii - delicious) ですね。いかがですか (ikaga desu ka - how is it)?'
       },
       level4: {
         english: 30, target: 70,
@@ -447,11 +457,38 @@ export const LANGUAGE_CONFIG = {
       unit1: {
         title: 'はじめまして - First Meeting',
         objectives: ['greetings', 'self_introduction', 'basic_politeness'],
+        scenarios: [
+          { name: 'Entering Tea House', phrases: ['お邪魔します', '失礼します', 'ありがとうございます'] },
+          { name: 'Receiving Tea', phrases: ['いただきます', 'おいしいです', 'ごちそうさまでした'] },
+          { name: 'Thanking Host', phrases: ['ありがとうございました', 'また来ます', 'さようなら'] }
+        ],
         vocabulary: [
           { word: 'こんにちは', translation: 'hello', pronunciation: 'kon-ni-chi-wa' },
           { word: 'ありがとう', translation: 'thank you', pronunciation: 'a-ri-ga-tou' },
           { word: 'お茶', translation: 'tea', pronunciation: 'o-cha' },
-          { word: 'どうぞ', translation: 'please (offering)', pronunciation: 'dou-zo' }
+          { word: 'どうぞ', translation: 'please (offering)', pronunciation: 'dou-zo' },
+          { word: 'おいしい', translation: 'delicious', pronunciation: 'o-i-shi-i' },
+          { word: 'いただきます', translation: 'I humbly receive', pronunciation: 'i-ta-da-ki-mas' }
+        ],
+        culturalNotes: [
+          'Remove shoes before entering traditional spaces',
+          'Bow slightly when greeting and thanking',
+          'Say "itadakimasu" before eating or drinking',
+          'Tea ceremony embodies wabi-sabi - finding beauty in imperfection'
+        ]
+      },
+      unit2: {
+        title: '茶道の心 - The Spirit of Tea',
+        objectives: ['tea_ceremony_vocabulary', 'honorifics', 'cultural_expressions'],
+        scenarios: [
+          { name: 'Observing Ceremony', phrases: ['美しいですね', '素晴らしい', '勉強になります'] }
+        ]
+      },
+      unit3: {
+        title: '季節の言葉 - Seasonal Words',
+        objectives: ['seasonal_vocabulary', 'nature_terms', 'poetic_expressions'],
+        scenarios: [
+          { name: 'Discussing Seasons', phrases: ['桜が咲いています', '秋の紅葉', '雪が降っています'] }
         ]
       }
     },
@@ -529,10 +566,27 @@ export const LANGUAGE_CONFIG = {
           type: 'small_tablao',
           position: { x: 4, y: 0.2, z: -5 },
           elements: [
-            { name: 'wooden_platform', wood: 'aged_oak' },
-            { name: 'chair_for_guitarist', style: 'traditional' },
-            { name: 'microphone', style: 'vintage' }
+            { name: 'wooden_platform', wood: 'aged_oak', condition: 'well_worn' },
+            { name: 'chair_for_guitarist', style: 'traditional', material: 'dark_wood' },
+            { name: 'microphone', style: 'vintage', brand: 'classic_spanish' },
+            { name: 'dance_space', marked: true, size: 'intimate' }
           ]
+        },
+
+        architectural: {
+          floor: { type: 'terracotta_tiles', pattern: 'traditional_spanish', condition: 'worn_smooth' },
+          ceiling: { type: 'exposed_beams', wood: 'dark_oak', height: 3.8 },
+          walls: { type: 'plaster', color: 'warm_ochre', texture: 'hand_finished' },
+          windows: { type: 'arched', panes: 'small_glass', shutters: 'wooden' },
+          door: { type: 'heavy_wood', style: 'traditional_spanish', handle: 'wrought_iron' }
+        },
+
+        exterior: {
+          view: 'la_latina_street',
+          elements: ['cobblestone_plaza', 'colorful_facades', 'wrought_iron_balconies'],
+          activity: ['locals_socializing', 'tourists_exploring', 'street_musicians'],
+          skyline: 'madrid_rooftops',
+          atmosphere: 'vibrant_evening'
         }
       },
 
@@ -565,6 +619,14 @@ export const LANGUAGE_CONFIG = {
       role: 'Chef & Flamenco Enthusiast',
       age: 38,
       emoji: '💃',
+      visuals: {
+        skinColor: '#d2b48c',
+        hairColor: '#000000',
+        hairStyle: 'bun_ornate',
+        outfitColor: '#e74c3c',
+        accessoryColor: '#ffd700',
+        style: 'flamenco'
+      },
 
       appearance: {
         height: 'tall',
@@ -608,20 +670,20 @@ export const LANGUAGE_CONFIG = {
       level1: {
         english: 85, target: 15,
         grammar: 'basic greetings',
-        instruction: 'Speak mostly in English, sprinkling in Spanish words like "hola", "gracias", "tapas". Always translate.',
-        example: '¡Hola! That means hello! Welcome to my tapas bar! Would you like some jamón - that\'s ham!'
+        instruction: 'Speak mostly in English, sprinkling in Spanish words using the format: "word (translation)". Example: "hola (hello)", "gracias (thank you)", "tapas (small plates)".',
+        example: '¡Hola (hello)! Welcome to my tapas bar! Would you like some jamón (ham)?'
       },
       level2: {
         english: 65, target: 35,
         grammar: 'ordering food',
-        instruction: 'Use Spanish for food items and common phrases. Provide translations naturally.',
-        example: '¡Muy bien! Would you like patatas bravas? They\'re spicy potatoes - muy deliciosas!'
+        instruction: 'Use Spanish for food items and common phrases. Use the format "word (translation)". Example: "patatas bravas (spicy potatoes)", "deliciosas (delicious)".',
+        example: '¡Muy bien (very good)! Would you like patatas bravas (spicy potatoes)? They\'re muy deliciosas (very delicious)!'
       },
       level3: {
         english: 45, target: 55,
         grammar: 'ser vs estar',
-        instruction: 'Speak half in Spanish. Use complete sentences. Explain grammar naturally.',
-        example: '¿Cómo está la comida? How is the food? ¡Las tapas están deliciosas hoy!'
+        instruction: 'Speak half in Spanish. Use the format "word (translation)" for new vocabulary. Example: "comida (food)", "tapas (small plates)", "deliciosas (delicious)".',
+        example: '¿Cómo está la comida (the food)? ¡Las tapas (the small plates) están deliciosas (delicious) hoy!'
       },
       level4: {
         english: 20, target: 80,
@@ -634,6 +696,45 @@ export const LANGUAGE_CONFIG = {
         grammar: 'natural conversation',
         instruction: 'Speak naturally in Spanish with regional expressions.',
         example: '¡Qué maravilla! Tu español es increíble. ¿Quieres probar el vino? Es de la Rioja.'
+      }
+    },
+
+    lessonPlan: {
+      unit1: {
+        title: '¡Bienvenido! - Welcome to Tapas',
+        objectives: ['greetings', 'ordering_tapas', 'basic_politeness'],
+        scenarios: [
+          { name: 'Entering Bar', phrases: ['¡Hola!', 'Buenas tardes', 'Una mesa, por favor'] },
+          { name: 'Ordering Tapas', phrases: ['¿Qué recomiendas?', 'Quiero...', 'Para compartir'] },
+          { name: 'Paying', phrases: ['La cuenta, por favor', '¿Cuánto es?', 'Gracias'] }
+        ],
+        vocabulary: [
+          { word: 'tapas', translation: 'small plates', pronunciation: 'TAH-pas' },
+          { word: 'jamón', translation: 'ham', pronunciation: 'ha-MON' },
+          { word: 'queso', translation: 'cheese', pronunciation: 'KEH-so' },
+          { word: 'cerveza', translation: 'beer', pronunciation: 'ser-VEH-sah' },
+          { word: 'delicioso', translation: 'delicious', pronunciation: 'deh-lee-SEE-oh-so' }
+        ],
+        culturalNotes: [
+          'Tapas are meant to be shared',
+          'Spaniards eat dinner very late (9-10 PM)',
+          'Always greet when entering a bar',
+          'Tapas culture is about socializing, not just eating'
+        ]
+      },
+      unit2: {
+        title: 'La Comida - Food & Flavors',
+        objectives: ['food_vocabulary', 'describing_taste', 'ordering_drinks'],
+        scenarios: [
+          { name: 'Describing Food', phrases: ['Está muy rico', 'Me encanta', 'Tiene mucho sabor'] }
+        ]
+      },
+      unit3: {
+        title: 'Flamenco y Cultura - Culture & Music',
+        objectives: ['cultural_vocabulary', 'expressing_emotions', 'music_terms'],
+        scenarios: [
+          { name: 'Discussing Flamenco', phrases: ['¡Qué pasión!', 'Me emociona', 'Es arte puro'] }
+        ]
       }
     },
 
@@ -698,11 +799,30 @@ export const LANGUAGE_CONFIG = {
         },
 
         decorations: [
-          { type: 'exposed_pipes', material: 'rusty_steel' },
-          { type: 'graffiti_art', style: 'abstract', artists: ['local'] },
-          { type: 'fog_machines', count: 4, output: 'thick' },
-          { type: 'strobe_lights', pattern: 'synchronized' }
-        ]
+          { type: 'exposed_pipes', material: 'rusty_steel', arrangement: 'industrial' },
+          { type: 'graffiti_art', style: 'abstract', artists: ['local'], themes: ['freedom', 'unity'] },
+          { type: 'fog_machines', count: 4, output: 'thick', position: 'strategic' },
+          { type: 'strobe_lights', pattern: 'synchronized', intensity: 'pulsing' },
+          { type: 'minimalist_art', style: 'berlin_underground', frames: 'none' },
+          { type: 'vintage_techno_posters', era: '90s_berlin', condition: 'faded' }
+        ],
+
+        architectural: {
+          floor: { type: 'concrete', finish: 'raw_polished', condition: 'worn' },
+          ceiling: { type: 'exposed_concrete', height: 4.5, pipes: 'visible' },
+          walls: { type: 'raw_concrete', texture: 'bunker_original', thickness: 'massive' },
+          windows: { type: 'minimal', style: 'industrial', light: 'filtered' },
+          entrance: { type: 'heavy_steel_door', style: 'bunker_original', sound: 'echoing' },
+          columns: { type: 'reinforced_concrete', spacing: 'irregular', purpose: 'structural' }
+        },
+
+        exterior: {
+          view: 'kreuzberg_street',
+          elements: ['graffiti_walls', 'industrial_buildings', 'night_life'],
+          activity: ['club_goers', 'artists', 'night_wanderers'],
+          skyline: 'berlin_skyline',
+          atmosphere: 'underground_energy'
+        }
       },
 
       sounds: {
@@ -733,6 +853,14 @@ export const LANGUAGE_CONFIG = {
       role: 'DJ & Club Philosopher',
       age: 42,
       emoji: '🎧',
+      visuals: {
+        skinColor: '#f5e6d3',
+        hairColor: '#2c3e50',
+        hairStyle: 'bald',
+        outfitColor: '#000000',
+        accessoryColor: '#7f8c8d',
+        style: 'casual'
+      },
 
       appearance: {
         height: 'tall',
@@ -774,20 +902,20 @@ export const LANGUAGE_CONFIG = {
       level1: {
         english: 80, target: 20,
         grammar: 'basic greetings',
-        instruction: 'Speak mostly in English with key German words. "Guten Abend", "Bier", "Musik".',
-        example: 'Guten Abend - good evening. Welcome to my... space. Would you like ein Bier?'
+        instruction: 'Speak mostly in English with key German words using the format: "word (translation)". Example: "Guten Abend (good evening)", "Bier (beer)", "Musik (music)".',
+        example: 'Guten Abend (good evening). Welcome to my... space. Would you like ein Bier (a beer)?'
       },
       level2: {
         english: 60, target: 40,
         grammar: 'ordering drinks',
-        instruction: 'Mix German naturally. Use German for club and drink vocabulary.',
-        example: 'Die Musik ist gut, ja? The beat... der Beat... it speaks to something deeper.'
+        instruction: 'Mix German naturally. Use the format "word (translation)" for German words. Example: "Musik (music)", "Beat (beat)", "gut (good)".',
+        example: 'Die Musik (the music) ist gut (is good), ja? Der Beat (the beat) speaks to something deeper.'
       },
       level3: {
         english: 40, target: 60,
         grammar: 'gendered articles',
-        instruction: 'Speak more German. Explain der/die/das naturally through context.',
-        example: 'Das ist der Sound von Berlin. Die Nacht ist jung. Was fühlst du?'
+        instruction: 'Speak more German. Use the format "word (translation)" for new vocabulary. Example: "Sound (sound)", "Nacht (night)", "fühlst (feel)".',
+        example: 'Das ist der Sound (the sound) von Berlin. Die Nacht (the night) ist jung (is young). Was fühlst du (what do you feel)?'
       },
       level4: {
         english: 20, target: 80,
@@ -802,6 +930,46 @@ export const LANGUAGE_CONFIG = {
         example: 'Die Musik ist eine Sprache ohne Worte. Hier sind wir alle gleich.'
       }
     },
+
+    lessonPlan: {
+      unit1: {
+        title: 'Willkommen - Welcome to Berlin',
+        objectives: ['greetings', 'ordering_drinks', 'basic_conversation'],
+        scenarios: [
+          { name: 'Entering Club', phrases: ['Guten Abend', 'Ein Bier, bitte', 'Wie viel kostet das?'] },
+          { name: 'Discussing Music', phrases: ['Die Musik ist gut', 'Was für Musik?', 'Ich mag Techno'] },
+          { name: 'Philosophical Talk', phrases: ['Was denkst du?', 'Das ist interessant', 'Verstehst du?'] }
+        ],
+        vocabulary: [
+          { word: 'Musik', translation: 'music', pronunciation: 'moo-ZEEK' },
+          { word: 'Bier', translation: 'beer', pronunciation: 'BEER' },
+          { word: 'Tanz', translation: 'dance', pronunciation: 'tahnts' },
+          { word: 'Freiheit', translation: 'freedom', pronunciation: 'FRY-hite' },
+          { word: 'Gemeinschaft', translation: 'community', pronunciation: 'geh-MINE-shahft' }
+        ],
+        culturalNotes: [
+          'Berlin techno culture values freedom and unity',
+          'Clubs often stay open until morning',
+          'The dance floor is a space of equality',
+          'Berlin has a rich underground art scene'
+        ]
+      },
+      unit2: {
+        title: 'Die Nacht - The Night',
+        objectives: ['night_vocabulary', 'expressing_feelings', 'philosophical_discussion'],
+        scenarios: [
+          { name: 'Deep Conversation', phrases: ['Was bedeutet das?', 'Ich fühle...', 'Das ist tief'] }
+        ]
+      },
+      unit3: {
+        title: 'Berlin Kultur - Berlin Culture',
+        objectives: ['cultural_vocabulary', 'history_terms', 'artistic_expressions'],
+        scenarios: [
+          { name: 'Discussing Berlin', phrases: ['Berlin ist...', 'Die Geschichte', 'Die Kunst'] }
+        ]
+      }
+    },
+
 
     falseFriends: [
       { word: 'Gift', looksLike: 'gift', actualMeaning: 'poison', warning: 'Use "Geschenk" for a present' },
@@ -868,11 +1036,31 @@ export const LANGUAGE_CONFIG = {
         },
 
         decorations: [
-          { type: 'vintage_movie_posters', films: ['la_dolce_vita', 'roma'], framed: true },
-          { type: 'hanging_plants', type: 'ivy_and_flowers' },
-          { type: 'roman_artifacts', displayed: true },
-          { type: 'chalkboard_menu', handwritten: true }
-        ]
+          { type: 'vintage_movie_posters', films: ['la_dolce_vita', 'roma'], framed: true, condition: 'aged' },
+          { type: 'hanging_plants', type: 'ivy_and_flowers', arrangement: 'cascading' },
+          { type: 'roman_artifacts', displayed: true, types: ['pottery_shards', 'coins', 'fragments'] },
+          { type: 'chalkboard_menu', handwritten: true, style: 'elegant_cursive' },
+          { type: 'wine_bottles_display', varieties: ['chianti', 'prosecco', 'barolo'], arrangement: 'rustic' },
+          { type: 'fresh_flowers', type: 'sunflowers', vase: 'terracotta' },
+          { type: 'vintage_photos', subjects: ['trastevere_old', 'family_café'], frames: 'ornate' }
+        ],
+
+        architectural: {
+          floor: { type: 'terracotta_tiles', pattern: 'traditional_roman', condition: 'worn_smooth' },
+          ceiling: { type: 'wooden_beams', style: 'exposed', wood: 'dark_oak' },
+          walls: { type: 'ochre_plaster', color: 'warm_yellow', texture: 'hand_applied' },
+          windows: { type: 'arched', style: 'roman', shutters: 'green_wooden' },
+          door: { type: 'heavy_wood', style: 'traditional_italian', handle: 'wrought_iron' },
+          columns: { type: 'stone', style: 'roman_inspired', decorative: true }
+        },
+
+        exterior: {
+          view: 'trastevere_plaza',
+          elements: ['cobblestone_piazza', 'ancient_fountain', 'ivy_covered_walls'],
+          activity: ['locals_drinking_coffee', 'tourists_photographing', 'vespas_parking'],
+          skyline: 'rome_domes',
+          atmosphere: 'golden_hour_magic'
+        }
       },
 
       sounds: {
@@ -905,6 +1093,14 @@ export const LANGUAGE_CONFIG = {
       role: 'Barista & Art Lover',
       age: 35,
       emoji: '☕',
+      visuals: {
+        skinColor: '#e0ac69',
+        hairColor: '#4a3728',
+        hairStyle: 'short',
+        outfitColor: '#ffffff',
+        accessoryColor: '#2c3e50',
+        style: 'casual'
+      },
 
       appearance: {
         height: 'medium',
@@ -947,20 +1143,20 @@ export const LANGUAGE_CONFIG = {
       level1: {
         english: 85, target: 15,
         grammar: 'basic greetings',
-        instruction: 'Speak mostly English with Italian words like "buongiorno", "caffè", "grazie". Always translate.',
-        example: 'Buongiorno! That means "good day"! Welcome to my little café. Un caffè?'
+        instruction: 'Speak mostly English with Italian words using the format: "word (translation)". Example: "buongiorno (good day)", "caffè (coffee)", "grazie (thank you)".',
+        example: 'Buongiorno (good day)! Welcome to my little café. Un caffè (a coffee)?'
       },
       level2: {
         english: 65, target: 35,
         grammar: 'ordering coffee',
-        instruction: 'Use Italian for coffee and food terms. Explain Italian coffee culture.',
-        example: 'Would you like un espresso? In Italia, we drink it standing at the bar - al banco!'
+        instruction: 'Use Italian for coffee and food terms. Use the format "word (translation)". Example: "espresso (espresso)", "al banco (at the bar)".',
+        example: 'Would you like un espresso (an espresso)? In Italia (Italy), we drink it standing al banco (at the bar)!'
       },
       level3: {
         english: 45, target: 55,
         grammar: 'gendered nouns',
-        instruction: 'Speak half Italian. Explain il/la naturally.',
-        example: 'Il caffè è pronto! La tazza - the cup - is beautiful, no? È italiana!'
+        instruction: 'Speak half Italian. Use the format "word (translation)" for new vocabulary. Example: "caffè (coffee)", "tazza (cup)", "italiana (Italian)".',
+        example: 'Il caffè (the coffee) è pronto (is ready)! La tazza (the cup) is beautiful, no? È italiana (it\'s Italian)!'
       },
       level4: {
         english: 20, target: 80,
@@ -973,6 +1169,46 @@ export const LANGUAGE_CONFIG = {
         grammar: 'natural conversation',
         instruction: 'Speak natural Italian with Roman expressions.',
         example: 'Ma dai! Il tuo italiano è bellissimo! Racconta, cosa hai visto oggi a Roma?'
+      }
+    },
+
+    lessonPlan: {
+      unit1: {
+        title: 'Benvenuto! - Welcome to Rome',
+        objectives: ['greetings', 'ordering_coffee', 'basic_politeness'],
+        scenarios: [
+          { name: 'Entering Café', phrases: ['Buongiorno!', 'Buonasera', 'Un tavolo, per favore'] },
+          { name: 'Ordering Coffee', phrases: ['Un caffè, per favore', 'Un cappuccino', 'Al banco o al tavolo?'] },
+          { name: 'Appreciating', phrases: ['Che bello!', 'Delizioso!', 'Grazie mille'] }
+        ],
+        vocabulary: [
+          { word: 'caffè', translation: 'coffee', pronunciation: 'kaf-FEH' },
+          { word: 'cornetto', translation: 'croissant', pronunciation: 'kor-NET-toh' },
+          { word: 'grazie', translation: 'thank you', pronunciation: 'GRAH-tsee-eh' },
+          { word: 'per favore', translation: 'please', pronunciation: 'per fa-VOR-eh' },
+          { word: 'bello', translation: 'beautiful', pronunciation: 'BEL-loh' }
+        ],
+        culturalNotes: [
+          'Italians drink espresso standing at the bar',
+          'Cappuccino is only for breakfast',
+          'Coffee culture is a social ritual',
+          'Always greet when entering a café',
+          'Rome has layers of history everywhere'
+        ]
+      },
+      unit2: {
+        title: 'La Dolce Vita - The Sweet Life',
+        objectives: ['food_vocabulary', 'expressing_pleasure', 'cultural_terms'],
+        scenarios: [
+          { name: 'Enjoying Food', phrases: ['Che buono!', 'Mi piace molto', 'È squisito'] }
+        ]
+      },
+      unit3: {
+        title: 'Arte e Storia - Art & History',
+        objectives: ['art_vocabulary', 'historical_terms', 'expressing_wonder'],
+        scenarios: [
+          { name: 'Discussing Art', phrases: ['Che capolavoro!', 'È magnifico', 'La storia di Roma'] }
+        ]
       }
     },
 
@@ -1066,6 +1302,14 @@ export const LANGUAGE_CONFIG = {
       role: '茶艺师 (Tea Master)',
       age: 50,
       emoji: '🍵',
+      visuals: {
+        skinColor: '#f5e6d3',
+        hairColor: '#2c2c2c',
+        hairStyle: 'bun',
+        outfitColor: '#8b0000',
+        accessoryColor: '#ffd700',
+        style: 'kimono'
+      },
 
       appearance: {
         height: 'medium',
@@ -1172,22 +1416,53 @@ export const LANGUAGE_CONFIG = {
       props: {
         servingCounter: {
           type: 'traditional_milk_bar',
+          material: 'aged_wood_with_marble_top',
           position: { x: 0, y: 1, z: -4 },
           dishes: [
-            { name: 'pierogi', varieties: ['ruskie', 'z_mięsem', 'z_kapustą', 'słodkie'] },
-            { name: 'barszcz_czerwony', with: 'uszka' },
-            { name: 'żurek', with: 'egg_and_kielbasa' },
-            { name: 'kotlet_schabowy', with: 'potatoes_and_cabbage' },
-            { name: 'placki_ziemniaczane', with: 'sour_cream' }
-          ]
+            { name: 'pierogi', varieties: ['ruskie', 'z_mięsem', 'z_kapustą', 'słodkie'], count: 48, arrangement: 'steaming_trays' },
+            { name: 'barszcz_czerwony', with: 'uszka', bowls: 12, garnish: 'sour_cream' },
+            { name: 'żurek', with: 'egg_and_kielbasa', bowls: 10, temperature: 'hot' },
+            { name: 'kotlet_schabowy', with: 'potatoes_and_cabbage', plates: 8, golden: true },
+            { name: 'placki_ziemniaczane', with: 'sour_cream', stacks: 6, crispy: true },
+            { name: 'bigos', pot: 'large_ceramic', steaming: true },
+            { name: 'gołąbki', count: 20, arranged: 'neat_rows' }
+          ],
+          display: {
+            type: 'glass_case',
+            temperature: 'warm',
+            lighting: 'soft_warm'
+          }
+        },
+
+        kitchen: {
+          type: 'visible_kitchen',
+          position: { x: -4, y: 0, z: -6 },
+          equipment: [
+            { name: 'large_stove', burners: 6, style: 'traditional' },
+            { name: 'pierogi_pot', size: 'large', boiling: true },
+            { name: 'cutting_board', wood: 'maple', in_use: true },
+            { name: 'serving_utensils', types: ['large_spoons', 'tongs', 'ladles'] }
+          ],
+          activity: 'active_cooking'
         },
 
         dining: {
           tables: [
-            { type: 'simple_wooden', seats: 4, cloth: 'checkered_red_white' },
-            { type: 'bench_seating', communal: true }
+            { type: 'simple_wooden', seats: 4, cloth: 'checkered_red_white', position: { x: 2, y: 0, z: -2 } },
+            { type: 'simple_wooden', seats: 4, cloth: 'checkered_red_white', position: { x: -2, y: 0, z: -2 } },
+            { type: 'bench_seating', communal: true, position: { x: 0, y: 0, z: -1 }, seats: 8 }
           ],
-          condiments: ['sour_cream', 'fried_onions', 'butter', 'sugar']
+          condiments: [
+            { name: 'sour_cream', bowls: 4, position: 'table_center' },
+            { name: 'fried_onions', bowls: 3, crispy: true },
+            { name: 'butter', pats: 12, chilled: true },
+            { name: 'sugar', bowls: 2, for_coffee: true }
+          ],
+          tableware: {
+            plates: 'white_ceramic',
+            cutlery: 'simple_steel',
+            napkins: 'paper_red_white'
+          }
         },
 
         decorations: [
@@ -1200,8 +1475,19 @@ export const LANGUAGE_CONFIG = {
 
         exterior: {
           view: 'old_town_square',
-          elements: ['colorful_townhouses', 'mermaid_statue', 'cobblestones'],
-          activity: ['tourists', 'street_artists', 'cafe_terraces']
+          elements: ['colorful_townhouses', 'mermaid_statue', 'cobblestones', 'reconstructed_facades'],
+          activity: ['tourists', 'street_artists', 'cafe_terraces', 'local_families'],
+          skyline: 'warsaw_skyline',
+          atmosphere: 'post_war_resilience'
+        },
+
+        architectural: {
+          floor: { type: 'wooden_planks', condition: 'well_worn', pattern: 'traditional' },
+          ceiling: { type: 'exposed_beams', wood: 'dark_pine', height: 3.2 },
+          walls: { type: 'plaster', color: 'warm_cream', texture: 'hand_finished' },
+          windows: { type: 'tall', style: 'traditional_polish', frames: 'dark_wood' },
+          door: { type: 'heavy_wood', style: 'traditional', handle: 'brass' },
+          details: ['checkered_tablecloths', 'vintage_lamps', 'family_photos']
         }
       },
 
@@ -1209,7 +1495,14 @@ export const LANGUAGE_CONFIG = {
         ambient: [
           { name: 'kitchen_sounds', volume: 0.2, loop: true },
           { name: 'polish_conversation', volume: 0.25, loop: true },
-          { name: 'church_bells', volume: 0.15, interval: 3600000 }
+          { name: 'church_bells', volume: 0.15, interval: 3600000 },
+          { name: 'old_town_street_sounds', volume: 0.2, loop: true }
+        ],
+        shop: [
+          { name: 'sizzling_pierogi', volume: 0.35, trigger: 'cooking', frequency: 30000 },
+          { name: 'plate_on_table', volume: 0.3, trigger: 'serving' },
+          { name: 'cutlery_clinking', volume: 0.25, trigger: 'random', frequency: 20000 },
+          { name: 'cash_register', volume: 0.3, trigger: 'payment' }
         ],
         music: {
           track: 'polish_folk_modern',
@@ -1220,8 +1513,13 @@ export const LANGUAGE_CONFIG = {
       },
 
       lighting: {
-        primary: { type: 'natural', color: '#FFF5E6', intensity: 0.7 },
-        secondary: { type: 'warm', color: '#FFE4B5', intensity: 0.3 }
+        primary: { type: 'natural', color: '#FFF5E6', intensity: 0.7, direction: 'afternoon_sun' },
+        secondary: { type: 'ambient', color: '#FFE4B5', intensity: 0.3 },
+        accent: [
+          { type: 'warm_lamp', position: { x: -2, y: 2, z: -3 }, color: '#FFD700', intensity: 0.2 },
+          { type: 'window_light', position: { x: 3, y: 2, z: -5 }, color: '#FFF8DC', intensity: 0.4 }
+        ],
+        effects: ['warm_glow_on_food', 'soft_shadows_on_tables']
       }
     },
 
@@ -1230,6 +1528,14 @@ export const LANGUAGE_CONFIG = {
       role: 'Pani Kucharka (Lady Cook)',
       age: 55,
       emoji: '🥟',
+      visuals: {
+        skinColor: '#f5d0b0',
+        hairColor: '#b8b8b8',
+        hairStyle: 'bun',
+        outfitColor: '#ffffff',
+        accessoryColor: '#ff69b4',
+        style: 'chef'
+      },
 
       appearance: {
         height: 'medium',
@@ -1270,34 +1576,75 @@ export const LANGUAGE_CONFIG = {
 
     difficultyScaling: {
       level1: {
-        english: 85, target: 15,
+        english: 90, target: 10,
         grammar: 'basic greetings',
-        instruction: 'Speak mostly English with Polish words like "cześć", "dziękuję", "pierogi". Always translate.',
-        example: 'Cześć! That means "hi"! Welcome to my little restaurant. Would you like pierogi?'
+        instruction: 'Speak mostly English. Introduce basic Polish words with pronunciation. "Cześć", "dziękuję", "pierogi".',
+        example: 'Welcome! Or in Polish, Cześć (cheshch)! Would you like some pierogi (pyeh-RO-gee)?'
       },
       level2: {
-        english: 65, target: 35,
-        grammar: 'ordering food',
-        instruction: 'Use Polish for food items and common phrases. Provide context.',
-        example: 'The pierogi ruskie are very popular - z ziemniakami i serem - with potatoes and cheese!'
+        english: 75, target: 25,
+        grammar: 'food vocabulary',
+        instruction: 'Use more Polish for food and hospitality terms. Explain pronunciation clearly.',
+        example: 'This is pierogi ruskie (pyeh-RO-gee ROOS-kyeh) - with potatoes and cheese. Smacznego (smach-NEH-go)! That means enjoy your meal!'
       },
       level3: {
-        english: 45, target: 55,
+        english: 55, target: 45,
         grammar: 'noun cases',
         instruction: 'Speak half Polish. Introduce cases naturally through food ordering.',
-        example: 'Poproszę pierogi. "Proszę" means please. Smacznego! That means enjoy your meal!'
+        example: 'Poproszę pierogi (po-PRO-sheh pyeh-RO-gee). Please, I would like pierogi. Dziękuję (jen-KOO-yeh) means thank you.'
       },
       level4: {
-        english: 20, target: 80,
+        english: 30, target: 70,
         grammar: 'verb conjugation',
-        instruction: 'Speak primarily Polish. Explain verbs as they come up.',
-        example: 'Dzisiaj zrobiłam pierogi rano. Są świeże i pyszne. Chcesz spróbować?'
+        instruction: 'Speak primarily Polish. Explain sentence structure as needed.',
+        example: 'Dzisiaj zrobiłam pierogi (djee-SHAY zro-BEE-wam pyeh-RO-gee). Today I made pierogi. Są świeże i pyszne (sohn SHFYEH-zheh ee PISH-neh). They are fresh and delicious.'
       },
       level5: {
-        english: 5, target: 95,
-        grammar: 'natural conversation',
-        instruction: 'Speak natural Polish with Warsaw expressions.',
-        example: 'Ale fajnie mówisz po polsku! Opowiedz mi o sobie. Skąd jesteś?'
+        english: 10, target: 90,
+        grammar: 'cultural expressions',
+        instruction: 'Speak natural Polish with idioms and cultural expressions.',
+        example: 'Ale fajnie mówisz po polsku (AH-leh FAY-nyeh MOO-vish po POL-skoo)! How cool that you speak Polish! Opowiedz mi o sobie (o-PO-vyech mee o SO-byeh). Tell me about yourself.'
+      }
+    },
+
+    lessonPlan: {
+      unit1: {
+        title: 'Witaj! - Welcome to Warsaw',
+        objectives: ['greetings', 'ordering_food', 'basic_politeness'],
+        scenarios: [
+          { name: 'Entering Milk Bar', phrases: ['Dzień dobry', 'Cześć', 'Czy jest wolne miejsce?'] },
+          { name: 'Ordering Food', phrases: ['Poproszę pierogi', 'Co polecasz?', 'Ile to kosztuje?'] },
+          { name: 'Thanking', phrases: ['Dziękuję', 'Bardzo dziękuję', 'Smacznego!'] }
+        ],
+        vocabulary: [
+          { word: 'pierogi', translation: 'dumplings', pronunciation: 'pyeh-RO-gee' },
+          { word: 'barszcz', translation: 'beet soup', pronunciation: 'barshch' },
+          { word: 'dziękuję', translation: 'thank you', pronunciation: 'jen-KOO-yeh' },
+          { word: 'proszę', translation: 'please', pronunciation: 'PRO-sheh' },
+          { word: 'smacznego', translation: 'enjoy your meal', pronunciation: 'smach-NEH-go' }
+        ],
+        culturalNotes: [
+          'Milk bars (bar mleczny) are traditional Polish cafeterias',
+          'Pierogi are Poland\'s national dish',
+          'Always say "Smacznego" before eating',
+          'Warsaw Old Town was rebuilt after WWII',
+          'Polish food connects generations and history'
+        ]
+      },
+      unit2: {
+        title: 'Polskie Jedzenie - Polish Food',
+        objectives: ['food_vocabulary', 'describing_taste', 'ordering_drinks'],
+        scenarios: [
+          { name: 'Describing Food', phrases: ['Pyszne!', 'Bardzo dobre', 'Smakuje wyśmienicie'] }
+        ]
+      },
+      unit3: {
+        title: 'Historia i Tradycja - History & Tradition',
+        objectives: ['historical_vocabulary', 'family_terms', 'cultural_expressions'],
+        scenarios: [
+          { name: 'Discussing History', phrases: ['To jest historia', 'Tradycja rodzinna', 'Pamięć'] }
+        ]
+
       }
     },
 

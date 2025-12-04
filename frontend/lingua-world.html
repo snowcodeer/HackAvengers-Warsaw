@@ -209,6 +209,149 @@
                 inset 2px 2px 0 0 var(--wood-dark);
         }
 
+        /* Objective Bar - Top Center */
+        .objective-bar {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(40, 30, 20, 0.95);
+            border: 6px solid var(--wood-dark);
+            box-shadow:
+                6px 6px 0 0 var(--wood-shadow),
+                inset 3px 3px 0 0 var(--wood-light);
+            padding: 16px 28px;
+            min-width: 320px;
+            max-width: 480px;
+            text-align: center;
+            z-index: 100;
+        }
+
+        .objective-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid var(--wood-dark);
+        }
+
+        .objective-icon {
+            font-size: 1.2rem;
+        }
+
+        .objective-label {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.6rem;
+            color: var(--cozy-yellow);
+            letter-spacing: 2px;
+        }
+
+        .objective-progress {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.5rem;
+            color: var(--accent-teal);
+            background: var(--wood-dark);
+            padding: 4px 8px;
+            border: 2px solid var(--wood-shadow);
+        }
+
+        .objective-text {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.65rem;
+            color: var(--cream);
+            line-height: 1.8;
+            margin-bottom: 6px;
+        }
+
+        .objective-translation {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.5rem;
+            color: var(--wood-light);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .objective-hint {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: rgba(78, 205, 196, 0.15);
+            border: 3px solid var(--accent-teal);
+            padding: 8px 12px;
+            margin-top: 8px;
+        }
+
+        .hint-label {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.45rem;
+            color: var(--accent-teal);
+        }
+
+        .hint-text {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.5rem;
+            color: var(--cozy-yellow);
+        }
+
+        .objective-bar.completed {
+            border-color: var(--accent-teal);
+        }
+
+        .objective-bar.completed .objective-text {
+            color: var(--accent-teal);
+            text-decoration: line-through;
+        }
+
+        @keyframes objectiveComplete {
+            0% {
+                transform: translateX(-50%) scale(1);
+            }
+
+            50% {
+                transform: translateX(-50%) scale(1.05);
+                border-color: var(--cozy-yellow);
+            }
+
+            100% {
+                transform: translateX(-50%) scale(1);
+            }
+        }
+
+        .objective-bar.level-up {
+            animation: objectiveComplete 0.5s ease;
+        }
+
+        @keyframes notificationPop {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes notificationFade {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(0.9);
+                opacity: 0;
+            }
+        }
+
         /* Conversation panel - Bottom */
         .conversation-panel {
             position: absolute;
@@ -1557,6 +1700,20 @@
 
             <!-- Glossary Button - Top Right -->
             <button class="glossary-btn" id="glossaryBtn" title="Glossary">📖</button>
+            <!-- Objective Bar - Top Center -->
+            <div class="objective-bar" id="objectiveBar">
+                <div class="objective-header">
+                    <span class="objective-icon">🎯</span>
+                    <span class="objective-label">OBJECTIVE</span>
+                    <span class="objective-progress" id="objectiveProgress">1/5</span>
+                </div>
+                <div class="objective-text" id="objectiveText">Bonjour! Saluez la boulangère.</div>
+                <div class="objective-translation" id="objectiveTranslation">Hello! Greet the baker.</div>
+                <div class="objective-hint" id="objectiveHint">
+                    <span class="hint-label">💡 Try:</span>
+                    <span class="hint-text" id="hintText">"Bonjour!"</span>
+                </div>
+            </div>
 
             <!-- Interaction Prompt -->
             <div class="interact-prompt" id="interactPrompt">
