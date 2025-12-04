@@ -3412,7 +3412,7 @@ async function processAudioInput(audioBlob) {
             console.log('🎤 Transcribing with ElevenLabs STT...');
 
             const formData = new FormData();
-            formData.append('audio', audioBlob, 'recording.webm');
+            formData.append('file', audioBlob, 'recording.webm');
             formData.append('model_id', 'scribe_v1');
 
             const sttResponse = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
