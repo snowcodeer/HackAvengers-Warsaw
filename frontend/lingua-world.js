@@ -2138,71 +2138,17 @@ async function generateNPCResponse(playerText, isGreeting = false) {
     const quirks = personality.quirks?.join('. ') || '';
     const backstory = personality.backstory || character.bio || '';
 
-    const systemPrompt = `You are ${character.name}, ${character.role || 'a language guide'} in an immersive language learning game.
+    const systemPrompt = `You are ${character.name}, ${character.role || 'a guide'} at ${scene.name || 'a shop'}. Be ${traits}.
 
-CHARACTER BACKSTORY:
-${backstory}
+LEVEL ${currentDifficulty}/5: ${difficultyInstruction}
 
-PERSONALITY: ${traits}
-QUIRKS: ${quirks}
+OUTPUT ONLY THIS JSON:
+{"text":"Your response with vocab as word (translation)","translation":"English","newWords":[{"word":"x","meaning":"y"}],"action":"physical action","mood":"emotional tone"}
 
-SCENE: ${scene.name || 'Learning environment'}
-LOCATION: ${scene.location || 'Unknown'}
-ATMOSPHERE: ${scene.description?.substring(0, 200) || 'A welcoming place for learning'}
-
-LANGUAGE LEVEL (${currentDifficulty}/5):
-${difficultyInstruction}
-
-CRITICAL VOCABULARY FORMAT:
-- When introducing new words in the target language, ALWAYS use the format: "word (translation)"
-- Example: "bonjour (hello)", "croissant (croissant)", "merci (thank you)"
-- This format helps the player learn vocabulary and allows automatic glossary tracking
-- Use this format frequently (3-5 times per response) to build vocabulary naturally
-
-TEACHING RULES:
-1. Stay deeply in character - you ARE this person
-2. Be ${traits}
-3. If the player makes a grammar mistake, gently correct them using your character's style
-4. Naturally introduce vocabulary relevant to ${scene.name} using the "word (translation)" format
-5. Keep responses conversational (2-4 sentences)
-6. Use your expression style: greeting=${character.voice?.expressionTags?.greeting || '[warmly]'}, teaching=${character.voice?.expressionTags?.teaching || '[patiently]'}
-
-STARTING PHRASES TO REFERENCE:
-${startingPhrases.map(p => `- "${p.phrase}" (${p.translation}) - pronounced: ${p.pronunciation}`).join('\n')}
-
-FALSE FRIENDS TO MENTION WHEN RELEVANT:
-${falseFriends.map(f => `- "${f.word}" looks like "${f.looksLike || f.trap}" but means: ${f.actualMeaning || f.meaning}`).join('\n')}
-
-CURRENT OBJECTIVE FOR PLAYER:
-"${getCurrentObjectiveText()}"
-
-RESPONSE FORMAT (JSON):
-{
-    "text": "Your response in the target language (with English mixed in based on difficulty). Use 'word (translation)' format for new vocabulary.",
-    "translation": "English translation if primarily in target language",
-    "newWords": [{"word": "new word", "meaning": "meaning"}],
-    "shouldIncreaseDifficulty": true/false (if player is doing well),
-    "expression": "greeting|teaching|praising",
-    "nextObjective": {
-        "target": "Next objective in target language - what should the player do/say next based on your response",
-        "english": "English translation of the objective",
-        "hint": "Example phrase they could use",
-        "keywords": ["key", "words", "to", "match"]
-    }
-}
-
-OBJECTIVE GUIDELINES BY LEVEL:
-- Level 1: Simple responses (greetings, yes/no, single words)
-- Level 2: Basic ordering (items + please, numbers, prices)
-- Level 3: Preferences and questions (what do you recommend, I would like...)
-- Level 4: Complex requests (dietary restrictions, asking about ingredients)
-- Level 5: Natural conversation (opinions, stories, cultural questions)
-
-The nextObjective should naturally follow from your response. If you ask them what they'd like, the objective should be "Order a drink/food". If you describe something, the objective could be "Ask a follow-up question".
-
-IMPORTANT: Include words in the "word (translation)" format in your text response. These will be automatically added to the player's glossary.
-
-NOTE: Keep responses encouraging and conversational.`;
+RULES:
+- 2 sentences max
+- Use "word (translation)" format for 1-2 new vocab words
+- NO asterisks, NO text outside JSON`;
 
     const messages = isGreeting
         ? [{ role: 'user', content: 'The player has just approached you. Greet them warmly and introduce yourself.' }]
@@ -2222,7 +2168,7 @@ NOTE: Keep responses encouraging and conversational.`;
             },
             body: JSON.stringify({
                 model: 'claude-3-haiku-20240307',
-                max_tokens: 500,
+                max_tokens: 700,
                 system: systemPrompt,
                 messages: messages
             })
