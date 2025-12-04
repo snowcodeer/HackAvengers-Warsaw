@@ -10,25 +10,17 @@ document.addEventListener('DOMContentLoaded', () => {
 // Character data
 const characterData = {
     name: '',
-    bodyType: 0,
     skinColor: '#ffd5b5',
     hairStyle: 0,
     hairColor: '#2c1810',
     eyeColor: '#4a90d9',
     outfit: 0,
     outfitColor: '#e74c3c',
-    pantsColor: '#3a3a5a',
-    accessory: 0,
-    hat: 0,
-    facialHair: 0
+    pantsColor: '#3a3a5a' // Default value, no longer customizable
 };
 
-const bodyTypes = ['Normal', 'Athletic', 'Slim', 'Stocky'];
 const hairStyles = ['Spiky', 'Mohawk', 'Flat Top', 'Long', 'Short', 'Ponytail', 'Bald', 'Curly', 'Afro', 'Pigtails', 'Buzz Cut', 'Side Part', 'Wavy', 'Slick Back'];
 const outfits = ['Adventurer', 'T-Shirt', 'Striped', 'Hoodie', 'Suit', 'Overalls', 'Tank Top', 'Uniform', 'Sweater', 'Jacket', 'Polo', 'V-Neck', 'Vest', 'Lab Coat'];
-const accessories = ['None', 'Glasses', 'Sunglasses', 'Round Glasses', 'Eye Patch', 'Monocle', 'Bandana', 'Scarf', 'Necklace', 'Bow Tie', 'Tie'];
-const hats = ['None', 'Cap', 'Beanie', 'Top Hat', 'Cowboy', 'Hard Hat', 'Crown', 'Headphones', 'Police Cap', 'Beret', 'Bandana', 'Wizard Hat', 'Viking Helmet'];
-const facialHairs = ['None', 'Stubble', 'Beard', 'Goatee', 'Mustache', 'Full Beard', 'Handlebar'];
 
 // Initialize customisation controls
 function initCharacterCustomisation() {
@@ -36,18 +28,14 @@ function initCharacterCustomisation() {
     document.getElementById('characterName').addEventListener('input', (e) => {
         characterData.name = e.target.value;
     });
-    
+
     // Navigation buttons
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const target = btn.dataset.target;
             const isNext = btn.classList.contains('next');
-            
-            switch(target) {
-                case 'bodyType':
-                    characterData.bodyType = cycleOption(characterData.bodyType, bodyTypes.length, isNext);
-                    document.getElementById('bodyTypeValue').textContent = bodyTypes[characterData.bodyType];
-                    break;
+
+            switch (target) {
                 case 'hairStyle':
                     characterData.hairStyle = cycleOption(characterData.hairStyle, hairStyles.length, isNext);
                     document.getElementById('hairStyleValue').textContent = hairStyles[characterData.hairStyle];
@@ -56,29 +44,17 @@ function initCharacterCustomisation() {
                     characterData.outfit = cycleOption(characterData.outfit, outfits.length, isNext);
                     document.getElementById('outfitValue').textContent = outfits[characterData.outfit];
                     break;
-                case 'accessory':
-                    characterData.accessory = cycleOption(characterData.accessory, accessories.length, isNext);
-                    document.getElementById('accessoryValue').textContent = accessories[characterData.accessory];
-                    break;
-                case 'hat':
-                    characterData.hat = cycleOption(characterData.hat, hats.length, isNext);
-                    document.getElementById('hatValue').textContent = hats[characterData.hat];
-                    break;
-                case 'facialHair':
-                    characterData.facialHair = cycleOption(characterData.facialHair, facialHairs.length, isNext);
-                    document.getElementById('facialHairValue').textContent = facialHairs[characterData.facialHair];
-                    break;
             }
             updateCharacterPreview();
         });
     });
-    
+
     // Color buttons
     initColorButtons('skinColors', 'skinColor');
     initColorButtons('hairColors', 'hairColor');
     initColorButtons('eyeColors', 'eyeColor');
     initColorButtons('outfitColors', 'outfitColor');
-    initColorButtons('pantsColors', 'pantsColor');
+    // Pants color removed
 }
 
 function cycleOption(current, max, isNext) {
@@ -91,6 +67,7 @@ function cycleOption(current, max, isNext) {
 
 function initColorButtons(containerId, dataKey) {
     const container = document.getElementById(containerId);
+    if (!container) return; // Safety check
     container.querySelectorAll('.color-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             container.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
@@ -110,10 +87,10 @@ function updateCharacterPreview() {
     const accessory = accessories[characterData.accessory];
     const hat = hats[characterData.hat];
     const facialHair = facialHairs[characterData.facialHair];
-    
+
     // Generate hair based on style
     let hairHTML = '';
-    switch(hairStyle) {
+    switch (hairStyle) {
         case 'Spiky':
             hairHTML = `
                 <div style="position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); width: 52px; height: 20px; background: ${characterData.hairColor}; box-shadow: -8px -8px 0 0 ${characterData.hairColor}, 8px -8px 0 0 ${characterData.hairColor}, 0 -16px 0 0 ${characterData.hairColor}, -16px 0 0 0 ${characterData.hairColor}, 16px 0 0 0 ${characterData.hairColor};"></div>
@@ -189,10 +166,10 @@ function updateCharacterPreview() {
             `;
             break;
     }
-    
+
     // Generate accessory
     let accessoryHTML = '';
-    switch(accessory) {
+    switch (accessory) {
         case 'Glasses':
             accessoryHTML = `
                 <div style="position: absolute; bottom: 105px; left: calc(50% - 20px); width: 40px; height: 12px; border: 3px solid #333; background: transparent; border-radius: 2px;"></div>
@@ -254,10 +231,10 @@ function updateCharacterPreview() {
             `;
             break;
     }
-    
+
     // Generate hat
     let hatHTML = '';
-    switch(hat) {
+    switch (hat) {
         case 'Cap':
             hatHTML = `
                 <div style="position: absolute; bottom: 128px; left: 50%; transform: translateX(-50%); width: 50px; height: 18px; background: #2c3e50; border-radius: 20px 20px 0 0;"></div>
@@ -339,22 +316,22 @@ function updateCharacterPreview() {
             `;
             break;
     }
-    
+
     // Body width based on type
     let bodyWidth = 48;
     let bodyHeight = 56;
-    switch(bodyType) {
+    switch (bodyType) {
         case 'Athletic': bodyWidth = 52; bodyHeight = 58; break;
         case 'Slim': bodyWidth = 40; bodyHeight = 60; break;
         case 'Stocky': bodyWidth = 56; bodyHeight = 50; break;
     }
-    
+
     // Generate outfit pattern
     let outfitHTML = '';
     const outfitDark = darkenColor(characterData.outfitColor, 20);
     const outfitLight = lightenColor(characterData.outfitColor, 15);
-    
-    switch(outfit) {
+
+    switch (outfit) {
         case 'Striped':
             outfitHTML = `
                 <div style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: repeating-linear-gradient(0deg, ${characterData.outfitColor} 0px, ${characterData.outfitColor} 8px, #fff 8px, #fff 16px); box-shadow: 4px 0 0 0 ${outfitDark};"></div>
@@ -445,11 +422,11 @@ function updateCharacterPreview() {
                 <div style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: ${characterData.outfitColor}; box-shadow: 4px 0 0 0 ${outfitDark}, -4px 0 0 0 ${outfitLight};"></div>
             `;
     }
-    
+
     // Generate facial hair
     let facialHairHTML = '';
     const facialHairColor = darkenColor(characterData.hairColor, 10);
-    switch(facialHair) {
+    switch (facialHair) {
         case 'Stubble':
             facialHairHTML = `
                 <div style="position: absolute; bottom: 88px; left: calc(50% - 16px); width: 32px; height: 8px; background: ${facialHairColor}; opacity: 0.4;"></div>
@@ -501,12 +478,12 @@ function updateCharacterPreview() {
         ${outfitHTML}
         
         <!-- Arms -->
-        <div style="position: absolute; bottom: 50px; left: calc(50% - ${bodyWidth/2 + 12}px); width: 12px; height: 40px; background: ${characterData.skinColor}; box-shadow: 2px 0 0 0 ${darkenColor(characterData.skinColor, 15)};"></div>
-        <div style="position: absolute; bottom: 50px; left: calc(50% + ${bodyWidth/2}px); width: 12px; height: 40px; background: ${characterData.skinColor}; box-shadow: 2px 0 0 0 ${darkenColor(characterData.skinColor, 15)};"></div>
+        <div style="position: absolute; bottom: 50px; left: calc(50% - ${bodyWidth / 2 + 12}px); width: 12px; height: 40px; background: ${characterData.skinColor}; box-shadow: 2px 0 0 0 ${darkenColor(characterData.skinColor, 15)};"></div>
+        <div style="position: absolute; bottom: 50px; left: calc(50% + ${bodyWidth / 2}px); width: 12px; height: 40px; background: ${characterData.skinColor}; box-shadow: 2px 0 0 0 ${darkenColor(characterData.skinColor, 15)};"></div>
         
         <!-- Hands -->
-        <div style="position: absolute; bottom: 45px; left: calc(50% - ${bodyWidth/2 + 14}px); width: 14px; height: 14px; background: ${characterData.skinColor}; border-radius: 4px;"></div>
-        <div style="position: absolute; bottom: 45px; left: calc(50% + ${bodyWidth/2}px); width: 14px; height: 14px; background: ${characterData.skinColor}; border-radius: 4px;"></div>
+        <div style="position: absolute; bottom: 45px; left: calc(50% - ${bodyWidth / 2 + 14}px); width: 14px; height: 14px; background: ${characterData.skinColor}; border-radius: 4px;"></div>
+        <div style="position: absolute; bottom: 45px; left: calc(50% + ${bodyWidth / 2}px); width: 14px; height: 14px; background: ${characterData.skinColor}; border-radius: 4px;"></div>
         
         <!-- Head -->
         <div style="position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%); width: 44px; height: 44px; background: ${characterData.skinColor}; border-radius: 8px; box-shadow: 4px 0 0 0 ${darkenColor(characterData.skinColor, 15)}, -4px 0 0 0 ${lightenColor(characterData.skinColor, 10)};"></div>
@@ -565,13 +542,13 @@ function darkenColor(color, percent) {
 // Submit button
 function initSubmitButton() {
     const submitBtn = document.getElementById('submitBtn');
-    
+
     submitBtn.addEventListener('click', () => {
         submitBtn.style.transform = 'translateY(8px)';
-        
+
         // Save character data to localStorage
         localStorage.setItem('playerCharacter', JSON.stringify(characterData));
-        
+
         setTimeout(() => {
             submitBtn.style.transform = '';
             // Navigate to LinguaVerse language/scenario selection
@@ -583,28 +560,28 @@ function initSubmitButton() {
 // Snowfall
 function initSnowfall() {
     const snowContainer = document.getElementById('snowContainer');
-    
+
     function createSnowflake() {
         const snowflake = document.createElement('div');
         snowflake.className = 'snowflake';
         snowflake.style.left = Math.random() * 100 + 'vw';
-        
+
         const sizes = [4, 6, 8];
         const size = sizes[Math.floor(Math.random() * sizes.length)];
         snowflake.style.width = size + 'px';
         snowflake.style.height = size + 'px';
-        
+
         const duration = 8 + Math.random() * 6;
         snowflake.style.animationDuration = duration + 's';
         snowflake.style.animationDelay = Math.random() * 2 + 's';
-        
+
         const drift = Math.round((Math.random() - 0.5) * 60 / 4) * 4;
         snowflake.style.setProperty('--drift', drift + 'px');
-        
+
         snowContainer.appendChild(snowflake);
         setTimeout(() => snowflake.remove(), (duration + 2) * 1000);
     }
-    
+
     for (let i = 0; i < 30; i++) {
         setTimeout(() => createSnowflake(), i * 100);
     }

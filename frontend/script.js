@@ -1,13 +1,25 @@
 // Cute Flower Garden with Snow - 8-Bit Style
 
 document.addEventListener('DOMContentLoaded', () => {
-    createTallTrees();
-    createFlowerGarden();
-    createBushes();
-    createRocks();
-    createBunnies();
-    initPixelSnowfall();
-    initButtonEffects();
+    console.log('DOM Content Loaded');
+    try {
+        createTallTrees();
+        console.log('Trees created');
+        createFlowerGarden();
+        console.log('Garden created');
+        createBushes();
+        console.log('Bushes created');
+        createRocks();
+        console.log('Rocks created');
+        createBunnies();
+        console.log('Bunnies created');
+        initPixelSnowfall();
+        console.log('Snowfall initialized');
+        initButtonEffects();
+        console.log('Button effects initialized');
+    } catch (e) {
+        console.error('Error initializing:', e);
+    }
 });
 
 // Flower colors
@@ -832,18 +844,37 @@ function darkenColor(color, percent) {
 
 
 function initButtonEffects() {
+    console.log('initButtonEffects called');
     const beginBtn = document.getElementById('beginBtn');
+    if (!beginBtn) {
+        console.error('Begin button not found!');
+        return;
+    }
+    console.log('Begin button found', beginBtn);
+
     const languageModal = document.getElementById('languageModal');
     const langBtns = document.querySelectorAll('.lang-btn');
 
-    beginBtn.addEventListener('click', () => {
-        beginBtn.style.transform = 'translateY(8px)';
-        createPixelBurst(beginBtn);
-        setTimeout(() => {
-            beginBtn.style.transform = '';
-            // Show language selection modal instead of direct navigation
-            languageModal.classList.add('active');
-        }, 300);
+    // Use event delegation to ensure click is captured
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('#beginBtn');
+        if (btn) {
+            console.log('Delegated click on beginBtn');
+            e.preventDefault();
+
+            btn.style.transform = 'translateY(8px)';
+            try {
+                createPixelBurst(btn);
+            } catch (err) {
+                console.error('Error in createPixelBurst:', err);
+            }
+
+            setTimeout(() => {
+                btn.style.transform = '';
+                console.log('Navigating to character.html');
+                window.location.href = 'character.html';
+            }, 300);
+        }
     });
 
     langBtns.forEach(btn => {
