@@ -829,7 +829,18 @@ async function init() {
         // Use extensive config if available, or fallback to scenario character
         const characterConfig = langConfig?.character || gameState.scenario?.character;
 
-        mirageActive = await startMirageStream(scenarioId, 'gameCanvas', characterConfig);
+        // Prepare custom config if applicable
+        let customConfig = null;
+        if (scenarioId === 'custom_generated' && gameState.scenario) {
+            customConfig = {
+                vibe: gameState.scenario.vibe || 'cozy', // Fallback if not saved
+                description: gameState.scenario.description || ''
+            };
+            // If vibe wasn't saved directly in scenario root, try to infer or use default
+            // Note: We need to ensure 'vibe' is saved in scenarioGenerator.js or passed through
+        }
+
+        mirageActive = await startMirageStream(scenarioId, 'gameCanvas', characterConfig, customConfig);
         if (mirageActive) {
             console.log('🎨 Mirage MirageLSD activated - immersive world rendering');
         }
@@ -1673,7 +1684,10 @@ function createBeerTable(x, y, z) {
 
 // ==================== NPC CREATION ====================
 function createNPC() {
-    const character = gameState.scenario?.character || {
+    // Get character from language config first, fallback to scenario
+    const language = gameState.language || 'french';
+    const langConfig = getLanguageConfig(language);
+    const character = langConfig?.character || gameState.scenario?.character || {
         name: 'Guide',
         emoji: '👤'
     };
@@ -1697,17 +1711,19 @@ function createNPC() {
     const accessoryMat = new THREE.MeshStandardMaterial({ color: visuals.accessoryColor });
     const pantsMat = new THREE.MeshStandardMaterial({ color: 0x2c3e50 }); // Dark pants default
 
-    // 1. Legs (Cylinders)
-    const legGeo = new THREE.CylinderGeometry(0.12, 0.1, 0.9, 8);
-    const leftLeg = new THREE.Mesh(legGeo, pantsMat);
-    leftLeg.position.set(-0.2, 0.45, 0);
-    leftLeg.castShadow = true;
-    npc.add(leftLeg);
+    // 1. Legs (Cylinders) - hidden for dress styles
+    if (visuals.style !== 'flamenco' && visuals.style !== 'dress') {
+        const legGeo = new THREE.CylinderGeometry(0.12, 0.1, 0.9, 8);
+        const leftLeg = new THREE.Mesh(legGeo, pantsMat);
+        leftLeg.position.set(-0.2, 0.45, 0);
+        leftLeg.castShadow = true;
+        npc.add(leftLeg);
 
-    const rightLeg = new THREE.Mesh(legGeo, pantsMat);
-    rightLeg.position.set(0.2, 0.45, 0);
-    rightLeg.castShadow = true;
-    npc.add(rightLeg);
+        const rightLeg = new THREE.Mesh(legGeo, pantsMat);
+        rightLeg.position.set(0.2, 0.45, 0);
+        rightLeg.castShadow = true;
+        npc.add(rightLeg);
+    }
 
     // 2. Torso (Box/Cylinder mix)
     // Main body
@@ -1717,31 +1733,33 @@ function createNPC() {
     torso.castShadow = true;
     npc.add(torso);
 
-    // 3. Arms (Cylinders)
-    const armGeo = new THREE.CylinderGeometry(0.08, 0.07, 0.7, 8);
+    // 3. Arms (Cylinders) - Hanging DOWN from shoulders
+    const armGeo = new THREE.CylinderGeometry(0.08, 0.07, 0.55, 8);
+    // Translate geometry so TOP of cylinder is at origin (arm hangs down)
+    armGeo.translate(0, -0.275, 0);  // Move down by half height
 
-    // Left Arm
+    // Left Arm - attached at shoulder, angling OUTWARD (away from body)
     const leftArm = new THREE.Mesh(armGeo, outfitMat);
-    leftArm.position.set(-0.35, 1.3, 0);
-    leftArm.rotation.z = Math.PI / 8;
+    leftArm.position.set(-0.25, 1.5, 0);  // Shoulder position
+    leftArm.rotation.z = -Math.PI / 13;  // Slight outward angle
     leftArm.castShadow = true;
     npc.add(leftArm);
 
-    // Right Arm
-    const rightArm = new THREE.Mesh(armGeo, outfitMat);
-    rightArm.position.set(0.35, 1.3, 0);
-    rightArm.rotation.z = -Math.PI / 8;
+    // Right Arm - angling OUTWARD (away from body)
+    const rightArm = new THREE.Mesh(armGeo.clone(), outfitMat);
+    rightArm.position.set(0.25, 1.5, 0);  // Shoulder position
+    rightArm.rotation.z = Math.PI / 13;  // Slight outward angle
     rightArm.castShadow = true;
     npc.add(rightArm);
 
-    // Hands
-    const handGeo = new THREE.SphereGeometry(0.08, 8, 8);
+    // Hands - at bottom of arms (which now hang down and outward)
+    const handGeo = new THREE.SphereGeometry(0.07, 8, 8);
     const leftHand = new THREE.Mesh(handGeo, skinMat);
-    leftHand.position.set(0, -0.4, 0);
+    leftHand.position.set(0, -0.55, 0);  // At bottom of hanging arm
     leftArm.add(leftHand);
 
     const rightHand = new THREE.Mesh(handGeo, skinMat);
-    rightHand.position.set(0, -0.4, 0);
+    rightHand.position.set(0, -0.55, 0);  // At bottom of hanging arm
     rightArm.add(rightHand);
 
     // 4. Head
@@ -1842,7 +1860,30 @@ function createNPC() {
         string.position.set(0, 1.5, 0.2);
         npc.add(string);
     } else if (visuals.style === 'flamenco') {
-        // Flower
+        // Flamenco dress - flowing skirt
+        const skirtGeo = new THREE.CylinderGeometry(0.15, 0.45, 0.9, 16);
+        const skirtMat = new THREE.MeshStandardMaterial({ color: visuals.outfitColor });
+        const skirt = new THREE.Mesh(skirtGeo, skirtMat);
+        skirt.position.y = 0.45;
+        skirt.castShadow = true;
+        npc.add(skirt);
+
+        // Dress ruffle at bottom
+        const ruffleGeo = new THREE.TorusGeometry(0.45, 0.08, 8, 24);
+        const ruffleMat = new THREE.MeshStandardMaterial({ color: visuals.outfitColor });
+        const ruffle = new THREE.Mesh(ruffleGeo, ruffleMat);
+        ruffle.position.y = 0.05;
+        ruffle.rotation.x = Math.PI / 2;
+        npc.add(ruffle);
+
+        // Second ruffle layer
+        const ruffle2Geo = new THREE.TorusGeometry(0.38, 0.06, 8, 24);
+        const ruffle2 = new THREE.Mesh(ruffle2Geo, ruffleMat);
+        ruffle2.position.y = 0.25;
+        ruffle2.rotation.x = Math.PI / 2;
+        npc.add(ruffle2);
+
+        // Flower in hair
         const flowerGeo = new THREE.SphereGeometry(0.08, 8, 8);
         const flower = new THREE.Mesh(flowerGeo, accessoryMat);
         flower.position.set(0.2, 1.85, 0.15);

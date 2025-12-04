@@ -622,7 +622,7 @@ export const LANGUAGE_CONFIG = {
       visuals: {
         skinColor: '#d2b48c',
         hairColor: '#000000',
-        hairStyle: 'bun_ornate',
+        hairStyle: 'long_wavy',
         outfitColor: '#e74c3c',
         accessoryColor: '#ffd700',
         style: 'flamenco'

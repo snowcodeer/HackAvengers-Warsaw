@@ -55,7 +55,25 @@ export class SceneBuilder {
   // ═══════════════════════════════════════════════════════════════════════════
   buildFromJSON(sceneData) {
     console.log("🏗️ Building dynamic scene from JSON:", sceneData);
-    const layout = sceneData.scene.layout;
+
+    const sceneConfig = sceneData.scene || {};
+    const layout = sceneConfig.layout || {};
+    const atmosphere = sceneConfig.atmosphere;
+    const lighting = sceneConfig.lighting;
+
+    // 0. Atmosphere & Lighting
+    if (atmosphere) {
+      if (atmosphere.fog) {
+        this.scene.fog = new THREE.Fog(
+          atmosphere.fog.color || '#FFFFFF',
+          atmosphere.fog.near || 10,
+          atmosphere.fog.far || 50
+        );
+      }
+      if (atmosphere.background) {
+        this.scene.background = new THREE.Color(atmosphere.background);
+      }
+    }
 
     // 1. Floor
     if (layout.floor) {
@@ -63,9 +81,11 @@ export class SceneBuilder {
       if (type.includes('tile')) {
         this.createHexagonalTileFloor(15, 15, [color, '#ffffff']);
       } else if (type.includes('wood')) {
-        this.createVintageLinoleumFloor(15, 15, color, '#8B4513'); // Reusing linoleum/wood logic
+        this.createVintageLinoleumFloor(15, 15, color, '#8B4513');
       } else if (type.includes('concrete')) {
         this.createConcreteFloor(15, 15);
+      } else if (type.includes('tatami')) {
+        this.createTatamiFloor(15, 15);
       } else {
         this.createTerracottaFloor(15, 15);
       }
@@ -78,6 +98,10 @@ export class SceneBuilder {
         this.createIndustrialWalls(15, 15, 5);
       } else if (type.includes('tiled')) {
         this.createTalaveraWalls(15, 15, 4);
+      } else if (type.includes('shoji')) {
+        this.createShojiWalls(15, 15, 4);
+      } else if (type.includes('wainscot')) {
+        this.createWallsWithWainscoting(color || '#FFF8DC', '#8B7355', 4);
       } else {
         this.createSimpleWalls(15, 15, 4, color || '#ffffff');
       }
@@ -86,37 +110,122 @@ export class SceneBuilder {
     // 3. Props
     if (layout.props) {
       layout.props.forEach(prop => {
-        const { type, position, color, name } = prop;
+        const { type, position, color, name, rotation } = prop;
         const x = position.x;
         const y = position.y;
         const z = position.z;
+        const rot = rotation || 0;
 
-        // Map generic types to specific builder methods
+        let mesh = null;
+
+        // --- Furniture ---
         if (type.includes('counter') || type.includes('bar')) {
-          const counter = this.createDisplayCounter({
+          mesh = this.createDisplayCounter({
             width: 5, height: 1.1, depth: 0.8,
             material: 'wood', color: color || '#8B4513', trim: '#FFD700'
           });
-          counter.position.set(x, y + 0.55, z);
-          this.scene.add(counter);
+          mesh.position.set(x, y + 0.55, z);
         }
         else if (type.includes('table')) {
-          this.createSimpleTables([{ x, y, z }]);
+          if (type.includes('beer')) {
+            this.createBeerTable(x, y, z);
+          } else if (type.includes('low')) {
+            this.createLowTable({ x, y, z }, 1.8, 0.3, 1.2, color || '#4A3020');
+          } else {
+            this.createSimpleTables([{ x, y, z }]);
+          }
         }
         else if (type.includes('shelf')) {
-          this.createBreadShelves({ x, y, z }, 1); // Generic shelf
+          this.createBreadShelves({ x, y, z }, 1);
         }
-        else if (type.includes('plant') || type.includes('flower')) {
+        else if (type.includes('sofa') || type.includes('couch')) {
+          mesh = this.createSofa({ x, y, z }, color || '#555555');
+        }
+        else if (type.includes('stool')) {
+          mesh = this.createStool({ x, y, z }, color || '#8B4513');
+        }
+
+        // --- Decor ---
+        else if (type.includes('plant') || type.includes('flower') || type.includes('vase')) {
           this.createFlowerVase({ x, y, z }, 'flowers', color || '#ffffff');
         }
-        else if (type.includes('poster') || type.includes('art')) {
+        else if (type.includes('bamboo')) {
+          // Custom bamboo creation since createBambooPlants takes array
+          const bambooGeometry = new THREE.CylinderGeometry(0.05, 0.05, 4);
+          const bambooMaterial = new THREE.MeshStandardMaterial({ color: 0x6b8e23 });
+          mesh = new THREE.Mesh(bambooGeometry, bambooMaterial);
+          mesh.position.set(x, y + 2, z);
+        }
+        else if (type.includes('poster') || type.includes('art') || type.includes('painting')) {
           this.createVintagePosters([{ x, y: y + 2, z }], 'art');
         }
-        else if (type.includes('light') || type.includes('lamp')) {
-          this.createPendantLights([{ x, y: y + 3, z }], color || '#ffaa00', 1);
+        else if (type.includes('mirror')) {
+          this.createArtNouveauMirror({ x, y: y + 1.5, z });
         }
+        else if (type.includes('clock')) {
+          this.createVintageClock({ x, y: y + 2, z });
+        }
+        else if (type.includes('chalkboard') || type.includes('menu')) {
+          this.createChalkboardMenu({ x, y: y + 1.5, z }, []);
+        }
+
+        // --- Lighting ---
+        else if (type.includes('light') || type.includes('lamp') || type.includes('pendant')) {
+          if (type.includes('street')) {
+            mesh = this.createStreetLight({ x, y, z }, color || '#FFFFE0');
+          } else {
+            this.createPendantLights([{ x, y: y + 3, z }], color || '#ffaa00', 1);
+          }
+        }
+        else if (type.includes('lantern')) {
+          this.createLantern(x, y + 2, z, new THREE.Color(color || '#FF4500'));
+        }
+        else if (type.includes('neon')) {
+          const signLight = new THREE.PointLight(color || 0xff00ff, 2, 15);
+          signLight.position.set(x, y + 2, z);
+          this.scene.add(signLight);
+        }
+
+        // --- Food & Drink ---
+        else if (type.includes('croissant')) {
+          this.createCroissantDisplay({ x, y, z }, 5, 'pyramid');
+        }
+        else if (type.includes('bread') || type.includes('baguette')) {
+          this.createBaguetteBasket({ x, y, z }, 5);
+        }
+        else if (type.includes('coffee')) {
+          this.createVintageCoffeeMachine({ x, y, z });
+        }
+        else if (type.includes('tea')) {
+          this.createTeaCeremonySet({ x, y: y + 0.1, z });
+        }
+        else if (type.includes('wine')) {
+          // Simple wine bottle
+          const bottleGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.3);
+          const bottleMaterial = new THREE.MeshStandardMaterial({ color: 0x4a0000 });
+          const bottle = new THREE.Mesh(bottleGeometry, bottleMaterial);
+          bottle.position.set(x, y + 0.15, z);
+          this.scene.add(bottle);
+        }
+
+        // --- Special ---
+        else if (type.includes('register') || type.includes('cash')) {
+          this.createAntiqueCashRegister({ x, y, z });
+        }
+        else if (type.includes('scale')) {
+          this.createAntiqueBrassScale({ x, y, z });
+        }
+
+        // --- Structures ---
+        else if (type.includes('window')) {
+          this.createFrenchWindows([{ x, y, z }]);
+        }
+        else if (type.includes('door')) {
+          this.createShopDoor({ x, y, z });
+        }
+
+        // --- Fallback ---
         else {
-          // Fallback generic box for unknown props
           const geometry = new THREE.BoxGeometry(1, 1, 1);
           const material = new THREE.MeshStandardMaterial({ color: color || '#cccccc' });
           const mesh = new THREE.Mesh(geometry, material);
@@ -127,7 +236,16 @@ export class SceneBuilder {
       });
     }
 
-    // Apply default lighting if none specified
+    // Apply lighting from config if provided
+    if (lighting) {
+      // Clear default lights first if we want strict control, but for now we'll just add on top
+      // or rely on applyLighting to handle it.
+      // Actually, applyLighting checks this.config.scene.lighting.
+      // We need to inject our dynamic lighting into this.config.scene.lighting
+      if (!this.config.scene) this.config.scene = {};
+      this.config.scene.lighting = lighting;
+    }
+
     this.applyLighting();
 
     return {
@@ -1847,6 +1965,146 @@ export class SceneBuilder {
 
     group.position.set(position.x, position.y, position.z);
     this.scene.add(group);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // NEW DYNAMIC PROPS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  createSofa(pos, color) {
+    const group = new THREE.Group();
+    const seatGeo = new THREE.BoxGeometry(2, 0.5, 0.8);
+    const backGeo = new THREE.BoxGeometry(2, 1, 0.2);
+    const armGeo = new THREE.BoxGeometry(0.2, 0.8, 0.8);
+    const mat = new THREE.MeshStandardMaterial({ color: color });
+
+    const seat = new THREE.Mesh(seatGeo, mat);
+    const back = new THREE.Mesh(backGeo, mat);
+    const armL = new THREE.Mesh(armGeo, mat);
+    const armR = new THREE.Mesh(armGeo, mat);
+
+    seat.position.set(0, 0.25, 0);
+    back.position.set(0, 0.75, -0.3);
+    armL.position.set(-1.1, 0.4, 0);
+    armR.position.set(1.1, 0.4, 0);
+
+    group.add(seat, back, armL, armR);
+    group.position.set(pos.x, pos.y, pos.z);
+    this.scene.add(group);
+    return group;
+  }
+
+  createStool(pos, color) {
+    const geo = new THREE.CylinderGeometry(0.3, 0.3, 0.1, 16);
+    const legGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.8);
+    const mat = new THREE.MeshStandardMaterial({ color: color });
+
+    const seat = new THREE.Mesh(geo, mat);
+    seat.position.y = 0.8;
+
+    const group = new THREE.Group();
+    group.add(seat);
+
+    for (let i = 0; i < 4; i++) {
+      const leg = new THREE.Mesh(legGeo, mat);
+      const angle = (i / 4) * Math.PI * 2;
+      leg.position.set(Math.cos(angle) * 0.2, 0.4, Math.sin(angle) * 0.2);
+      group.add(leg);
+    }
+
+    group.position.set(pos.x, pos.y, pos.z);
+    this.scene.add(group);
+    return group;
+  }
+
+  createStreetLight(pos, color) {
+    const group = new THREE.Group();
+    const poleGeo = new THREE.CylinderGeometry(0.1, 0.15, 4);
+    const poleMat = new THREE.MeshStandardMaterial({ color: '#333333' });
+    const pole = new THREE.Mesh(poleGeo, poleMat);
+    pole.position.y = 2;
+
+    const lampGeo = new THREE.SphereGeometry(0.3);
+    const lampMat = new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: 1 });
+    const lamp = new THREE.Mesh(lampGeo, lampMat);
+    lamp.position.y = 4;
+
+    const light = new THREE.PointLight(color, 1, 10);
+    light.position.y = 4;
+
+    group.add(pole, lamp, light);
+    group.position.set(pos.x, pos.y, pos.z);
+    this.scene.add(group);
+    return group;
+  }
+
+  createArcadeMachine(pos, color) {
+    const group = new THREE.Group();
+    const bodyGeo = new THREE.BoxGeometry(0.8, 1.8, 0.8);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: color });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.y = 0.9;
+
+    const screenGeo = new THREE.PlaneGeometry(0.6, 0.5);
+    const screenMat = new THREE.MeshStandardMaterial({ color: '#000000', emissive: '#00FF00', emissiveIntensity: 0.5 });
+    const screen = new THREE.Mesh(screenGeo, screenMat);
+    screen.position.set(0, 1.3, 0.41);
+
+    group.add(body, screen);
+    group.position.set(pos.x, pos.y, pos.z);
+    this.scene.add(group);
+    return group;
+  }
+
+  createHologram(pos, color) {
+    const geo = new THREE.ConeGeometry(0.5, 1, 32, 1, true);
+    const mat = new THREE.MeshBasicMaterial({
+      color: color,
+      transparent: true,
+      opacity: 0.6,
+      side: THREE.DoubleSide,
+      wireframe: true
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(pos.x, pos.y + 0.5, pos.z);
+    mesh.rotation.x = Math.PI; // Invert cone
+
+    // Animate
+    this.animatedObjects.push({
+      mesh: mesh,
+      update: (time) => {
+        mesh.rotation.y = time;
+        mesh.material.opacity = 0.4 + Math.sin(time * 2) * 0.2;
+      }
+    });
+
+    this.scene.add(mesh);
+    return mesh;
+  }
+
+  createToriiGate(pos, color) {
+    const group = new THREE.Group();
+    const mat = new THREE.MeshStandardMaterial({ color: color });
+
+    // Pillars
+    const pillarGeo = new THREE.CylinderGeometry(0.2, 0.2, 3);
+    const p1 = new THREE.Mesh(pillarGeo, mat);
+    const p2 = new THREE.Mesh(pillarGeo, mat);
+    p1.position.set(-1.5, 1.5, 0);
+    p2.position.set(1.5, 1.5, 0);
+
+    // Lintels
+    const topGeo = new THREE.BoxGeometry(4, 0.3, 0.3);
+    const subGeo = new THREE.BoxGeometry(3.4, 0.2, 0.2);
+    const top = new THREE.Mesh(topGeo, mat);
+    const sub = new THREE.Mesh(subGeo, mat);
+    top.position.set(0, 2.8, 0);
+    sub.position.set(0, 2.3, 0);
+
+    group.add(p1, p2, top, sub);
+    group.position.set(pos.x, pos.y, pos.z);
+    this.scene.add(group);
+    return group;
   }
 
   // Placeholder methods for other scenes

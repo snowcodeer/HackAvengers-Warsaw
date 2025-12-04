@@ -189,6 +189,17 @@
                 <option value="polish">Polish</option>
             </select>
 
+            <label>Vibe / Atmosphere</label>
+            <select id="vibeSelect">
+                <option value="cozy">Cozy & Warm</option>
+                <option value="modern">Modern & Sleek</option>
+                <option value="bustling">Bustling & Busy</option>
+                <option value="historical">Historical & Vintage</option>
+                <option value="cyberpunk">Cyberpunk / Neon</option>
+                <option value="nature">Nature & Serene</option>
+                <option value="spooky">Spooky & Mysterious</option>
+            </select>
+
             <label>Scenario Description</label>
             <textarea id="scenarioPrompt"
                 placeholder="E.g., A busy fish market in Tokyo at dawn, with a grumpy but helpful fishmonger."></textarea>
@@ -204,6 +215,7 @@
         const generateBtn = document.getElementById('generateBtn');
         const loading = document.getElementById('loading');
         const languageSelect = document.getElementById('languageSelect');
+        const vibeSelect = document.getElementById('vibeSelect');
 
         // Pre-select language if available
         const savedLang = localStorage.getItem('selectedLanguage');
@@ -213,6 +225,7 @@
 
         generateBtn.addEventListener('click', async () => {
             const language = document.getElementById('languageSelect').value;
+            const vibe = document.getElementById('vibeSelect').value;
             const prompt = document.getElementById('scenarioPrompt').value;
 
             if (!prompt) {
@@ -222,9 +235,17 @@
 
             generateBtn.disabled = true;
             loading.style.display = 'block';
+            loading.innerText = "📡 Contacting the AI Architect...";
+            console.log("🚀 Starting scenario generation...");
 
             try {
-                const scenario = await generateDynamicScenario(prompt, language);
+                const scenario = await generateDynamicScenario(prompt, language, vibe);
+
+                loading.innerText = "🏗️ Constructing 3D Assets...";
+                console.log("✅ Scenario received:", scenario);
+
+                // Inject vibe into scenario object for Mirage
+                scenario.vibe = vibe;
 
                 // Save state
                 const gameState = {
@@ -233,10 +254,11 @@
                 };
                 sessionStorage.setItem('linguaverse_state', JSON.stringify(gameState));
 
+                loading.innerText = "✨ Teleporting to your world...";
                 // Navigate to game
                 window.location.href = 'lingua-world.html';
             } catch (e) {
-                console.error(e);
+                console.error("❌ Generation failed:", e);
                 alert('Failed to generate scenario. Please check console/API keys.');
                 generateBtn.disabled = false;
                 loading.style.display = 'none';

@@ -5,7 +5,7 @@
  * @param {string} language - The target language (e.g., "japanese").
  * @returns {Promise<Object>} - The generated scenario data.
  */
-export async function generateDynamicScenario(userPrompt, language) {
+export async function generateDynamicScenario(userPrompt, language, vibe) {
     try {
         const response = await fetch('http://localhost:8000/api/scenario/generate', {
             method: 'POST',
@@ -14,7 +14,8 @@ export async function generateDynamicScenario(userPrompt, language) {
             },
             body: JSON.stringify({
                 prompt: userPrompt,
-                language: language
+                language: language,
+                vibe: vibe
             })
         });
 
