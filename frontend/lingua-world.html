@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -88,7 +89,7 @@
         .pixel-panel {
             background: rgba(40, 30, 20, 0.95);
             border: 4px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 4px 4px 0 0 var(--wood-shadow),
                 inset 2px 2px 0 0 var(--wood-light);
             color: var(--cream);
@@ -101,7 +102,7 @@
             left: 20px;
             background: rgba(40, 30, 20, 0.95);
             border: 6px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 6px 6px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 var(--wood-light);
             padding: 20px 24px;
@@ -148,6 +149,31 @@
             border-color: var(--cozy-orange);
         }
 
+        /* Custom Scenario Button */
+        .custom-scenario-btn {
+            margin-top: 15px;
+            background: var(--accent-teal);
+            border: 4px solid #3aa39b;
+            color: var(--pixel-black);
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.6rem;
+            padding: 10px;
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 0 var(--wood-shadow);
+            transition: all 0.1s;
+        }
+
+        .custom-scenario-btn:hover {
+            transform: translateY(2px);
+            box-shadow: 2px 2px 0 0 var(--wood-shadow);
+        }
+
+        .custom-scenario-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
         /* Glossary button - Top Right */
         .glossary-btn {
             position: absolute;
@@ -155,7 +181,7 @@
             right: 20px;
             background: var(--wood-main);
             border: 5px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 5px 5px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 var(--wood-light);
             width: 70px;
@@ -171,14 +197,14 @@
 
         .glossary-btn:hover {
             transform: translateY(2px);
-            box-shadow: 
+            box-shadow:
                 2px 2px 0 0 var(--wood-shadow),
                 inset 2px 2px 0 0 var(--wood-light);
         }
 
         .glossary-btn:active {
             transform: translateY(4px);
-            box-shadow: 
+            box-shadow:
                 0 0 0 0 var(--wood-shadow),
                 inset 2px 2px 0 0 var(--wood-dark);
         }
@@ -228,7 +254,7 @@
         .speech-bubble {
             background: rgba(40, 30, 20, 0.95);
             border: 5px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 5px 5px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 var(--wood-light);
             padding: 20px;
@@ -278,7 +304,7 @@
             height: 75px;
             background: var(--cozy-yellow);
             border: 5px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 5px 5px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 var(--wood-light);
             cursor: pointer;
@@ -291,7 +317,7 @@
 
         .voice-btn:hover {
             transform: translateY(3px);
-            box-shadow: 
+            box-shadow:
                 2px 2px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 var(--wood-light);
         }
@@ -302,15 +328,20 @@
         }
 
         @keyframes pixel-pulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.05); }
+            0% {
+                transform: scale(1);
+            }
+
+            100% {
+                transform: scale(1.05);
+            }
         }
 
         .voice-hint {
             flex: 1;
             background: rgba(40, 30, 20, 0.95);
             border: 5px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 5px 5px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 var(--wood-light);
             padding: 18px 20px;
@@ -328,7 +359,7 @@
             flex: 1;
             background: rgba(40, 30, 20, 0.95);
             border: 5px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 inset 3px 3px 0 0 var(--wood-shadow);
             padding: 18px 20px;
             font-size: 0.65rem;
@@ -350,7 +381,7 @@
             height: 65px;
             background: var(--accent-teal);
             border: 5px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 5px 5px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 #6ee6dc;
             cursor: pointer;
@@ -361,7 +392,7 @@
 
         .send-btn:hover {
             transform: translateY(3px);
-            box-shadow: 
+            box-shadow:
                 2px 2px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 #6ee6dc;
         }
@@ -388,7 +419,7 @@
         .glossary-content {
             background: rgba(40, 30, 20, 0.98);
             border: 6px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 8px 8px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 var(--wood-light);
             width: 90%;
@@ -510,8 +541,15 @@
         }
 
         @keyframes pixel-float {
-            0%, 100% { transform: translate(-50%, -50%); }
-            50% { transform: translate(-50%, calc(-50% - 8px)); }
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%);
+            }
+
+            50% {
+                transform: translate(-50%, calc(-50% - 8px));
+            }
         }
 
         /* Loading screen */
@@ -521,13 +559,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(180deg, 
-                #3878b8 0%, 
-                #50a0d8 30%, 
-                #78c0e8 60%, 
-                #50c850 80%, 
-                #40a840 100%
-            );
+            background: linear-gradient(180deg,
+                    #3878b8 0%,
+                    #50a0d8 30%,
+                    #78c0e8 60%,
+                    #50c850 80%,
+                    #40a840 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -544,7 +581,7 @@
         .loading-box {
             background: rgba(40, 30, 20, 0.95);
             border: 8px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 10px 10px 0 0 var(--wood-shadow),
                 inset 4px 4px 0 0 var(--wood-light);
             padding: 60px 80px;
@@ -559,8 +596,15 @@
         }
 
         @keyframes pixel-bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
         }
 
         .loading-text {
@@ -594,8 +638,13 @@
         }
 
         @keyframes loading-fill {
-            0% { width: 0%; }
-            100% { width: 100%; }
+            0% {
+                width: 0%;
+            }
+
+            100% {
+                width: 100%;
+            }
         }
 
         /* Controls hint - Bottom Left */
@@ -605,7 +654,7 @@
             left: 20px;
             background: rgba(40, 30, 20, 0.95);
             border: 5px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 5px 5px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 var(--wood-light);
             padding: 14px 18px;
@@ -641,15 +690,16 @@
         }
     </style>
 </head>
+
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
-        
+
         <!-- Mirage Real-time Video Stylization -->
         <div id="mirage-container">
             <video id="mirage-video-output" autoplay muted playsinline></video>
         </div>
-        
+
         <div class="ui-overlay">
             <!-- Scenario Info - Top Left -->
             <div class="scenario-info" id="scenarioInfo">
@@ -665,21 +715,22 @@
                     <div class="difficulty-pip"></div>
                     <div class="difficulty-pip"></div>
                 </div>
+                <button id="customScenarioBtn" class="custom-scenario-btn">✨ Custom Scenario</button>
             </div>
-            
+
             <!-- Glossary Button - Top Right -->
             <button class="glossary-btn" id="glossaryBtn" title="Glossary">📖</button>
-            
+
             <!-- Interaction Prompt -->
             <div class="interact-prompt" id="interactPrompt">
                 Press <kbd>E</kbd> to talk
             </div>
-            
+
             <!-- Controls Hint - Bottom Left -->
             <div class="controls-hint" id="controlsHint">
                 <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move · <kbd>E</kbd> Talk · <kbd>ESC</kbd> Exit
             </div>
-            
+
             <!-- Conversation Panel - Bottom -->
             <div class="conversation-panel" id="conversationPanel">
                 <div class="conversation-content">
@@ -694,7 +745,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="voice-input-area">
                         <button class="voice-btn" id="voiceBtn">🎤</button>
                         <input type="text" class="text-input" id="textInput" placeholder="Type or click mic...">
@@ -703,7 +754,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Glossary Modal -->
         <div class="glossary-modal" id="glossaryModal">
             <div class="glossary-content">
@@ -711,14 +762,14 @@
                     <h2 class="glossary-title">📖 GLOSSARY</h2>
                     <button class="glossary-close" id="glossaryClose">✕ CLOSE</button>
                 </div>
-                
+
                 <div class="glossary-section">
                     <h3 class="glossary-section-title">Words Learned</h3>
                     <div class="glossary-grid" id="glossaryWords">
                         <!-- Populated by JS -->
                     </div>
                 </div>
-                
+
                 <div class="glossary-section">
                     <h3 class="glossary-section-title">⚠️ False Friends</h3>
                     <div class="glossary-grid" id="glossaryFalseFriends">
@@ -727,7 +778,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Loading Screen -->
         <div class="loading-screen" id="loadingScreen">
             <div class="loading-box">
@@ -740,7 +791,8 @@
             </div>
         </div>
     </div>
-    
+
     <script type="module" src="lingua-world.js"></script>
 </body>
+
 </html>

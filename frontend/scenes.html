@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LinguaWorlds - Choose Your Journey</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap"
+    rel="stylesheet">
   <style>
     :root {
       --bg-primary: #0a0a0f;
@@ -35,7 +38,7 @@
       color: var(--text-primary);
       min-height: 100vh;
       overflow-x: hidden;
-      background-image: 
+      background-image:
         radial-gradient(ellipse at 20% 0%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
         radial-gradient(ellipse at 80% 100%, rgba(231, 76, 94, 0.06) 0%, transparent 50%),
         radial-gradient(ellipse at 50% 50%, rgba(74, 144, 217, 0.04) 0%, transparent 70%);
@@ -64,10 +67,25 @@
     }
 
     @keyframes float {
-      0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-      10% { opacity: 0.3; }
-      90% { opacity: 0.3; }
-      100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+
+      0%,
+      100% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 0.3;
+      }
+
+      90% {
+        opacity: 0.3;
+      }
+
+      100% {
+        transform: translateY(-10vh) rotate(720deg);
+        opacity: 0;
+      }
     }
 
     /* Header */
@@ -138,6 +156,7 @@
         opacity: 0;
         transform: translateY(-30px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
@@ -180,20 +199,44 @@
       animation: cardFadeIn 0.6s ease-out backwards;
     }
 
-    .language-card:nth-child(1) { animation-delay: 0.1s; }
-    .language-card:nth-child(2) { animation-delay: 0.2s; }
-    .language-card:nth-child(3) { animation-delay: 0.3s; }
-    .language-card:nth-child(4) { animation-delay: 0.4s; }
-    .language-card:nth-child(5) { animation-delay: 0.5s; }
-    .language-card:nth-child(6) { animation-delay: 0.6s; }
-    .language-card:nth-child(7) { animation-delay: 0.7s; }
-    .language-card:nth-child(8) { animation-delay: 0.8s; }
+    .language-card:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+
+    .language-card:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .language-card:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    .language-card:nth-child(4) {
+      animation-delay: 0.4s;
+    }
+
+    .language-card:nth-child(5) {
+      animation-delay: 0.5s;
+    }
+
+    .language-card:nth-child(6) {
+      animation-delay: 0.6s;
+    }
+
+    .language-card:nth-child(7) {
+      animation-delay: 0.7s;
+    }
+
+    .language-card:nth-child(8) {
+      animation-delay: 0.8s;
+    }
 
     @keyframes cardFadeIn {
       from {
         opacity: 0;
         transform: translateY(40px) rotateX(-10deg);
       }
+
       to {
         opacity: 1;
         transform: translateY(0) rotateX(0);
@@ -227,7 +270,7 @@
     .card-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.7) 100%);
+      background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.7) 100%);
     }
 
     .card-flag {
@@ -235,7 +278,7 @@
       top: 1rem;
       right: 1rem;
       font-size: 2rem;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
     }
 
     .card-icon {
@@ -243,7 +286,7 @@
       bottom: 1rem;
       left: 1rem;
       font-size: 3rem;
-      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
     }
 
     .progress-ring {
@@ -262,7 +305,7 @@
     }
 
     .progress-ring .bg {
-      stroke: rgba(255,255,255,0.1);
+      stroke: rgba(255, 255, 255, 0.1);
     }
 
     .progress-ring .progress {
@@ -387,14 +430,37 @@
     }
 
     /* Card-specific themes */
-    .card-french .card-bg { background: linear-gradient(135deg, #1e3a5f 0%, #2a4a7f 100%); }
-    .card-german .card-bg { background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%); }
-    .card-polish .card-bg { background: linear-gradient(135deg, #7f1d1d 0%, #9f2d2d 100%); }
-    .card-english .card-bg { background: linear-gradient(135deg, #2c1810 0%, #4c2820 100%); }
-    .card-mandarin .card-bg { background: linear-gradient(135deg, #8b0000 0%, #ab2020 100%); }
-    .card-spanish .card-bg { background: linear-gradient(135deg, #c2410c 0%, #e2612c 100%); }
-    .card-japanese .card-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
-    .card-italian .card-bg { background: linear-gradient(135deg, #1e3a24 0%, #2e5a34 100%); }
+    .card-french .card-bg {
+      background: linear-gradient(135deg, #1e3a5f 0%, #2a4a7f 100%);
+    }
+
+    .card-german .card-bg {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+    }
+
+    .card-polish .card-bg {
+      background: linear-gradient(135deg, #7f1d1d 0%, #9f2d2d 100%);
+    }
+
+    .card-english .card-bg {
+      background: linear-gradient(135deg, #2c1810 0%, #4c2820 100%);
+    }
+
+    .card-mandarin .card-bg {
+      background: linear-gradient(135deg, #8b0000 0%, #ab2020 100%);
+    }
+
+    .card-spanish .card-bg {
+      background: linear-gradient(135deg, #c2410c 0%, #e2612c 100%);
+    }
+
+    .card-japanese .card-bg {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
+
+    .card-italian .card-bg {
+      background: linear-gradient(135deg, #1e3a24 0%, #2e5a34 100%);
+    }
 
     /* Completed badge */
     .completed-badge {
@@ -455,6 +521,7 @@
     }
   </style>
 </head>
+
 <body>
   <!-- Animated Particles Background -->
   <div class="particles" id="particles"></div>
@@ -501,10 +568,10 @@
   <script type="module">
     import { LANGUAGE_CONFIG } from './config/languages.js';
     import { EXTENDED_LANGUAGES } from './config/languages-extended.js';
-    
+
     // Merge all languages
     const ALL_LANGUAGES = { ...LANGUAGE_CONFIG, ...EXTENDED_LANGUAGES };
-    
+
     // Load saved progress
     function getProgress(langId) {
       try {
@@ -513,44 +580,44 @@
           const state = JSON.parse(saved);
           const config = ALL_LANGUAGES[langId];
           if (config && config.scenarios) {
-            const completed = config.scenarios.filter(s => 
+            const completed = config.scenarios.filter(s =>
               (state.visitedScenarios || []).includes(`${langId}_${s.id}`)
             ).length;
             return Math.round((completed / config.scenarios.length) * 100);
           }
         }
-      } catch (e) {}
+      } catch (e) { }
       return 0;
     }
-    
+
     function getStats() {
       try {
         const progress = localStorage.getItem('linguaWorlds_progress');
         const glossary = localStorage.getItem('linguaWorlds_glossary');
-        
+
         let stats = { level: 1, streak: 0, words: 0 };
-        
+
         if (progress) {
           const p = JSON.parse(progress);
           stats.level = p.level || 1;
           stats.streak = p.streaks?.current || 0;
         }
-        
+
         if (glossary) {
           const g = JSON.parse(glossary);
           stats.words = Object.values(g.vocabulary || {}).reduce((sum, arr) => sum + arr.length, 0);
         }
-        
+
         return stats;
       } catch (e) {
         return { level: 1, streak: 0, words: 0 };
       }
     }
-    
+
     function createProgressRing(progress) {
       const circumference = 2 * Math.PI * 20;
       const offset = circumference - (progress / 100) * circumference;
-      
+
       return `
         <svg class="progress-ring" viewBox="0 0 50 50">
           <circle class="bg" cx="25" cy="25" r="20"/>
@@ -561,12 +628,12 @@
         <span class="progress-text">${progress}%</span>
       `;
     }
-    
+
     function createLanguageCard(id, config) {
       const progress = getProgress(id);
       const isCompleted = progress === 100;
       const character = config.character;
-      
+
       return `
         <article class="language-card card-${id}" data-lang="${id}">
           ${isCompleted ? '<div class="completed-badge">✓ Complete</div>' : ''}
@@ -592,7 +659,7 @@
             </div>
             <div class="card-footer">
               <div class="difficulty-stars">
-                ${[1,2,3,4,5].map(i => `<span class="star ${i <= Math.ceil(progress/20) || i === 1 ? 'filled' : ''}">★</span>`).join('')}
+                ${[1, 2, 3, 4, 5].map(i => `<span class="star ${i <= Math.ceil(progress / 20) || i === 1 ? 'filled' : ''}">★</span>`).join('')}
               </div>
               <button class="start-btn">${progress > 0 ? 'Continue' : 'Start'}</button>
             </div>
@@ -600,7 +667,7 @@
         </article>
       `;
     }
-    
+
     function generateParticles() {
       const container = document.getElementById('particles');
       for (let i = 0; i < 30; i++) {
@@ -612,23 +679,42 @@
         container.appendChild(particle);
       }
     }
-    
+
     function initialize() {
       // Generate particles
       generateParticles();
-      
+
       // Update stats
       const stats = getStats();
       document.getElementById('streakCount').textContent = stats.streak;
       document.getElementById('levelCount').textContent = stats.level;
       document.getElementById('wordCount').textContent = stats.words;
-      
+
       // Generate language cards
       const grid = document.getElementById('languageGrid');
-      grid.innerHTML = Object.entries(ALL_LANGUAGES)
+
+      const customCard = `
+        <article class="language-card" onclick="window.location.href='custom-scenario.html'" style="border-color: var(--accent-blue);">
+          <div class="card-visual">
+            <div class="card-bg" style="background: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);"></div>
+            <div class="card-overlay"></div>
+            <span class="card-icon">✨</span>
+          </div>
+          <div class="card-content">
+            <h2 class="card-title">Custom Scenario</h2>
+            <p class="card-native">Create Your Own</p>
+            <p class="card-location">Anywhere you imagine</p>
+            <div class="card-footer">
+                <button class="start-btn" style="background: var(--accent-blue);">Create</button>
+            </div>
+          </div>
+        </article>
+      `;
+
+      grid.innerHTML = customCard + Object.entries(ALL_LANGUAGES)
         .map(([id, config]) => createLanguageCard(id, config))
         .join('');
-      
+
       // Add click handlers
       grid.querySelectorAll('.language-card').forEach(card => {
         card.addEventListener('click', () => {
@@ -639,10 +725,10 @@
         });
       });
     }
-    
+
     // Initialize on load
     document.addEventListener('DOMContentLoaded', initialize);
   </script>
 </body>
-</html>
 
+</html>
