@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
     <style>
         * {
             margin: 0;
@@ -682,8 +683,19 @@
             object-fit: cover;
         }
     </style>
-  <script type="module" crossorigin src="/assets/game-CmVno8wG.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "@mediapipe/hands": "https://esm.sh/@mediapipe/hands",
+                "@mediapipe/camera_utils": "https://esm.sh/@mediapipe/camera_utils",
+                "@mediapipe/drawing_utils": "https://esm.sh/@mediapipe/drawing_utils"
+            }
+        }
+    </script>
+  <script type="module" crossorigin src="/assets/game-BwxiCotf.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="modulepreload" crossorigin href="/assets/mirage-S6-GZa0g.js">
+  <link rel="stylesheet" crossorigin href="/assets/game-BvquaKak.css">
 </head>
 
 <body>
@@ -714,13 +726,17 @@
             <!-- Chat wrapper -->
             <div class="chat-wrapper" id="chatWrapper">
                 <div class="chat-container" id="chatContainer"></div>
+                <div class="chat-input-container">
+                    <button id="micBtn" class="mic-btn" title="Hold to Speak">🎤</button>
+                    <div id="recordingStatus" class="recording-status hidden">Recording...</div>
+                </div>
             </div>
 
             <!-- Journal button during dialogue (fixed right) -->
             <button class="journal-btn-chat" id="journalBtnChat" title="Journal [F]">📖</button>
 
-            <div class="continue-prompt" id="continuePrompt">
-                Press SPACE to continue...
+            <div class="continue-prompt" id="voicePrompt">
+                Hold SPACE to Speak
             </div>
 
             <!-- Journal button (shown when not in dialogue) -->
