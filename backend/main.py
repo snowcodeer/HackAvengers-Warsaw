@@ -17,7 +17,7 @@ from fastapi.responses import JSONResponse
 import os
 
 # Import routers
-from routers import conversation, quest, voice
+from routers import conversation, quest, voice, scenario
 from services.lesson_service import lesson_service
 from services.elevenlabs_service import elevenlabs_service
 
@@ -56,6 +56,9 @@ app.include_router(conversation.router)
 
 # Quest API - Game progression
 app.include_router(quest.router)
+
+# Scenario API - Dynamic generation
+app.include_router(scenario.router)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

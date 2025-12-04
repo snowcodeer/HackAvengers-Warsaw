@@ -272,7 +272,7 @@ function initLanguageSelection() {
             // Remove previous selection
             cards.forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
-            
+
             state.selectedLanguage = card.dataset.lang;
             showScenarios(state.selectedLanguage);
         });
@@ -283,10 +283,10 @@ function showScenarios(language) {
     // Use extensive LANGUAGE_CONFIG for main scenario, fallback to SCENARIOS for extras
     const langConfig = getLanguageConfig(language);
     const extraScenarios = SCENARIOS[language] || [];
-    
+
     // Build scenarios list - primary from config, extras from SCENARIOS
     let scenarios = [];
-    
+
     if (langConfig) {
         // Add the main scenario from extensive config
         const mainScenario = {
@@ -310,14 +310,14 @@ function showScenarios(language) {
         };
         scenarios.push(mainScenario);
     }
-    
+
     // Add any extra scenarios from the old SCENARIOS object (for variety)
     extraScenarios.forEach(s => {
         if (!scenarios.find(sc => sc.id === s.id)) {
             scenarios.push(s);
         }
     });
-    
+
     elements.scenarioGrid.innerHTML = scenarios.map(s => `
         <div class="scenario-card" data-scenario="${s.id}">
             <div class="scenario-preview">${s.emoji}</div>
@@ -333,21 +333,72 @@ function showScenarios(language) {
                 </div>
             </div>
         </div>
-    `).join('');
-    
+    `).join('') + `
+        <div class="scenario-card" data-scenario="custom">
+            <div class="scenario-preview" style="background: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);">✨</div>
+            <div class="scenario-content">
+                <div class="scenario-location">
+                    <span class="scenario-flag">🤖</span>
+                    <span class="scenario-country">AI Generated</span>
+                </div>
+                <h3 class="scenario-name">Custom Scenario</h3>
+                <p class="scenario-desc">Describe your own dream scenario and let our AI build it for you instantly.</p>
+                <div class="scenario-vocab">
+                    <span class="vocab-tag" style="background: #4ca1af; color: white;">Unlimited</span>
+                </div>
+            </div>
+        </div>
+    `;
+
     // Add click handlers
     const scenarioCards = elements.scenarioGrid.querySelectorAll('.scenario-card');
     scenarioCards.forEach(card => {
         card.addEventListener('click', () => {
             scenarioCards.forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
-            
+
             const scenarioId = card.dataset.scenario;
-            state.selectedScenario = scenarios.find(s => s.id === scenarioId);
-            showCharacter(state.selectedScenario);
+
+            if (scenarioId === 'custom') {
+                state.selectedScenario = { id: 'custom', name: 'Custom Scenario' };
+                showCustomPreview();
+            } else {
+                state.selectedScenario = scenarios.find(s => s.id === scenarioId);
+                showCharacter(state.selectedScenario);
+            }
         });
     });
-    
+
+    // Show section with animation
+    elements.stepScenario.classList.remove('hidden');
+    elements.stepScenario.classList.add('fade-in');
+}
+
+function showCustomPreview() {
+    elements.characterPreview.innerHTML = `
+        <div class="character-avatar" style="background: #2c3e50; color: #4ca1af;">✨</div>
+        <div class="character-info">
+            <h3 class="character-name">The Architect</h3>
+            <p class="character-role">AI World Builder</p>
+            <p class="character-bio">"I can build anything you can imagine. Just describe your dream learning environment, and I will construct it, populate it, and prepare a lesson plan just for you."</p>
+            <p style="color: var(--accent-teal); font-size: 0.9rem; margin-top: 10px;">✨ Infinite Possibilities</p>
+        </div>
+    `;
+
+    elements.stepCharacter.classList.remove('hidden');
+    elements.stepCharacter.classList.add('fade-in');
+
+    elements.stepStart.classList.remove('hidden');
+    elements.stepStart.classList.add('fade-in');
+
+    elements.startBtn.textContent = "Create Scenario";
+    elements.startBtn.disabled = false;
+
+    // Override start button for custom flow
+    elements.startBtn.onclick = () => {
+        window.location.href = 'custom-scenario.html';
+    };
+
     // Show section with animation
     elements.stepScenario.classList.remove('hidden');
     elements.stepScenario.classList.add('fade-in');
@@ -357,12 +408,12 @@ function showCharacter(scenario) {
     const char = scenario.character;
     const personality = char.personality || {};
     const appearance = char.appearance || {};
-    
+
     // Build a richer bio from extensive config
     const traits = personality.traits?.join(', ') || '';
     const backstory = personality.backstory || char.bio || '';
     const quirks = personality.quirks?.slice(0, 2).join(', ') || '';
-    
+
     // Build appearance description
     const outfit = appearance.outfit || {};
     const appearanceDesc = [
@@ -370,7 +421,7 @@ function showCharacter(scenario) {
         outfit.top,
         appearance.signature
     ].filter(Boolean).join(' • ');
-    
+
     elements.characterPreview.innerHTML = `
         <div class="character-avatar">${char.emoji}</div>
         <div class="character-info">
@@ -382,13 +433,13 @@ function showCharacter(scenario) {
             ${appearanceDesc ? `<p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 8px;">👗 ${appearanceDesc}</p>` : ''}
         </div>
     `;
-    
+
     elements.stepCharacter.classList.remove('hidden');
     elements.stepCharacter.classList.add('fade-in');
-    
+
     elements.stepStart.classList.remove('hidden');
     elements.stepStart.classList.add('fade-in');
-    
+
     elements.startBtn.disabled = false;
 }
 
@@ -438,10 +489,10 @@ Return a JSON object with this structure:
                 messages: [{ role: 'user', content: prompt }]
             })
         });
-        
+
         const data = await response.json();
         const content = data.content[0].text;
-        
+
         // Extract JSON from response
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
@@ -450,7 +501,7 @@ Return a JSON object with this structure:
     } catch (error) {
         console.error('Error generating lesson plan:', error);
     }
-    
+
     // Return default lesson plan
     return getDefaultLessonPlan(language, scenario);
 }
@@ -480,17 +531,17 @@ function getDefaultLessonPlan(language, scenario) {
 async function startGame() {
     elements.startBtn.textContent = 'Loading...';
     elements.startBtn.disabled = true;
-    
+
     // Generate lesson plan
     state.lessonPlan = await generateLessonPlan(state.selectedLanguage, state.selectedScenario);
-    
+
     // Store state for the game world
     sessionStorage.setItem('linguaverse_state', JSON.stringify({
         language: state.selectedLanguage,
         scenario: state.selectedScenario,
         lessonPlan: state.lessonPlan
     }));
-    
+
     // Navigate to the game world
     window.location.href = 'lingua-world.html';
 }
@@ -498,7 +549,7 @@ async function startGame() {
 // ==================== INITIALIZATION ====================
 function init() {
     elements.startBtn.addEventListener('click', startGame);
-    
+
     // Check if language was already selected from country-selection
     const savedLanguage = localStorage.getItem('selectedLanguage');
     if (savedLanguage) {
