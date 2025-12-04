@@ -11,7 +11,7 @@ export class AudioManager {
     this.sfxPool = new Map();
     
     // Volume settings (0-1) - Very subtle background atmosphere
-    this.musicVolume = 0.08;      // Background music - quiet radio
+    this.musicVolume = 0.02;      // Background music - very quiet
     this.ambientVolume = 0.04;    // Ambient sounds - barely there café atmosphere
     this.sfxVolume = 0.4;         // Sound effects
     this.masterVolume = 1.0;
