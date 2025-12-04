@@ -574,8 +574,8 @@ function initSubmitButton() {
         
         setTimeout(() => {
             submitBtn.style.transform = '';
-            // Navigate to game world
-            window.location.href = 'game.html';
+            // Navigate to LinguaVerse language/scenario selection
+            window.location.href = 'lingua.html';
         }, 300);
     });
 }
