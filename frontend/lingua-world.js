@@ -1701,31 +1701,33 @@ function createNPC() {
     torso.castShadow = true;
     npc.add(torso);
 
-    // 3. Arms (Cylinders)
-    const armGeo = new THREE.CylinderGeometry(0.08, 0.07, 0.7, 8);
+    // 3. Arms (Cylinders) - Hanging DOWN from shoulders
+    const armGeo = new THREE.CylinderGeometry(0.08, 0.07, 0.55, 8);
+    // Translate geometry so TOP of cylinder is at origin (arm hangs down)
+    armGeo.translate(0, -0.275, 0);  // Move down by half height
 
-    // Left Arm
+    // Left Arm - attached at shoulder, angling OUTWARD (away from body)
     const leftArm = new THREE.Mesh(armGeo, outfitMat);
-    leftArm.position.set(-0.35, 1.3, 0);
-    leftArm.rotation.z = Math.PI / 8;
+    leftArm.position.set(-0.25, 1.5, 0);  // Shoulder position
+    leftArm.rotation.z = -Math.PI / 13;  // Slight outward angle
     leftArm.castShadow = true;
     npc.add(leftArm);
 
-    // Right Arm
-    const rightArm = new THREE.Mesh(armGeo, outfitMat);
-    rightArm.position.set(0.35, 1.3, 0);
-    rightArm.rotation.z = -Math.PI / 8;
+    // Right Arm - angling OUTWARD (away from body)
+    const rightArm = new THREE.Mesh(armGeo.clone(), outfitMat);
+    rightArm.position.set(0.25, 1.5, 0);  // Shoulder position
+    rightArm.rotation.z = Math.PI / 13;  // Slight outward angle
     rightArm.castShadow = true;
     npc.add(rightArm);
 
-    // Hands
-    const handGeo = new THREE.SphereGeometry(0.08, 8, 8);
+    // Hands - at bottom of arms (which now hang down and outward)
+    const handGeo = new THREE.SphereGeometry(0.07, 8, 8);
     const leftHand = new THREE.Mesh(handGeo, skinMat);
-    leftHand.position.set(0, -0.4, 0);
+    leftHand.position.set(0, -0.55, 0);  // At bottom of hanging arm
     leftArm.add(leftHand);
 
     const rightHand = new THREE.Mesh(handGeo, skinMat);
-    rightHand.position.set(0, -0.4, 0);
+    rightHand.position.set(0, -0.55, 0);  // At bottom of hanging arm
     rightArm.add(rightHand);
 
     // 4. Head
