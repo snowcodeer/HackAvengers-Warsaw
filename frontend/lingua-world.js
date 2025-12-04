@@ -795,14 +795,21 @@ async function init() {
 
         // Start Mirage real-time stylization when world loads
         const scenarioId = gameState.scenario?.id || 'boulangerie';
-        mirageActive = await startMirageStream(scenarioId, 'gameCanvas');
+
+        // Get character config for dynamic prompt
+        const language = gameState.language || 'french';
+        const langConfig = getLanguageConfig(language);
+        // Use extensive config if available, or fallback to scenario character
+        const characterConfig = langConfig?.character || gameState.scenario?.character;
+
+        mirageActive = await startMirageStream(scenarioId, 'gameCanvas', characterConfig);
         if (mirageActive) {
             console.log('🎨 Mirage MirageLSD activated - immersive world rendering');
         }
 
         // 🎵 Start background music for this language/country
         await audioManager.initialize();
-        const language = gameState.language || 'french';
+        // language variable already defined above
         await audioManager.setLanguageAudio(language);
         console.log(`🎵 Background music started for ${language}`);
     }, 2000);
@@ -1717,6 +1724,39 @@ function createNPC() {
     head.castShadow = true;
     npc.add(head);
 
+    // --- Facial Features ---
+
+    // Eyes
+    const eyeGeo = new THREE.SphereGeometry(0.025, 8, 8);
+    const eyeMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.2 });
+
+    const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+    leftEye.position.set(-0.08, 0.02, 0.19);
+    head.add(leftEye);
+
+    const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+    rightEye.position.set(0.08, 0.02, 0.19);
+    head.add(rightEye);
+
+    // Nose
+    const noseGeo = new THREE.ConeGeometry(0.02, 0.06, 4);
+    const noseMat = new THREE.MeshStandardMaterial({ color: visuals.skinColor, roughness: 0.6 }); // Slightly darker/different roughness could work too
+    // Darken nose slightly for definition
+    noseMat.color.offsetHSL(0, 0, -0.05);
+
+    const nose = new THREE.Mesh(noseGeo, noseMat);
+    nose.position.set(0, -0.02, 0.21);
+    nose.rotation.x = Math.PI / 2; // Point forward
+    head.add(nose);
+
+    // Mouth
+    const mouthGeo = new THREE.TorusGeometry(0.03, 0.008, 4, 8, Math.PI);
+    const mouthMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b }); // Darker skin tone/lip color
+    const mouth = new THREE.Mesh(mouthGeo, mouthMat);
+    mouth.position.set(0, -0.08, 0.19);
+    mouth.rotation.x = Math.PI / 8; // Tilt slightly
+    head.add(mouth);
+
     // 5. Hair (Based on style)
     let hairGeo;
     if (visuals.hairStyle === 'bun' || visuals.hairStyle === 'bun_ornate') {
@@ -1970,26 +2010,17 @@ function zoomToNPC() {
     originalCameraPos = camera.position.clone();
     isZoomedIn = true;
 
-    // Get NPC face position
-    const npcPosition = npc.position.clone();
-    const facePosition = npcPosition.clone();
-    facePosition.y += 1.6; // Head height
+    // Calculate target position in front of NPC
+    // Adjusted: Moved further back (z + 3.5) for a comfortable conversation distance
+    const offset = new THREE.Vector3(0, 1.6, 3.5);
+    offset.applyQuaternion(npc.quaternion);
+    targetCameraPos = npc.position.clone().add(offset);
 
-    // Calculate camera position (close-up, slightly to the side)
-    const faceDirection = new THREE.Vector3(0, 0, 1);
-    faceDirection.applyQuaternion(npc.quaternion);
+    // Look at NPC's face
+    targetLookAt = npc.position.clone().add(new THREE.Vector3(0, 1.6, 0));
 
-    targetCameraPos = facePosition.clone();
-    targetCameraPos.add(faceDirection.clone().multiplyScalar(2.5)); // 2.5 units from face
-    targetCameraPos.y = facePosition.y + 0.3; // Slightly above eye level
-
-    // Slight side offset for cinematic feel
-    const sideOffset = new THREE.Vector3(-0.5, 0, 0);
-    sideOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), npc.rotation.y);
-    targetCameraPos.add(sideOffset);
-
-    // Look at NPC face
-    targetLookAt = facePosition.clone();
+    // Hide player model if it obstructs view
+    if (player) player.visible = false;
 
     console.log('🎥 Camera zooming to NPC');
 }
@@ -1998,6 +2029,10 @@ function zoomOutFromNPC() {
     isZoomedIn = false;
     targetCameraPos = null;
     targetLookAt = null;
+
+    // Show player model again
+    if (player) player.visible = true;
+
     console.log('🎥 Camera zooming out');
 }
 
