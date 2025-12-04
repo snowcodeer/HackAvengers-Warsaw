@@ -833,10 +833,8 @@ function darkenColor(color, percent) {
 
 function initButtonEffects() {
     const beginBtn = document.getElementById('beginBtn');
-    const languageModal = document.getElementById('languageModal');
-    const langBtns = document.querySelectorAll('.lang-btn');
 
-    if (beginBtn && languageModal) {
+    if (beginBtn) {
         beginBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -845,25 +843,11 @@ function initButtonEffects() {
             createPixelBurst(beginBtn);
             setTimeout(() => {
                 beginBtn.style.transform = '';
-                // Show language selection modal
-                languageModal.classList.add('active');
+                // Go to country selection (houses)
+                window.location.href = 'country-selection.html';
             }, 300);
         });
     }
-
-    langBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const lang = btn.dataset.lang;
-            const country = btn.dataset.country;
-
-            // Store selection
-            localStorage.setItem('selectedLanguage', lang);
-            localStorage.setItem('selectedCountry', country);
-
-            // Navigate to character customisation
-            window.location.href = 'character.html';
-        });
-    });
 }
 
 function createPixelBurst(button) {

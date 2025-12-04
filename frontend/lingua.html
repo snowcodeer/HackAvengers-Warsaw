@@ -6,277 +6,213 @@
     <title>LinguaVerse - Immersive Language Learning</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;600;800&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-deep: #0a0a0f;
-            --bg-card: #12121a;
-            --accent-gold: #f4b942;
-            --accent-coral: #ff6b6b;
+            /* 8-bit color palette */
+            --sky-light: #87CEEB;
+            --sky-mid: #5BA3D9;
+            --grass-bright: #7EC850;
+            --grass-dark: #5A9A38;
+            --wood-main: #8B5A2B;
+            --wood-dark: #654321;
+            --wood-light: #A67C52;
+            --cream: #FFF8DC;
+            --pixel-black: #1a1a2e;
+            --cozy-yellow: #FFD93D;
+            --cozy-orange: #FF8C42;
+            --accent-red: #E74C3C;
             --accent-teal: #4ecdc4;
-            --accent-violet: #a855f7;
-            --text-primary: #fafafa;
-            --text-secondary: #9ca3af;
-            --glass: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
 
         body {
-            font-family: 'Bricolage Grotesque', sans-serif;
-            background: var(--bg-deep);
-            color: var(--text-primary);
+            font-family: 'Press Start 2P', cursive;
+            background: linear-gradient(180deg, var(--sky-light) 0%, var(--sky-mid) 50%, var(--grass-bright) 70%, var(--grass-dark) 100%);
+            color: var(--pixel-black);
             min-height: 100vh;
             overflow-x: hidden;
         }
 
-        /* Animated background */
+        /* Pixel clouds */
         .bg-canvas {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: 40%;
             z-index: 0;
-            background: 
-                radial-gradient(ellipse at 20% 20%, rgba(168, 85, 247, 0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(244, 185, 66, 0.1) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(78, 205, 196, 0.05) 0%, transparent 60%);
+            background-image: 
+                radial-gradient(ellipse 80px 40px at 15% 20%, white 50%, transparent 50%),
+                radial-gradient(ellipse 60px 30px at 18% 22%, white 50%, transparent 50%),
+                radial-gradient(ellipse 100px 50px at 70% 15%, white 50%, transparent 50%),
+                radial-gradient(ellipse 70px 35px at 75% 18%, white 50%, transparent 50%),
+                radial-gradient(ellipse 90px 45px at 45% 25%, white 50%, transparent 50%);
         }
 
-        .floating-orbs {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(60px);
-            animation: float 20s ease-in-out infinite;
-        }
-
-        .orb-1 {
-            width: 400px;
-            height: 400px;
-            background: rgba(244, 185, 66, 0.2);
-            top: -100px;
-            left: -100px;
-            animation-delay: 0s;
-        }
-
-        .orb-2 {
-            width: 300px;
-            height: 300px;
-            background: rgba(168, 85, 247, 0.2);
-            bottom: -50px;
-            right: -50px;
-            animation-delay: -5s;
-        }
-
-        .orb-3 {
-            width: 200px;
-            height: 200px;
-            background: rgba(78, 205, 196, 0.2);
-            top: 50%;
-            left: 50%;
-            animation-delay: -10s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            25% { transform: translate(50px, -50px) scale(1.1); }
-            50% { transform: translate(-30px, 30px) scale(0.9); }
-            75% { transform: translate(40px, 40px) scale(1.05); }
-        }
+        .floating-orbs { display: none; }
 
         /* Main container */
         .container {
             position: relative;
             z-index: 10;
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 30px 20px;
         }
 
         /* Header */
         .header {
             text-align: center;
-            margin-bottom: 60px;
+            margin-bottom: 40px;
         }
 
         .logo {
-            font-size: 4rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-coral) 50%, var(--accent-violet) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 16px;
-            letter-spacing: -2px;
+            font-size: 2rem;
+            color: var(--wood-dark);
+            text-shadow: 
+                4px 4px 0px var(--cozy-yellow),
+                -2px -2px 0px var(--cream);
+            margin-bottom: 12px;
         }
 
         .tagline {
-            font-family: 'Crimson Pro', serif;
-            font-size: 1.5rem;
-            font-style: italic;
-            color: var(--text-secondary);
+            font-size: 0.7rem;
+            color: var(--wood-main);
+            line-height: 1.8;
         }
 
         /* Step sections */
         .step-section {
-            margin-bottom: 60px;
+            margin-bottom: 40px;
         }
 
         .step-header {
             display: flex;
             align-items: center;
             gap: 16px;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
         }
 
         .step-number {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--accent-violet) 0%, var(--accent-coral) 100%);
+            width: 40px;
+            height: 40px;
+            background: var(--cozy-yellow);
+            border: 4px solid var(--wood-dark);
+            box-shadow: 4px 4px 0px var(--wood-dark);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 800;
-            font-size: 1.2rem;
+            font-size: 0.9rem;
+            color: var(--wood-dark);
         }
 
         .step-title {
-            font-size: 1.8rem;
-            font-weight: 600;
+            font-size: 1rem;
+            color: var(--wood-dark);
+            text-shadow: 2px 2px 0px var(--cozy-yellow);
         }
 
         /* Language grid */
         .language-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
         }
 
         .language-card {
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 30px 20px;
+            background: var(--cream);
+            border: 4px solid var(--wood-dark);
+            box-shadow: 6px 6px 0px var(--wood-dark);
+            padding: 20px 16px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .language-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.05) 100%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .language-card:hover::before {
-            opacity: 1;
+            transition: all 0.1s;
         }
 
         .language-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            border-color: var(--accent-gold);
-            box-shadow: 0 20px 40px rgba(244, 185, 66, 0.15);
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px var(--wood-dark);
+        }
+
+        .language-card:active {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0px var(--wood-dark);
         }
 
         .language-card.selected {
-            border-color: var(--accent-gold);
-            background: rgba(244, 185, 66, 0.1);
-            box-shadow: 0 0 30px rgba(244, 185, 66, 0.2);
+            background: var(--cozy-yellow);
+            border-color: var(--cozy-orange);
+            box-shadow: 6px 6px 0px var(--cozy-orange);
         }
 
         .language-flag {
-            font-size: 4rem;
-            margin-bottom: 16px;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+            font-size: 2.5rem;
+            margin-bottom: 12px;
         }
 
         .language-name {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 6px;
+            font-size: 0.6rem;
+            color: var(--wood-dark);
+            margin-bottom: 4px;
         }
 
         .language-native {
-            font-family: 'Crimson Pro', serif;
-            font-style: italic;
-            color: var(--text-secondary);
+            font-size: 0.5rem;
+            color: var(--wood-main);
         }
 
         /* Scenario grid */
         .scenario-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
+            gap: 20px;
         }
 
         .scenario-card {
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
+            background: var(--cream);
+            border: 4px solid var(--wood-dark);
+            box-shadow: 6px 6px 0px var(--wood-dark);
             overflow: hidden;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
+            transition: all 0.1s;
         }
 
         .scenario-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            border-color: var(--accent-teal);
-            box-shadow: 0 25px 50px rgba(78, 205, 196, 0.15);
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px var(--wood-dark);
+        }
+
+        .scenario-card:active {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0px var(--wood-dark);
         }
 
         .scenario-card.selected {
-            border-color: var(--accent-teal);
-            background: rgba(78, 205, 196, 0.1);
-            box-shadow: 0 0 40px rgba(78, 205, 196, 0.2);
+            background: var(--cozy-yellow);
+            border-color: var(--cozy-orange);
+            box-shadow: 6px 6px 0px var(--cozy-orange);
         }
 
         .scenario-preview {
-            height: 180px;
-            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-deep) 100%);
+            height: 140px;
+            background: linear-gradient(180deg, var(--sky-light) 0%, var(--grass-bright) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .scenario-preview::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: linear-gradient(to top, var(--bg-card), transparent);
+            font-size: 4rem;
+            border-bottom: 4px solid var(--wood-dark);
         }
 
         .scenario-content {
-            padding: 24px;
+            padding: 16px;
         }
 
         .scenario-location {
@@ -287,132 +223,118 @@
         }
 
         .scenario-flag {
-            font-size: 1.2rem;
+            font-size: 1rem;
         }
 
         .scenario-country {
-            font-size: 0.85rem;
-            color: var(--accent-teal);
+            font-size: 0.5rem;
+            color: var(--grass-dark);
             text-transform: uppercase;
             letter-spacing: 1px;
-            font-weight: 600;
         }
 
         .scenario-name {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 10px;
+            font-size: 0.8rem;
+            color: var(--wood-dark);
+            margin-bottom: 8px;
         }
 
         .scenario-desc {
-            font-family: 'Crimson Pro', serif;
-            color: var(--text-secondary);
-            line-height: 1.6;
+            font-size: 0.5rem;
+            color: var(--wood-main);
+            line-height: 2;
         }
 
         .scenario-vocab {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-top: 16px;
+            margin-top: 12px;
         }
 
         .vocab-tag {
-            background: rgba(168, 85, 247, 0.2);
-            border: 1px solid rgba(168, 85, 247, 0.3);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            color: var(--accent-violet);
+            background: var(--grass-bright);
+            border: 2px solid var(--grass-dark);
+            padding: 4px 8px;
+            font-size: 0.45rem;
+            color: var(--pixel-black);
         }
 
         /* Character preview */
         .character-section {
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 40px;
+            background: var(--cream);
+            border: 4px solid var(--wood-dark);
+            box-shadow: 6px 6px 0px var(--wood-dark);
+            padding: 24px;
             display: flex;
-            gap: 40px;
+            gap: 24px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .character-avatar {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-coral) 0%, var(--accent-violet) 100%);
+            width: 120px;
+            height: 120px;
+            background: var(--cozy-yellow);
+            border: 4px solid var(--wood-dark);
+            box-shadow: 4px 4px 0px var(--wood-dark);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 6rem;
+            font-size: 4rem;
             flex-shrink: 0;
-            box-shadow: 0 20px 40px rgba(255, 107, 107, 0.2);
         }
 
         .character-info {
             flex: 1;
+            min-width: 200px;
         }
 
         .character-name {
-            font-size: 2rem;
-            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--wood-dark);
             margin-bottom: 8px;
         }
 
         .character-role {
-            color: var(--accent-coral);
-            font-size: 1.1rem;
-            margin-bottom: 16px;
+            color: var(--cozy-orange);
+            font-size: 0.6rem;
+            margin-bottom: 12px;
         }
 
         .character-bio {
-            font-family: 'Crimson Pro', serif;
-            font-size: 1.1rem;
-            line-height: 1.7;
-            color: var(--text-secondary);
+            font-size: 0.5rem;
+            line-height: 2;
+            color: var(--wood-main);
         }
 
         /* Start button */
         .start-section {
             text-align: center;
-            margin-top: 60px;
+            margin-top: 40px;
         }
 
         .start-btn {
-            background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-coral) 100%);
-            border: none;
-            padding: 20px 60px;
-            font-size: 1.4rem;
-            font-weight: 700;
-            font-family: 'Bricolage Grotesque', sans-serif;
-            color: var(--bg-deep);
-            border-radius: 60px;
+            background: var(--cozy-yellow);
+            border: 4px solid var(--wood-dark);
+            box-shadow: 6px 6px 0px var(--wood-dark);
+            padding: 16px 40px;
+            font-size: 0.9rem;
+            font-family: 'Press Start 2P', cursive;
+            color: var(--wood-dark);
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 10px 40px rgba(244, 185, 66, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .start-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.5s;
-        }
-
-        .start-btn:hover::before {
-            left: 100%;
+            transition: all 0.1s;
         }
 
         .start-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 15px 50px rgba(244, 185, 66, 0.4);
+            background: var(--cozy-orange);
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px var(--wood-dark);
+        }
+
+        .start-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0px var(--wood-dark);
         }
 
         .start-btn:disabled {
@@ -422,14 +344,13 @@
         }
 
         .powered-by {
-            margin-top: 20px;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
+            margin-top: 16px;
+            font-size: 0.5rem;
+            color: var(--wood-main);
         }
 
         .powered-by span {
             color: var(--accent-teal);
-            font-weight: 600;
         }
 
         /* Hidden sections */
@@ -438,27 +359,22 @@
         }
 
         .fade-in {
-            animation: fadeIn 0.6s ease-out forwards;
+            animation: fadeIn 0.3s ease-out forwards;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
     <div class="bg-canvas"></div>
-    <div class="floating-orbs">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-    </div>
 
     <div class="container">
         <header class="header">
-            <h1 class="logo">LinguaVerse</h1>
-            <p class="tagline">Step into a world where language comes alive</p>
+            <h1 class="logo">Mówka</h1>
+            <p class="tagline">Pick Your Scene</p>
         </header>
 
         <!-- Step 1: Language Selection -->

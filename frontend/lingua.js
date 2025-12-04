@@ -497,8 +497,23 @@ async function startGame() {
 
 // ==================== INITIALIZATION ====================
 function init() {
-    initLanguageSelection();
     elements.startBtn.addEventListener('click', startGame);
+    
+    // Check if language was already selected from country-selection
+    const savedLanguage = localStorage.getItem('selectedLanguage');
+    if (savedLanguage) {
+        // Hide language selection step
+        const stepLanguage = document.getElementById('step-language');
+        if (stepLanguage) {
+            stepLanguage.classList.add('hidden');
+        }
+        // Auto-load scenarios for the saved language
+        state.selectedLanguage = savedLanguage;
+        showScenarios(savedLanguage);
+    } else {
+        // Show language selection
+        initLanguageSelection();
+    }
 }
 
 document.addEventListener('DOMContentLoaded', init);
