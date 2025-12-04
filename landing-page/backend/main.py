@@ -96,7 +96,9 @@ async def get_waitlist():
         )
 
 
-@app.get("/")
-async def root():
-    return {"message": "Mówka Waitlist Backend is running"}
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
 
+# Mount static files (must be last to avoid overriding API routes)
+app.mount("/", StaticFiles(directory=Path(__file__).parent.parent, html=True), name="static")
