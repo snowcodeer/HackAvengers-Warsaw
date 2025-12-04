@@ -574,8 +574,8 @@ function initSubmitButton() {
         
         setTimeout(() => {
             submitBtn.style.transform = '';
-            // Navigate to LinguaVerse language/scenario selection
-            window.location.href = 'lingua.html';
+            // Navigate to country selection
+            window.location.href = 'country-selection.html';
         }, 300);
     });
 }

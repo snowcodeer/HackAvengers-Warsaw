@@ -1,51 +1,73 @@
 // Country Selection - Stardew Valley Style Neighborhood
 
-// ==================== COUNTRY DATA (5 COUNTRIES) ====================
+// ==================== COUNTRY DATA (8 COUNTRIES) ====================
 const COUNTRIES = [
+    // Top row (3 houses) - more horizontal spacing
     {
         id: 'france',
         name: 'FRANCE',
         flag: '🇫🇷',
         lang: 'french',
-        // Neighborhood position (top-left)
-        posX: 150,
-        posY: 120
+        posX: 180,
+        posY: 130
     },
     {
         id: 'germany',
         name: 'GERMANY',
         flag: '🇩🇪',
         lang: 'german',
-        // Neighborhood position (top-right)
-        posX: 450,
-        posY: 120
+        posX: 500,
+        posY: 130
     },
+    {
+        id: 'uk',
+        name: 'UK',
+        flag: '🇬🇧',
+        lang: 'english',
+        posX: 820,
+        posY: 130
+    },
+    // Middle row (2 houses)
     {
         id: 'spain',
         name: 'SPAIN',
         flag: '🇪🇸',
         lang: 'spanish',
-        // Neighborhood position (center)
-        posX: 300,
-        posY: 280
+        posX: 340,
+        posY: 310
     },
+    {
+        id: 'italy',
+        name: 'ITALY',
+        flag: '🇮🇹',
+        lang: 'italian',
+        posX: 660,
+        posY: 310
+    },
+    // Bottom row (3 houses)
     {
         id: 'japan',
         name: 'JAPAN',
         flag: '🇯🇵',
         lang: 'japanese',
-        // Neighborhood position (bottom-left)
-        posX: 150,
-        posY: 440
+        posX: 180,
+        posY: 490
+    },
+    {
+        id: 'china',
+        name: 'CHINA',
+        flag: '🇨🇳',
+        lang: 'mandarin',
+        posX: 500,
+        posY: 490
     },
     {
         id: 'poland',
         name: 'POLAND',
         flag: '🇵🇱',
         lang: 'polish',
-        // Neighborhood position (bottom-right)
-        posX: 450,
-        posY: 440
+        posX: 820,
+        posY: 490
     }
 ];
 
@@ -61,19 +83,48 @@ canvas.height = window.innerHeight;
 let cameraX = 0;
 let cameraY = 0;
 const TILE_SIZE = 32;
-const WORLD_WIDTH = 600;
-const WORLD_HEIGHT = 600;
+const WORLD_WIDTH = 1000;
+const WORLD_HEIGHT = 700;
 
 // ==================== GAME STATE ====================
 let player = {
-    worldX: 300,  // Start in center of neighborhood
-    worldY: 350,
+    worldX: 500,  // Start in center of neighborhood
+    worldY: 400,
     width: 24,
     height: 32,
     speed: 3,
     facing: 'down',
     animFrame: 0
 };
+
+// Load saved character customization
+let characterData = {
+    skinColor: '#F8D8B8',
+    hairColor: '#684010',
+    hairStyle: 0,
+    eyeColor: '#402808',
+    outfitColor: '#4A90D9',
+    pantsColor: '#8B6914',
+    outfit: 0,
+    hat: 0,
+    accessory: 0
+};
+
+// Hair style names for reference
+const hairStyles = ['Spiky', 'Mohawk', 'Flat Top', 'Long', 'Short', 'Ponytail', 'Bald', 'Curly', 'Afro', 'Pigtails', 'Buzz Cut', 'Side Part', 'Wavy', 'Slick Back'];
+const hats = ['None', 'Cap', 'Beanie', 'Top Hat', 'Cowboy', 'Hard Hat', 'Crown', 'Headphones', 'Police Cap', 'Beret', 'Bandana', 'Wizard Hat', 'Viking Helmet'];
+const accessories = ['None', 'Glasses', 'Sunglasses', 'Round Glasses', 'Eye Patch', 'Monocle', 'Bandana', 'Scarf', 'Necklace', 'Bow Tie', 'Tie'];
+
+// Try to load saved character
+try {
+    const savedCharacter = localStorage.getItem('playerCharacter');
+    if (savedCharacter) {
+        const parsed = JSON.parse(savedCharacter);
+        characterData = { ...characterData, ...parsed };
+    }
+} catch (e) {
+    console.log('Using default character');
+}
 
 let keys = {};
 let worldObjects = [];
@@ -116,15 +167,15 @@ function createWorld() {
     // Add trees around the neighborhood perimeter
     const treePositions = [
         // Top edge
-        { x: 50, y: 50 }, { x: 130, y: 30 }, { x: 250, y: 40 }, { x: 350, y: 30 }, { x: 470, y: 40 }, { x: 550, y: 50 },
+        { x: 50, y: 50 }, { x: 180, y: 30 }, { x: 340, y: 40 }, { x: 500, y: 30 }, { x: 660, y: 40 }, { x: 820, y: 30 }, { x: 950, y: 50 },
         // Bottom edge
-        { x: 50, y: 550 }, { x: 150, y: 560 }, { x: 300, y: 550 }, { x: 450, y: 560 }, { x: 550, y: 550 },
+        { x: 50, y: 650 }, { x: 180, y: 660 }, { x: 340, y: 650 }, { x: 500, y: 660 }, { x: 660, y: 650 }, { x: 820, y: 660 }, { x: 950, y: 650 },
         // Left edge
-        { x: 30, y: 150 }, { x: 40, y: 300 }, { x: 30, y: 450 },
+        { x: 30, y: 150 }, { x: 40, y: 310 }, { x: 30, y: 490 },
         // Right edge
-        { x: 570, y: 150 }, { x: 560, y: 300 }, { x: 570, y: 450 },
-        // Scattered around
-        { x: 80, y: 280 }, { x: 520, y: 280 }
+        { x: 970, y: 150 }, { x: 960, y: 310 }, { x: 970, y: 490 },
+        // Scattered between houses
+        { x: 340, y: 210 }, { x: 660, y: 210 }, { x: 80, y: 310 }, { x: 920, y: 310 }, { x: 340, y: 410 }, { x: 660, y: 410 }
     ];
     
     treePositions.forEach(pos => {
@@ -391,8 +442,8 @@ function drawTerrain() {
 
 function drawPaths() {
     // Central plaza/intersection
-    const centerX = 300 - cameraX;
-    const centerY = 300 - cameraY;
+    const centerX = 500 - cameraX;
+    const centerY = 310 - cameraY;
     
     // Plaza (circular dirt area in center)
     ctx.fillStyle = '#C4A55A';
@@ -499,6 +550,15 @@ function drawHouse(house, x, y) {
         case 'poland':
             drawPolishHouse(x, y, w, h, doorX, doorY, door);
             break;
+        case 'uk':
+            drawUKHouse(x, y, w, h, doorX, doorY, door);
+            break;
+        case 'italy':
+            drawItalianHouse(x, y, w, h, doorX, doorY, door);
+            break;
+        case 'china':
+            drawChineseHouse(x, y, w, h, doorX, doorY, door);
+            break;
         default:
             drawDefaultHouse(x, y, w, h, doorX, doorY, door);
     }
@@ -517,14 +577,182 @@ function drawHouse(house, x, y) {
         ctx.fillText('PRESS E', doorX, doorY - door.height/2 - 12);
     }
     
-    // Country label
+    // Draw flagpole with country flag (centered on house)
+    // Adjust flagpole height based on roof type (some houses have lower roofs)
+    let roofOffset = 25;
+    if (country.id === 'france' || country.id === 'spain') {
+        roofOffset = 18; // Lower mansard/terracotta roofs
+    } else if (country.id === 'japan') {
+        roofOffset = 20; // Lower curved roof
+    }
+    drawFlagpole(x, y - h/2 - roofOffset, country);
+    
+    // Country label (below the flag)
     ctx.fillStyle = '#F8F0D8';
-    ctx.font = '8px "Press Start 2P"';
+    ctx.font = '10px "Press Start 2P"';
     ctx.textAlign = 'center';
     ctx.strokeStyle = '#402808';
     ctx.lineWidth = 3;
-    ctx.strokeText(country.flag + ' ' + country.name, x, y - h/2 - 40);
-    ctx.fillText(country.flag + ' ' + country.name, x, y - h/2 - 40);
+    ctx.strokeText(country.name, x, y - h/2 - 70 - (roofOffset - 18));
+    ctx.fillText(country.name, x, y - h/2 - 70 - (roofOffset - 18));
+}
+
+// ==================== FLAGPOLE ====================
+function drawFlagpole(x, y, country) {
+    const poleHeight = 55;
+    const flagWidth = 40;
+    const flagHeight = 26;
+    
+    // Pole shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillRect(x + 2, y - poleHeight + 2, 4, poleHeight);
+    
+    // Wooden pole (centered)
+    ctx.fillStyle = '#8B6914';
+    ctx.fillRect(x - 2, y - poleHeight, 4, poleHeight);
+    
+    // Pole highlight
+    ctx.fillStyle = '#A8841C';
+    ctx.fillRect(x - 2, y - poleHeight, 2, poleHeight);
+    
+    // Pole top ornament (gold ball)
+    ctx.fillStyle = '#C9A227';
+    ctx.beginPath();
+    ctx.arc(x, y - poleHeight - 5, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#E8C84A';
+    ctx.beginPath();
+    ctx.arc(x - 1, y - poleHeight - 6, 2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Flag position (waving to the right from centered pole)
+    const flagX = x + 2;
+    const flagY = y - poleHeight + 3;
+    
+    // Flag shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.fillRect(flagX + 2, flagY + 2, flagWidth, flagHeight);
+    
+    // Draw country-specific flag
+    drawCountryFlag(flagX, flagY, flagWidth, flagHeight, country.id);
+    
+    // Flag border
+    ctx.strokeStyle = '#402808';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(flagX, flagY, flagWidth, flagHeight);
+}
+
+function drawCountryFlag(x, y, w, h, countryId) {
+    switch(countryId) {
+        case 'france':
+            // Blue, White, Red vertical stripes
+            ctx.fillStyle = '#002395';
+            ctx.fillRect(x, y, w/3, h);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + w/3, y, w/3, h);
+            ctx.fillStyle = '#ED2939';
+            ctx.fillRect(x + 2*w/3, y, w/3, h);
+            break;
+        case 'germany':
+            // Black, Red, Gold horizontal stripes
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(x, y, w, h/3);
+            ctx.fillStyle = '#DD0000';
+            ctx.fillRect(x, y + h/3, w, h/3);
+            ctx.fillStyle = '#FFCC00';
+            ctx.fillRect(x, y + 2*h/3, w, h/3);
+            break;
+        case 'uk':
+            // Union Jack (simplified)
+            ctx.fillStyle = '#012169';
+            ctx.fillRect(x, y, w, h);
+            // White diagonals
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(x, y); ctx.lineTo(x + w, y + h);
+            ctx.moveTo(x + w, y); ctx.lineTo(x, y + h);
+            ctx.stroke();
+            // Red diagonals
+            ctx.strokeStyle = '#C8102E';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x, y); ctx.lineTo(x + w, y + h);
+            ctx.moveTo(x + w, y); ctx.lineTo(x, y + h);
+            ctx.stroke();
+            // White cross
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + w/2 - 4, y, 8, h);
+            ctx.fillRect(x, y + h/2 - 3, w, 6);
+            // Red cross
+            ctx.fillStyle = '#C8102E';
+            ctx.fillRect(x + w/2 - 2, y, 4, h);
+            ctx.fillRect(x, y + h/2 - 2, w, 4);
+            break;
+        case 'spain':
+            // Red, Yellow, Red horizontal
+            ctx.fillStyle = '#AA151B';
+            ctx.fillRect(x, y, w, h/4);
+            ctx.fillStyle = '#F1BF00';
+            ctx.fillRect(x, y + h/4, w, h/2);
+            ctx.fillStyle = '#AA151B';
+            ctx.fillRect(x, y + 3*h/4, w, h/4);
+            break;
+        case 'italy':
+            // Green, White, Red vertical stripes
+            ctx.fillStyle = '#009246';
+            ctx.fillRect(x, y, w/3, h);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + w/3, y, w/3, h);
+            ctx.fillStyle = '#CE2B37';
+            ctx.fillRect(x + 2*w/3, y, w/3, h);
+            break;
+        case 'japan':
+            // White with red circle
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x, y, w, h);
+            ctx.fillStyle = '#BC002D';
+            ctx.beginPath();
+            ctx.arc(x + w/2, y + h/2, h/3, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+        case 'china':
+            // Red with yellow stars
+            ctx.fillStyle = '#DE2910';
+            ctx.fillRect(x, y, w, h);
+            ctx.fillStyle = '#FFDE00';
+            // Big star
+            drawStar(x + w*0.2, y + h*0.35, 5);
+            // Small stars
+            drawStar(x + w*0.4, y + h*0.2, 3);
+            drawStar(x + w*0.5, y + h*0.35, 3);
+            drawStar(x + w*0.5, y + h*0.55, 3);
+            drawStar(x + w*0.4, y + h*0.7, 3);
+            break;
+        case 'poland':
+            // White and Red horizontal
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x, y, w, h/2);
+            ctx.fillStyle = '#DC143C';
+            ctx.fillRect(x, y + h/2, w, h/2);
+            break;
+        default:
+            ctx.fillStyle = '#888888';
+            ctx.fillRect(x, y, w, h);
+    }
+}
+
+function drawStar(cx, cy, size) {
+    ctx.beginPath();
+    for (let i = 0; i < 5; i++) {
+        const angle = (i * 4 * Math.PI / 5) - Math.PI / 2;
+        const x = cx + size * Math.cos(angle);
+        const y = cy + size * Math.sin(angle);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fill();
 }
 
 // ==================== FRENCH HOUSE ====================
@@ -730,11 +958,11 @@ function drawSpanishHouse(x, y, w, h, doorX, doorY, door) {
     ctx.closePath();
     ctx.fill();
     
-    // Barrel tile texture
+    // Barrel tile texture (scalloped edge)
     ctx.fillStyle = '#A83C05';
     for (let i = 0; i < w + 20; i += 8) {
         ctx.beginPath();
-        ctx.arc(x - w/2 - 10 + i + 4, y - h/2 - 8, 3, 0, Math.PI);
+        ctx.arc(x - w/2 - 10 + i + 4, y - h/2 + 2, 3, 0, Math.PI);
         ctx.fill();
     }
     
@@ -950,6 +1178,252 @@ function drawPolishWindow(x, y, w, h) {
     ctx.fillRect(x + 1, y + 1, w - 2, 6);
 }
 
+// ==================== UK HOUSE ====================
+// Classic British cottage - red brick, white trim, chimney
+function drawUKHouse(x, y, w, h, doorX, doorY, door) {
+    // Red brick walls
+    ctx.fillStyle = '#B85C5C';
+    ctx.fillRect(x - w/2, y - h/2, w, h);
+    
+    // Brick pattern
+    ctx.fillStyle = '#A04040';
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 6; col++) {
+            const offset = row % 2 === 0 ? 0 : 7;
+            ctx.fillRect(x - w/2 + col * 15 + offset + 1, y - h/2 + row * 12 + 1, 13, 10);
+        }
+    }
+    
+    // Gray slate roof
+    ctx.fillStyle = '#5A5A6A';
+    ctx.beginPath();
+    ctx.moveTo(x - w/2 - 8, y - h/2 + 8);
+    ctx.lineTo(x, y - h/2 - 30);
+    ctx.lineTo(x + w/2 + 8, y - h/2 + 8);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Chimney (lowered)
+    ctx.fillStyle = '#8B4040';
+    ctx.fillRect(x + w/4, y - h/2 - 25, 15, 20);
+    ctx.fillStyle = '#5A5A6A';
+    ctx.fillRect(x + w/4 - 2, y - h/2 - 28, 19, 5);
+    
+    // White door frame
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(doorX - door.width/2 - 4, doorY - door.height/2 - 4, door.width + 8, door.height + 4);
+    
+    // Door (British racing green or red)
+    ctx.fillStyle = '#1A4D2E';
+    ctx.fillRect(doorX - door.width/2, doorY - door.height/2, door.width, door.height);
+    
+    // Door knocker
+    ctx.fillStyle = '#C9A227';
+    ctx.beginPath();
+    ctx.arc(doorX, doorY - 5, 4, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Windows with white frames
+    const windowY = y - h/4;
+    
+    // Left window
+    drawBritishWindow(x - w/3, windowY, 18, 22);
+    
+    // Right window
+    drawBritishWindow(x + w/3, windowY, 18, 22);
+}
+
+function drawBritishWindow(x, y, w, h) {
+    // White frame
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(x - w/2 - 3, y - h/2 - 3, w + 6, h + 6);
+    
+    // Glass
+    ctx.fillStyle = '#6BA3D6';
+    ctx.fillRect(x - w/2, y - h/2, w, h);
+    
+    // Window panes (4 panes)
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(x - 1, y - h/2, 2, h);
+    ctx.fillRect(x - w/2, y - 1, w, 2);
+}
+
+// ==================== ITALIAN HOUSE ====================
+// Tuscan villa - ochre/terracotta, green shutters, terracotta roof
+function drawItalianHouse(x, y, w, h, doorX, doorY, door) {
+    // Ochre/yellow stucco walls
+    ctx.fillStyle = '#E8C47C';
+    ctx.fillRect(x - w/2, y - h/2, w, h);
+    
+    // Wall texture
+    ctx.fillStyle = '#D4A860';
+    for (let i = 0; i < 5; i++) {
+        ctx.fillRect(x - w/2 + i * 18 + 2, y - h/2 + 10, 2, h - 20);
+    }
+    
+    // Terracotta tile roof
+    ctx.fillStyle = '#C8563D';
+    ctx.beginPath();
+    ctx.moveTo(x - w/2 - 10, y - h/2 + 8);
+    ctx.lineTo(x, y - h/2 - 28);
+    ctx.lineTo(x + w/2 + 10, y - h/2 + 8);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Roof tiles detail
+    ctx.fillStyle = '#B84530';
+    for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        ctx.arc(x - w/3 + i * 15, y - h/2 - 5 + Math.abs(i - 2) * 5, 6, Math.PI, 0);
+        ctx.fill();
+    }
+    
+    // Stone archway door frame
+    ctx.fillStyle = '#A08060';
+    ctx.beginPath();
+    ctx.moveTo(doorX - door.width/2 - 6, doorY + door.height/2);
+    ctx.lineTo(doorX - door.width/2 - 6, doorY - door.height/4);
+    ctx.quadraticCurveTo(doorX - door.width/2 - 6, doorY - door.height/2 - 8, doorX, doorY - door.height/2 - 8);
+    ctx.quadraticCurveTo(doorX + door.width/2 + 6, doorY - door.height/2 - 8, doorX + door.width/2 + 6, doorY - door.height/4);
+    ctx.lineTo(doorX + door.width/2 + 6, doorY + door.height/2);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Wooden door
+    ctx.fillStyle = '#6B4423';
+    ctx.fillRect(doorX - door.width/2, doorY - door.height/2, door.width, door.height);
+    
+    // Door details
+    ctx.fillStyle = '#4A2F15';
+    ctx.fillRect(doorX - door.width/2 + 3, doorY - door.height/2 + 3, door.width - 6, 3);
+    ctx.fillRect(doorX - door.width/2 + 3, doorY, door.width - 6, 3);
+    
+    // Windows with green shutters
+    const windowY = y - h/4;
+    drawItalianWindow(x - w/3, windowY, 16, 24);
+    drawItalianWindow(x + w/3, windowY, 16, 24);
+}
+
+function drawItalianWindow(x, y, w, h) {
+    // Green shutters
+    ctx.fillStyle = '#2E5E3E';
+    ctx.fillRect(x - w/2 - 8, y - h/2, 7, h);
+    ctx.fillRect(x + w/2 + 1, y - h/2, 7, h);
+    
+    // Shutter slats
+    ctx.fillStyle = '#1A3A24';
+    for (let i = 0; i < 4; i++) {
+        ctx.fillRect(x - w/2 - 7, y - h/2 + i * 6 + 2, 5, 2);
+        ctx.fillRect(x + w/2 + 2, y - h/2 + i * 6 + 2, 5, 2);
+    }
+    
+    // Window
+    ctx.fillStyle = '#6BA3D6';
+    ctx.fillRect(x - w/2, y - h/2, w, h);
+    
+    // Window cross
+    ctx.fillStyle = '#F5E6D3';
+    ctx.fillRect(x - 1, y - h/2, 2, h);
+    ctx.fillRect(x - w/2, y - 1, w, 2);
+}
+
+// ==================== CHINESE HOUSE ====================
+// Traditional Chinese courtyard house - red walls, curved roof, gold details
+function drawChineseHouse(x, y, w, h, doorX, doorY, door) {
+    // Red/crimson walls
+    ctx.fillStyle = '#B83232';
+    ctx.fillRect(x - w/2, y - h/2, w, h);
+    
+    // Wall lattice pattern
+    ctx.fillStyle = '#8B2020';
+    for (let i = 0; i < 4; i++) {
+        ctx.fillRect(x - w/2 + 5 + i * 22, y - h/2 + 5, 2, h - 10);
+    }
+    for (let i = 0; i < 3; i++) {
+        ctx.fillRect(x - w/2 + 5, y - h/2 + 20 + i * 25, w - 10, 2);
+    }
+    
+    // Curved green/teal roof
+    ctx.fillStyle = '#2A6B5E';
+    ctx.beginPath();
+    ctx.moveTo(x - w/2 - 12, y - h/2 + 10);
+    ctx.quadraticCurveTo(x - w/4, y - h/2 - 35, x, y - h/2 - 25);
+    ctx.quadraticCurveTo(x + w/4, y - h/2 - 35, x + w/2 + 12, y - h/2 + 10);
+    ctx.lineTo(x - w/2 - 12, y - h/2 + 10);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Roof edge detail (gold)
+    ctx.strokeStyle = '#C9A227';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x - w/2 - 12, y - h/2 + 10);
+    ctx.quadraticCurveTo(x - w/4, y - h/2 - 35, x, y - h/2 - 25);
+    ctx.quadraticCurveTo(x + w/4, y - h/2 - 35, x + w/2 + 12, y - h/2 + 10);
+    ctx.stroke();
+    
+    // Roof tiles
+    ctx.fillStyle = '#1A4A40';
+    for (let i = 0; i < 5; i++) {
+        const tileX = x - w/3 + i * 15;
+        const tileY = y - h/2 - 10 + Math.abs(i - 2) * 4;
+        ctx.beginPath();
+        ctx.arc(tileX, tileY, 5, Math.PI, 0);
+        ctx.fill();
+    }
+    
+    // Gold door frame
+    ctx.fillStyle = '#C9A227';
+    ctx.fillRect(doorX - door.width/2 - 5, doorY - door.height/2 - 5, door.width + 10, door.height + 5);
+    
+    // Red door
+    ctx.fillStyle = '#D43C3C';
+    ctx.fillRect(doorX - door.width/2, doorY - door.height/2, door.width, door.height);
+    
+    // Door studs (gold)
+    ctx.fillStyle = '#C9A227';
+    for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 2; col++) {
+            ctx.beginPath();
+            ctx.arc(doorX - 5 + col * 10, doorY - door.height/4 + row * 12, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    
+    // Traditional windows (circular)
+    const windowY = y - h/4;
+    drawChineseWindow(x - w/3, windowY, 20);
+    drawChineseWindow(x + w/3, windowY, 20);
+}
+
+function drawChineseWindow(x, y, size) {
+    // Circular window frame (gold)
+    ctx.fillStyle = '#C9A227';
+    ctx.beginPath();
+    ctx.arc(x, y, size/2 + 3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Window opening
+    ctx.fillStyle = '#1A1A2E';
+    ctx.beginPath();
+    ctx.arc(x, y, size/2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Lattice pattern inside
+    ctx.strokeStyle = '#C9A227';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x - size/3, y - size/3);
+    ctx.lineTo(x + size/3, y + size/3);
+    ctx.moveTo(x + size/3, y - size/3);
+    ctx.lineTo(x - size/3, y + size/3);
+    ctx.moveTo(x, y - size/2 + 2);
+    ctx.lineTo(x, y + size/2 - 2);
+    ctx.moveTo(x - size/2 + 2, y);
+    ctx.lineTo(x + size/2 - 2, y);
+    ctx.stroke();
+}
+
 // ==================== DEFAULT HOUSE ====================
 function drawDefaultHouse(x, y, w, h, doorX, doorY, door) {
     ctx.fillStyle = '#D4A574';
@@ -1077,40 +1551,87 @@ function drawFlower(x, y, color) {
 }
 
 function drawPlayer(x, y) {
+    const skinColor = characterData.skinColor || '#F8D8B8';
+    const hairColor = characterData.hairColor || '#684010';
+    const outfitColor = characterData.outfitColor || '#4A90D9';
+    const pantsColor = characterData.pantsColor || '#8B6914';
+    const eyeColor = characterData.eyeColor || '#402808';
+    const hairStyleName = hairStyles[characterData.hairStyle] || 'Spiky';
+    const hatName = hats[characterData.hat] || 'None';
+    const accessoryName = accessories[characterData.accessory] || 'None';
+    
+    // Darken helper
+    const darken = (color, amt) => {
+        const num = parseInt(color.replace('#', ''), 16);
+        const r = Math.max(0, (num >> 16) - amt);
+        const g = Math.max(0, ((num >> 8) & 0xFF) - amt);
+        const b = Math.max(0, (num & 0xFF) - amt);
+        return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
+    };
+    
     // Shadow
     ctx.fillStyle = 'rgba(0,0,0,0.2)';
     ctx.beginPath();
     ctx.ellipse(x, y + player.height/2, player.width/2, 6, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    // Body (blue shirt)
-    ctx.fillStyle = '#4A90D9';
+    // Body (custom outfit color)
+    ctx.fillStyle = outfitColor;
     ctx.fillRect(x - player.width/2 + 2, y - player.height/2 + 10, player.width - 4, player.height - 18);
     
     // Shirt detail
-    ctx.fillStyle = '#3A7BC8';
+    ctx.fillStyle = darken(outfitColor, 30);
     ctx.fillRect(x - 2, y - player.height/2 + 10, 4, player.height - 18);
     
-    // Legs (brown pants)
-    ctx.fillStyle = '#8B6914';
+    // Legs (custom pants color)
+    ctx.fillStyle = pantsColor;
     ctx.fillRect(x - player.width/2 + 4, y + player.height/2 - 12, 7, 10);
     ctx.fillRect(x + player.width/2 - 11, y + player.height/2 - 12, 7, 10);
     
-    // Head
-    ctx.fillStyle = '#F8D8B8';
+    // Head (custom skin color)
+    ctx.fillStyle = skinColor;
     ctx.beginPath();
     ctx.arc(x, y - player.height/2 + 6, 8, 0, Math.PI * 2);
     ctx.fill();
     
-    // Hair
-    ctx.fillStyle = '#684010';
-    ctx.beginPath();
-    ctx.arc(x, y - player.height/2 + 3, 8, Math.PI, Math.PI * 2);
-    ctx.fill();
-    ctx.fillRect(x - 8, y - player.height/2 + 3, 16, 4);
+    // Hair (custom color and style)
+    ctx.fillStyle = hairColor;
+    if (hairStyleName !== 'Bald') {
+        if (hairStyleName === 'Mohawk') {
+            ctx.fillRect(x - 2, y - player.height/2 - 4, 4, 10);
+        } else if (hairStyleName === 'Afro' || hairStyleName === 'Curly') {
+            ctx.beginPath();
+            ctx.arc(x, y - player.height/2 + 2, 10, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (hairStyleName === 'Long' || hairStyleName === 'Ponytail') {
+            ctx.beginPath();
+            ctx.arc(x, y - player.height/2 + 3, 8, Math.PI, Math.PI * 2);
+            ctx.fill();
+            ctx.fillRect(x - 8, y - player.height/2 + 3, 16, 12);
+        } else if (hairStyleName === 'Flat Top') {
+            ctx.fillRect(x - 8, y - player.height/2 - 2, 16, 6);
+        } else if (hairStyleName === 'Pigtails') {
+            ctx.beginPath();
+            ctx.arc(x, y - player.height/2 + 3, 8, Math.PI, Math.PI * 2);
+            ctx.fill();
+            ctx.fillRect(x - 12, y - player.height/2 + 4, 6, 8);
+            ctx.fillRect(x + 6, y - player.height/2 + 4, 6, 8);
+        } else {
+            // Default spiky/short styles
+            ctx.beginPath();
+            ctx.arc(x, y - player.height/2 + 3, 8, Math.PI, Math.PI * 2);
+            ctx.fill();
+            ctx.fillRect(x - 8, y - player.height/2 + 3, 16, 4);
+            if (hairStyleName === 'Spiky') {
+                ctx.fillRect(x - 6, y - player.height/2 - 2, 3, 5);
+                ctx.fillRect(x - 1, y - player.height/2 - 4, 3, 7);
+                ctx.fillRect(x + 4, y - player.height/2 - 2, 3, 5);
+            }
+        }
+    }
     
-    // Eyes based on direction
-    ctx.fillStyle = '#402808';
+    // Eyes based on direction (custom eye color)
+    ctx.fillStyle = eyeColor;
     if (player.facing === 'down') {
         ctx.fillRect(x - 4, y - player.height/2 + 5, 2, 2);
         ctx.fillRect(x + 2, y - player.height/2 + 5, 2, 2);
@@ -1122,8 +1643,65 @@ function drawPlayer(x, y) {
         ctx.fillRect(x + 3, y - player.height/2 + 5, 2, 2);
     }
     
-    // Arms (animate when walking)
-    ctx.fillStyle = '#F8D8B8';
+    // Hat (if any)
+    if (hatName !== 'None') {
+        ctx.fillStyle = '#2c3e50';
+        if (hatName === 'Cap') {
+            ctx.fillRect(x - 8, y - player.height/2 - 2, 16, 6);
+            ctx.fillRect(x - 10, y - player.height/2 + 2, 10, 3);
+        } else if (hatName === 'Beanie') {
+            ctx.fillStyle = '#8e44ad';
+            ctx.beginPath();
+            ctx.arc(x, y - player.height/2, 9, Math.PI, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x, y - player.height/2 - 6, 3, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (hatName === 'Crown') {
+            ctx.fillStyle = '#f1c40f';
+            ctx.fillRect(x - 8, y - player.height/2 - 2, 16, 4);
+            ctx.fillRect(x - 6, y - player.height/2 - 6, 3, 4);
+            ctx.fillRect(x - 1, y - player.height/2 - 8, 3, 6);
+            ctx.fillRect(x + 4, y - player.height/2 - 6, 3, 4);
+        } else if (hatName === 'Cowboy') {
+            ctx.fillStyle = '#8b6914';
+            ctx.fillRect(x - 12, y - player.height/2 + 1, 24, 3);
+            ctx.beginPath();
+            ctx.arc(x, y - player.height/2 - 2, 7, Math.PI, Math.PI * 2);
+            ctx.fill();
+        } else if (hatName === 'Top Hat') {
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(x - 10, y - player.height/2, 20, 3);
+            ctx.fillRect(x - 6, y - player.height/2 - 12, 12, 12);
+        } else if (hatName === 'Wizard Hat') {
+            ctx.fillStyle = '#4a148c';
+            ctx.beginPath();
+            ctx.moveTo(x, y - player.height/2 - 16);
+            ctx.lineTo(x - 10, y - player.height/2 + 2);
+            ctx.lineTo(x + 10, y - player.height/2 + 2);
+            ctx.closePath();
+            ctx.fill();
+        }
+    }
+    
+    // Accessory (glasses, etc)
+    if (accessoryName === 'Glasses' || accessoryName === 'Round Glasses') {
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x - 6, y - player.height/2 + 4, 4, 3);
+        ctx.strokeRect(x + 2, y - player.height/2 + 4, 4, 3);
+        ctx.beginPath();
+        ctx.moveTo(x - 2, y - player.height/2 + 5);
+        ctx.lineTo(x + 2, y - player.height/2 + 5);
+        ctx.stroke();
+    } else if (accessoryName === 'Sunglasses') {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(x - 6, y - player.height/2 + 4, 5, 3);
+        ctx.fillRect(x + 1, y - player.height/2 + 4, 5, 3);
+    }
+    
+    // Arms (animate when walking, custom skin color)
+    ctx.fillStyle = skinColor;
     const armOffset = Math.floor(player.animFrame) % 2 === 0 ? 0 : 2;
     ctx.fillRect(x - player.width/2 - 2, y - player.height/2 + 12 + armOffset, 4, 10);
     ctx.fillRect(x + player.width/2 - 2, y - player.height/2 + 12 - armOffset, 4, 10);

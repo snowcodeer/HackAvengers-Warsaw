@@ -4,6 +4,8 @@ import { EffectComposer, RenderPass, BloomEffect, SMAAEffect, EffectPass, Vignet
 import { startMirageStream, stopMirageStream, setMirageScenario, isMirageActive } from './mirage.js';
 import { audioManager } from './core/AudioManager.js';
 import { LANGUAGE_CONFIG, getLanguageConfig, getDifficultyInstruction, getCharacterVoice } from './config/languages.js';
+import { RealtimeVoice, realtimeVoice } from './core/RealtimeVoice.js';
+import { RealtimeVoiceFeedback, voiceFeedback } from './core/RealtimeVoiceFeedback.js';
 import { SceneBuilder } from './core/SceneBuilder.js';
 import { generateDynamicScenario } from './scenarioGenerator.js';
 
@@ -14,6 +16,11 @@ const CONFIG = {
     DECART_API_KEY: import.meta.env.VITE_DECART_API_KEY || '',
     BACKEND_URL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
 };
+
+// Make API key available globally for RealtimeVoice module
+if (typeof window !== 'undefined') {
+    window.ELEVENLABS_API_KEY = CONFIG.ELEVENLABS_API_KEY;
+}
 
 // ==================== GLOBAL STATE ====================
 let scene, camera, renderer, composer;
@@ -44,6 +51,17 @@ let isRecording = false;
 
 // Mirage state
 let mirageActive = false;
+
+// Camera zoom state (for NPC conversation close-up)
+let isZoomedIn = false;
+let originalCameraPos = null;
+let targetCameraPos = null;
+let targetLookAt = null;
+
+// Speech highlighting state
+let currentSpeechText = '';
+let speechHighlightIndex = 0;
+let speechHighlightInterval = null;
 
 // Player character from customization
 let playerCharacter = {
@@ -86,6 +104,7 @@ const elements = {
     difficultyBar: document.getElementById('difficultyBar'),
     interactPrompt: document.getElementById('interactPrompt'),
     conversationPanel: document.getElementById('conversationPanel'),
+    chatHistory: document.getElementById('chatHistory'),
     charAvatarSmall: document.getElementById('charAvatarSmall'),
     speechText: document.getElementById('speechText'),
     speechTranslation: document.getElementById('speechTranslation'),
@@ -100,7 +119,27 @@ const elements = {
     glossaryWords: document.getElementById('glossaryWords'),
     glossaryFalseFriends: document.getElementById('glossaryFalseFriends'),
     controlsHint: document.getElementById('controlsHint'),
-    customScenarioBtn: document.getElementById('customScenarioBtn') // New button
+    customScenarioBtn: document.getElementById('customScenarioBtn'), // New button
+    practiceBtn: document.getElementById('practiceBtn'),
+    replaySpeechBtn: document.getElementById('replaySpeechBtn'),
+    // Pronunciation Trainer elements
+    pronunciationTrainer: document.getElementById('pronunciationTrainer'),
+    ptClose: document.getElementById('ptClose'),
+    micIcon: document.getElementById('micIcon'),
+    micLabel: document.getElementById('micLabel'),
+    amplitudeBars: document.getElementById('amplitudeBars'),
+    levelValue: document.getElementById('levelValue'),
+    expectedText: document.getElementById('expectedText'),
+    playExpectedBtn: document.getElementById('playExpectedBtn'),
+    transcribedWords: document.getElementById('transcribedWords'),
+    errorFeedback: document.getElementById('errorFeedback'),
+    errorList: document.getElementById('errorList'),
+    overallScore: document.getElementById('overallScore'),
+    scoreCircle: document.getElementById('scoreCircle'),
+    scoreValue: document.getElementById('scoreValue'),
+    ptStartBtn: document.getElementById('ptStartBtn'),
+    ptPlaybackBtn: document.getElementById('ptPlaybackBtn'),
+    ptRetryBtn: document.getElementById('ptRetryBtn')
 };
 
 // ==================== INITIALIZATION ====================
@@ -156,6 +195,9 @@ async function init() {
 
     // Setup conversation UI
     setupConversationUI();
+
+    // Setup pronunciation trainer
+    initPronunciationTrainer();
 
     // Setup glossary
     setupGlossary();
@@ -1136,7 +1178,43 @@ function setupControls() {
 
 // ==================== CONVERSATION SYSTEM ====================
 function setupConversationUI() {
+    // Single click: toggle recording
     elements.voiceBtn.addEventListener('click', toggleRecording);
+
+    // Double click: open pronunciation trainer with NPC's last message
+    elements.voiceBtn.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const lastNPCText = elements.speechText?.textContent || '';
+        if (lastNPCText) {
+            openPronunciationTrainer(lastNPCText);
+        }
+    });
+
+    // Practice button: open pronunciation trainer
+    if (elements.practiceBtn) {
+        elements.practiceBtn.addEventListener('click', () => {
+            const phraseToLearn = elements.speechText?.textContent || '';
+            if (phraseToLearn) {
+                openPronunciationTrainer(phraseToLearn);
+            }
+        });
+    }
+
+    // Replay button: replay the NPC's last speech
+    if (elements.replaySpeechBtn) {
+        elements.replaySpeechBtn.addEventListener('click', async () => {
+            const lastSpeech = elements.speechText?.textContent || '';
+            if (lastSpeech) {
+                elements.replaySpeechBtn.disabled = true;
+                elements.replaySpeechBtn.textContent = '🔊...';
+                await speakText(lastSpeech);
+                elements.replaySpeechBtn.disabled = false;
+                elements.replaySpeechBtn.textContent = '🔊 Replay';
+            }
+        });
+    }
+
     elements.sendBtn.addEventListener('click', sendTextMessage);
     elements.textInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendTextMessage();
@@ -1151,8 +1229,13 @@ async function startConversation() {
     elements.interactPrompt.classList.remove('active');
     elements.controlsHint.style.display = 'none';
 
+    // 🎥 Zoom camera to NPC for cinematic close-up
+    zoomToNPC();
+
     // 🔊 Play dialogue open sound
-    audioManager.playDialogueOpen();
+    if (audioManager.playDialogueOpen) {
+        audioManager.playDialogueOpen();
+    }
 
     // Mirage is already running from world load - log conversation start
     if (isMirageActive()) {
@@ -1163,8 +1246,50 @@ async function startConversation() {
     const greeting = await generateNPCResponse(null, true);
     displayNPCMessage(greeting.text, greeting.translation);
 
-    // Speak the greeting with expression
-    await speakText(greeting.text, greeting.expression || 'greeting');
+    // Speak the greeting with text highlighting
+    await speakTextWithHighlight(greeting.text, greeting.expression || 'greeting');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CAMERA ZOOM SYSTEM (from game.js)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function zoomToNPC() {
+    if (!npc) return;
+
+    // Store original camera position
+    originalCameraPos = camera.position.clone();
+    isZoomedIn = true;
+
+    // Get NPC face position
+    const npcPosition = npc.position.clone();
+    const facePosition = npcPosition.clone();
+    facePosition.y += 1.6; // Head height
+
+    // Calculate camera position (close-up, slightly to the side)
+    const faceDirection = new THREE.Vector3(0, 0, 1);
+    faceDirection.applyQuaternion(npc.quaternion);
+
+    targetCameraPos = facePosition.clone();
+    targetCameraPos.add(faceDirection.clone().multiplyScalar(2.5)); // 2.5 units from face
+    targetCameraPos.y = facePosition.y + 0.3; // Slightly above eye level
+
+    // Slight side offset for cinematic feel
+    const sideOffset = new THREE.Vector3(-0.5, 0, 0);
+    sideOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), npc.rotation.y);
+    targetCameraPos.add(sideOffset);
+
+    // Look at NPC face
+    targetLookAt = facePosition.clone();
+
+    console.log('🎥 Camera zooming to NPC');
+}
+
+function zoomOutFromNPC() {
+    isZoomedIn = false;
+    targetCameraPos = null;
+    targetLookAt = null;
+    console.log('🎥 Camera zooming out');
 }
 
 function endConversation() {
@@ -1172,6 +1297,15 @@ function endConversation() {
     elements.conversationPanel.classList.remove('active');
     elements.controlsHint.style.display = 'block';
     conversationHistory = [];
+
+    // 🎥 Zoom camera back out
+    zoomOutFromNPC();
+
+    // Stop any speech highlighting
+    if (speechHighlightInterval) {
+        clearInterval(speechHighlightInterval);
+        speechHighlightInterval = null;
+    }
 
     // Mirage continues running - it's always on once world loads
     console.log('🎨 Conversation ended - returning to exploration');
@@ -1185,19 +1319,29 @@ async function sendTextMessage() {
     elements.textInput.disabled = true;
     elements.sendBtn.disabled = true;
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ARCHIVE PREVIOUS NPC MESSAGE & DISPLAY USER'S MESSAGE
+    // ═══════════════════════════════════════════════════════════════════════════
+    archiveCurrentNPCMessage();
+    displayUserMessage(text);
+
     // Get NPC response
     const response = await generateNPCResponse(text);
     displayNPCMessage(response.text, response.translation, response.correction);
 
-    // Speak response with expression
-    await speakText(response.text, response.expression || 'teaching');
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SPEAK WITH TEXT HIGHLIGHTING
+    // ═══════════════════════════════════════════════════════════════════════════
+    await speakTextWithHighlight(response.text, response.expression || 'teaching');
 
     // Update difficulty
     if (response.shouldIncreaseDifficulty) {
         currentDifficulty = Math.min(5, currentDifficulty + 1);
         updateDifficultyUI();
         // 🎉 Play level up sound
-        audioManager.playQuestComplete();
+        if (audioManager.playQuestComplete) {
+            audioManager.playQuestComplete();
+        }
     }
 
     // Add new words to glossary
@@ -1339,8 +1483,107 @@ function displayNPCMessage(text, translation, correction = null) {
     }
 }
 
-// ==================== VOICE SYNTHESIS (ElevenLabs via Backend) ====================
-async function speakText(text, expression = null) {
+// ==================== TEXT HIGHLIGHTING DURING SPEECH ====================
+async function speakTextWithHighlight(text, expression = null) {
+    // Store the text for highlighting
+    currentSpeechText = text;
+    speechHighlightIndex = 0;
+
+    // Clear any existing highlight interval
+    if (speechHighlightInterval) {
+        clearInterval(speechHighlightInterval);
+        speechHighlightInterval = null;
+    }
+
+    // Show text dimmed initially (waiting for audio)
+    const words = text.split(/\s+/);
+    if (elements.speechText) {
+        elements.speechText.innerHTML = words.map(w =>
+            `<span class="word-pending" style="opacity: 0.3;">${w}</span>`
+        ).join(' ');
+    }
+
+    // Generate and play the speech - this returns the audio element
+    const audio = await speakTextAndGetAudio(text, expression);
+
+    if (!audio) {
+        // Fallback - just show text if audio fails
+        if (elements.speechText) {
+            elements.speechText.innerHTML = text;
+        }
+        return;
+    }
+
+    // Calculate timing based on audio duration
+    const audioDuration = audio.duration || 5; // fallback 5 seconds
+    const msPerWord = (audioDuration * 1000) / words.length;
+
+    console.log(`🔊 Audio duration: ${audioDuration}s, ${words.length} words, ${msPerWord.toFixed(0)}ms/word`);
+
+    // Start highlighting WHEN audio actually starts playing
+    audio.addEventListener('play', () => {
+        console.log('🎵 Audio started - beginning highlight sync');
+        speechHighlightIndex = 0;
+
+        speechHighlightInterval = setInterval(() => {
+            if (speechHighlightIndex < words.length) {
+                highlightWordInSpeech(words, speechHighlightIndex);
+                speechHighlightIndex++;
+            } else {
+                clearInterval(speechHighlightInterval);
+                speechHighlightInterval = null;
+            }
+        }, msPerWord);
+    });
+
+    // Cleanup when audio ends
+    audio.addEventListener('ended', () => {
+        console.log('🎵 Audio ended');
+        if (speechHighlightInterval) {
+            clearInterval(speechHighlightInterval);
+            speechHighlightInterval = null;
+        }
+        // Show full text highlighted as "completed"
+        if (elements.speechText) {
+            elements.speechText.innerHTML = words.map(w =>
+                `<span class="word-spoken" style="opacity: 1; color: #4ecdc4;">${w}</span>`
+            ).join(' ');
+        }
+    });
+
+    // Wait for audio to finish
+    await new Promise(resolve => {
+        audio.addEventListener('ended', resolve);
+        audio.addEventListener('error', resolve);
+    });
+}
+
+function highlightWordInSpeech(words, currentIndex) {
+    if (!elements.speechText) return;
+
+    const highlighted = words.map((word, i) => {
+        if (i < currentIndex) {
+            // Already spoken - teal color (learned)
+            return `<span class="word-spoken" style="color: #4ecdc4; opacity: 0.9;">${word}</span>`;
+        } else if (i === currentIndex) {
+            // Currently speaking - bright yellow/gold glow
+            return `<span class="word-current" style="
+                color: #f4b942;
+                font-weight: bold;
+                text-shadow: 0 0 15px rgba(244, 185, 66, 0.8), 0 0 30px rgba(244, 185, 66, 0.4);
+                animation: wordPulse 0.3s ease-in-out;
+            ">${word}</span>`;
+        } else {
+            // Not yet spoken - dimmed
+            return `<span class="word-pending" style="opacity: 0.4;">${word}</span>`;
+        }
+    }).join(' ');
+
+    elements.speechText.innerHTML = highlighted;
+}
+
+// Separate function to get audio element for sync
+async function speakTextAndGetAudio(text, expression = null) {
     // Stop any current audio
     if (currentAudio) {
         currentAudio.pause();
@@ -1354,12 +1597,12 @@ async function speakText(text, expression = null) {
 
     // Apply expression tag if available
     let processedText = text;
-    if (expression && voiceConfig.expressionTags[expression]) {
+    if (expression && voiceConfig.expressionTags && voiceConfig.expressionTags[expression]) {
         processedText = `${voiceConfig.expressionTags[expression]} ${text}`;
     }
 
     try {
-        // Try backend API first (preferred - keeps API keys server-side)
+        // Try backend API first
         const response = await fetch(`${CONFIG.BACKEND_URL}/api/speak`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1374,15 +1617,26 @@ async function speakText(text, expression = null) {
             const audioBlob = await response.blob();
             const audioUrl = URL.createObjectURL(audioBlob);
             currentAudio = new Audio(audioUrl);
-            await currentAudio.play();
-            console.log(`🔊 Speaking via backend: "${text.substring(0, 50)}..."`);
-            return;
+
+            // Wait for metadata to load (to get duration)
+            await new Promise((resolve) => {
+                currentAudio.addEventListener('loadedmetadata', resolve);
+                currentAudio.addEventListener('error', resolve);
+                currentAudio.load();
+            });
+
+            // Start playing
+            currentAudio.play().catch(e => console.error('Audio play error:', e));
+
+            console.log(`🔊 Backend TTS: "${text.substring(0, 40)}..." duration: ${currentAudio.duration}s`);
+            return currentAudio;
         }
     } catch (backendError) {
-        console.warn('Backend TTS failed, falling back to direct API:', backendError);
+        console.warn('Backend TTS failed:', backendError);
     }
 
-    // Fallback to direct API (for when backend is not running)
+    // Fallback to direct ElevenLabs API
+
     try {
         const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceConfig.voiceId}`, {
             method: 'POST',
@@ -1395,9 +1649,7 @@ async function speakText(text, expression = null) {
                 model_id: 'eleven_multilingual_v2',
                 voice_settings: {
                     stability: 0.5,
-                    similarity_boost: 0.75,
-                    style: 0.3,
-                    use_speaker_boost: true
+                    similarity_boost: 0.75
                 }
             })
         });
@@ -1406,11 +1658,35 @@ async function speakText(text, expression = null) {
             const audioBlob = await response.blob();
             const audioUrl = URL.createObjectURL(audioBlob);
             currentAudio = new Audio(audioUrl);
-            await currentAudio.play();
-            console.log(`🔊 Speaking via direct API: "${text.substring(0, 50)}..."`);
+
+            await new Promise((resolve) => {
+                currentAudio.addEventListener('loadedmetadata', resolve);
+                currentAudio.addEventListener('error', resolve);
+                currentAudio.load();
+            });
+
+            currentAudio.play().catch(e => console.error('Audio play error:', e));
+
+            console.log(`🔊 Direct TTS: "${text.substring(0, 40)}..." duration: ${currentAudio.duration}s`);
+            return currentAudio;
         }
     } catch (error) {
-        console.error('Error with TTS:', error);
+        console.error('TTS error:', error);
+    }
+
+    return null;
+}
+
+// ==================== VOICE SYNTHESIS (Simple version - no highlighting) ====================
+async function speakText(text, expression = null) {
+    // Use the full version but don't wait for completion
+    const audio = await speakTextAndGetAudio(text, expression);
+    if (audio) {
+        // Wait for audio to finish
+        await new Promise(resolve => {
+            audio.addEventListener('ended', resolve);
+            audio.addEventListener('error', resolve);
+        });
     }
 }
 
@@ -1423,9 +1699,298 @@ async function toggleRecording() {
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAL-TIME VOICE LISTENING (ElevenLabs Scribe v2 WebSocket)
+// ═══════════════════════════════════════════════════════════════════════════════
+
 async function startRecording() {
+    if (isRecording) return;
+    isRecording = true;
+
+    // Check if we have API key
+    const hasApiKey = CONFIG.ELEVENLABS_API_KEY && CONFIG.ELEVENLABS_API_KEY.length > 10;
+
+    if (!hasApiKey) {
+        console.warn('═══════════════════════════════════════════════════════════════════');
+        console.warn('⚠️ No ElevenLabs API key found!');
+        console.warn('To enable voice transcription:');
+        console.warn('1. Create a .env file in the frontend folder');
+        console.warn('2. Add: VITE_ELEVENLABS_API_KEY=your_api_key_here');
+        console.warn('3. Get your API key at: https://elevenlabs.io/');
+        console.warn('═══════════════════════════════════════════════════════════════════');
+    }
+
+    // Use regular recording with post-recording transcription
+    // (Real-time WebSocket STT requires enterprise access)
+    await startRegularRecording();
+}
+
+function stopRecording() {
+    if (!isRecording) return;
+    isRecording = false;
+
+    // Stop MediaRecorder
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+    }
+
+    elements.voiceBtn.classList.remove('recording');
+    elements.voiceBtn.textContent = '🎤';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SETUP REAL-TIME VOICE CALLBACKS
+// ═══════════════════════════════════════════════════════════════════════════════
+function setupRealtimeVoiceCallbacks() {
+    // Called for each word as it's recognized
+    realtimeVoice.onWordReceived = (word, index) => {
+        console.log(`📝 Word ${index}: "${word.text}" (${(word.confidence * 100).toFixed(0)}%)`);
+        addWordToRealtimeUI(word, index);
+    };
+
+    // Called when transcript updates
+    realtimeVoice.onTranscriptUpdate = (transcript, words, isFinal) => {
+        updateRealtimeTranscriptUI(transcript, words, isFinal);
+
+        if (isFinal && transcript.trim()) {
+            // Process the final transcript
+            processRealtimeTranscript(transcript, words);
+        }
+    };
+
+    // Called when listening starts
+    realtimeVoice.onListeningStart = () => {
+        console.log('🎤 Real-time listening active');
+        elements.textInput.placeholder = 'Listening... speak now!';
+    };
+
+    // Called when listening stops
+    realtimeVoice.onListeningStop = (transcript, words) => {
+        console.log('🛑 Listening stopped. Transcript:', transcript);
+        elements.textInput.placeholder = 'Type your response or click the mic to speak...';
+
+        // If we have a transcript, process it
+        if (transcript && transcript.trim()) {
+            processRealtimeTranscript(transcript, words);
+        }
+
+        // Hide real-time UI after a delay
+        setTimeout(() => {
+            hideRealtimeTranscriptUI();
+        }, 2000);
+    };
+
+    // Called on error
+    realtimeVoice.onError = (error) => {
+        console.error('Real-time voice error:', error);
+        elements.textInput.placeholder = 'Voice error - try typing';
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAL-TIME TRANSCRIPT UI
+// ═══════════════════════════════════════════════════════════════════════════════
+function showRealtimeTranscriptUI() {
+    // Create or show the real-time transcript display
+    let rtUI = document.getElementById('realtimeTranscript');
+    if (!rtUI) {
+        rtUI = document.createElement('div');
+        rtUI.id = 'realtimeTranscript';
+        rtUI.className = 'realtime-transcript';
+        rtUI.innerHTML = `
+            <div class="rt-header">
+                <span class="rt-pulse"></span>
+                <span class="rt-label">Listening...</span>
+                <span class="rt-avg-score">--</span>
+            </div>
+            <div class="rt-words" id="rtWords"></div>
+            <div class="rt-full-text" id="rtFullText"></div>
+        `;
+        elements.conversationPanel.querySelector('.conversation-content').insertBefore(
+            rtUI,
+            elements.conversationPanel.querySelector('.character-speaking')
+        );
+    }
+
+    rtUI.style.display = 'block';
+    rtUI.classList.add('active');
+
+    // Clear previous words
+    const wordsContainer = document.getElementById('rtWords');
+    if (wordsContainer) wordsContainer.innerHTML = '';
+
+    const fullText = document.getElementById('rtFullText');
+    if (fullText) fullText.textContent = '';
+}
+
+function hideRealtimeTranscriptUI() {
+    const rtUI = document.getElementById('realtimeTranscript');
+    if (rtUI) {
+        rtUI.classList.remove('active');
+        setTimeout(() => {
+            rtUI.style.display = 'none';
+        }, 300);
+    }
+}
+
+function addWordToRealtimeUI(word, index) {
+    const wordsContainer = document.getElementById('rtWords');
+    if (!wordsContainer) return;
+
+    const wordEl = document.createElement('span');
+    wordEl.className = 'rt-word';
+    wordEl.dataset.confidence = word.confidence;
+
+    // Color based on confidence score
+    const confidence = word.confidence || 0.9;
+    let colorClass = 'high';
+    if (confidence < 0.7) colorClass = 'low';
+    else if (confidence < 0.85) colorClass = 'medium';
+
+    wordEl.classList.add(`confidence-${colorClass}`);
+    wordEl.innerHTML = `
+        <span class="word-text">${word.text}</span>
+        <span class="word-score">${(confidence * 100).toFixed(0)}%</span>
+    `;
+
+    // Animate in
+    wordEl.style.animation = 'wordAppear 0.3s ease forwards';
+
+    wordsContainer.appendChild(wordEl);
+
+    // Update average score
+    updateAverageScore();
+}
+
+function updateRealtimeTranscriptUI(transcript, words, isFinal) {
+    const fullText = document.getElementById('rtFullText');
+    if (fullText) {
+        fullText.textContent = transcript;
+        fullText.classList.toggle('final', isFinal);
+    }
+
+    const rtLabel = document.querySelector('.rt-label');
+    if (rtLabel) {
+        rtLabel.textContent = isFinal ? 'Complete!' : 'Listening...';
+    }
+}
+
+function updateAverageScore() {
+    const avgScore = realtimeVoice.getAverageConfidence();
+    const scoreEl = document.querySelector('.rt-avg-score');
+    if (scoreEl && avgScore > 0) {
+        scoreEl.textContent = `Avg: ${(avgScore * 100).toFixed(0)}%`;
+
+        // Color based on score
+        scoreEl.className = 'rt-avg-score';
+        if (avgScore >= 0.85) scoreEl.classList.add('score-high');
+        else if (avgScore >= 0.7) scoreEl.classList.add('score-medium');
+        else scoreEl.classList.add('score-low');
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROCESS FINAL REAL-TIME TRANSCRIPT
+// ═══════════════════════════════════════════════════════════════════════════════
+async function processRealtimeTranscript(transcript, words) {
+    if (!transcript || !transcript.trim()) return;
+
+    console.log('📝 Processing transcript:', transcript);
+    console.log('📊 Words with scores:', words);
+
+    // Archive previous NPC message and display user message
+    archiveCurrentNPCMessage();
+    displayUserMessageWithScores(transcript, words);
+
+    // Get NPC response
+    elements.textInput.disabled = true;
+    elements.sendBtn.disabled = true;
+
+    const response = await generateNPCResponse(transcript);
+    displayNPCMessage(response.text, response.translation);
+
+    // Speak with highlighting
+    await speakTextWithHighlight(response.text, response.expression || 'teaching');
+
+    // Update difficulty
+    if (response.shouldIncreaseDifficulty) {
+        currentDifficulty = Math.min(5, currentDifficulty + 1);
+        updateDifficultyUI();
+        if (audioManager.playQuestComplete) {
+            audioManager.playQuestComplete();
+        }
+    }
+
+    // Add new words to glossary
+    if (response.newWords) {
+        response.newWords.forEach(word => {
+            if (!glossary.find(w => w.word === word.word)) {
+                glossary.push(word);
+            }
+        });
+        updateGlossaryUI();
+    }
+
+    elements.textInput.disabled = false;
+    elements.sendBtn.disabled = false;
+    elements.textInput.focus();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DISPLAY USER MESSAGE WITH WORD SCORES
+// ═══════════════════════════════════════════════════════════════════════════════
+function displayUserMessageWithScores(transcript, words) {
+    if (!elements.chatHistory) return;
+
+    const avgConfidence = words.length > 0
+        ? words.reduce((acc, w) => acc + (w.confidence || 0), 0) / words.length
+        : 0.9;
+
+    // Create user message with word-by-word scores
+    const userBubble = document.createElement('div');
+    userBubble.className = 'user-message with-scores';
+
+    // Build word HTML with individual scores
+    const wordsHtml = words.length > 0
+        ? words.map(w => {
+            const conf = w.confidence || 0.9;
+            let colorClass = 'high';
+            if (conf < 0.7) colorClass = 'low';
+            else if (conf < 0.85) colorClass = 'medium';
+
+            return `<span class="scored-word ${colorClass}" title="${(conf * 100).toFixed(0)}% confidence">${w.text}</span>`;
+        }).join(' ')
+        : transcript;
+
+    userBubble.innerHTML = `
+        <div class="user-label">
+            You said: 
+            <span class="overall-score ${avgConfidence >= 0.85 ? 'high' : avgConfidence >= 0.7 ? 'medium' : 'low'}">
+                ${(avgConfidence * 100).toFixed(0)}% clarity
+            </span>
+        </div>
+        <div class="user-text scored">${wordsHtml}</div>
+    `;
+
+    elements.chatHistory.appendChild(userBubble);
+    elements.chatHistory.scrollTop = elements.chatHistory.scrollHeight;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REGULAR RECORDING WITH AMPLITUDE VISUALIZATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let audioContext = null;
+let analyser = null;
+let animationFrameId = null;
+
+async function startRegularRecording() {
+    console.log('🎤 Starting recording with amplitude visualization...');
+
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        // Setup MediaRecorder
         mediaRecorder = new MediaRecorder(stream);
         audioChunks = [];
 
@@ -1434,36 +1999,757 @@ async function startRecording() {
         };
 
         mediaRecorder.onstop = async () => {
+            stopAmplitudeVisualization();
+            hideAmplitudeUI();
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
             await processAudioInput(audioBlob);
             stream.getTracks().forEach(track => track.stop());
         };
 
+        // Setup Audio Context for amplitude analysis
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.8;
+
+        const source = audioContext.createMediaStreamSource(stream);
+        source.connect(analyser);
+
+        // Show amplitude UI
+        showAmplitudeUI();
+
+        // Start visualization
+        startAmplitudeVisualization();
+
+        // Start recording
+
         mediaRecorder.start();
-        isRecording = true;
+
         elements.voiceBtn.classList.add('recording');
-        elements.voiceBtn.textContent = '⏹';
+        elements.voiceBtn.innerHTML = '<span class="pulse-dot"></span>';
+
+        console.log('✅ Recording started with visualization');
+
     } catch (error) {
         console.error('Error starting recording:', error);
+        isRecording = false;
     }
 }
 
-function stopRecording() {
-    if (mediaRecorder && isRecording) {
-        mediaRecorder.stop();
-        isRecording = false;
-        elements.voiceBtn.classList.remove('recording');
-        elements.voiceBtn.textContent = '🎤';
+function showAmplitudeUI() {
+    // Create or show the amplitude visualization UI
+    let ampUI = document.getElementById('amplitudeUI');
+    if (!ampUI) {
+        ampUI = document.createElement('div');
+        ampUI.id = 'amplitudeUI';
+        ampUI.innerHTML = `
+            <div class="amp-container">
+                <div class="amp-header">
+                    <span class="amp-pulse"></span>
+                    <span class="amp-label">🎤 Recording...</span>
+                    <span class="amp-level">0%</span>
+                </div>
+                <div class="amp-bars" id="ampBars"></div>
+                <div class="amp-waveform" id="ampWaveform">
+                    <canvas id="waveformCanvas" width="300" height="60"></canvas>
+                </div>
+            </div>
+        `;
+
+        // Add styles
+        const style = document.createElement('style');
+        style.textContent = `
+            #amplitudeUI {
+                position: fixed;
+                bottom: 120px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(15, 15, 25, 0.95);
+                border: 2px solid rgba(78, 205, 196, 0.5);
+                border-radius: 16px;
+                padding: 16px;
+                z-index: 1001;
+                min-width: 320px;
+                animation: slideUp 0.3s ease;
+            }
+            @keyframes slideUp {
+                from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+                to { opacity: 1; transform: translateX(-50%) translateY(0); }
+            }
+            .amp-container { display: flex; flex-direction: column; gap: 12px; }
+            .amp-header { display: flex; align-items: center; gap: 10px; }
+            .amp-pulse {
+                width: 12px; height: 12px;
+                background: #ff6b6b;
+                border-radius: 50%;
+                animation: pulse 1s ease-in-out infinite;
+            }
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.3); opacity: 0.7; }
+            }
+            .amp-label { flex: 1; color: #fff; font-size: 0.9rem; }
+            .amp-level { 
+                font-size: 1.2rem; font-weight: bold; 
+                color: #4ecdc4; min-width: 50px; text-align: right;
+            }
+            .amp-bars {
+                display: flex; align-items: flex-end;
+                height: 40px; gap: 2px;
+            }
+            .amp-bar {
+                flex: 1; background: linear-gradient(to top, #4ecdc4, #f4b942);
+                border-radius: 2px; min-height: 2px;
+                transition: height 0.05s ease;
+            }
+            .amp-waveform { margin-top: 8px; }
+            #waveformCanvas {
+                width: 100%; height: 60px;
+                border-radius: 8px;
+                background: rgba(0,0,0,0.3);
+            }
+        `;
+        document.head.appendChild(style);
+        document.body.appendChild(ampUI);
+
+        // Create bars
+        const barsContainer = document.getElementById('ampBars');
+        for (let i = 0; i < 32; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'amp-bar';
+            barsContainer.appendChild(bar);
+        }
     }
+
+    ampUI.style.display = 'block';
+}
+
+function hideAmplitudeUI() {
+    const ampUI = document.getElementById('amplitudeUI');
+    if (ampUI) {
+        ampUI.style.display = 'none';
+    }
+}
+
+function startAmplitudeVisualization() {
+    if (!analyser) return;
+
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    const bars = document.querySelectorAll('.amp-bar');
+    const levelDisplay = document.querySelector('.amp-level');
+    const canvas = document.getElementById('waveformCanvas');
+    const ctx = canvas?.getContext('2d');
+
+    // Waveform history
+    const waveformHistory = [];
+    const maxHistory = 150;
+
+    function draw() {
+        animationFrameId = requestAnimationFrame(draw);
+
+        analyser.getByteFrequencyData(dataArray);
+
+        // Calculate average amplitude
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+            sum += dataArray[i];
+        }
+        const avg = sum / bufferLength;
+        const percent = Math.round((avg / 255) * 100);
+
+        // Update level display
+        if (levelDisplay) {
+            levelDisplay.textContent = `${percent}%`;
+            levelDisplay.style.color = percent > 50 ? '#4ecdc4' : percent > 20 ? '#f4b942' : '#ff6b6b';
+        }
+
+        // Update bars
+        const step = Math.floor(bufferLength / bars.length);
+        bars.forEach((bar, i) => {
+            const value = dataArray[i * step] || 0;
+            const height = Math.max(2, (value / 255) * 40);
+            bar.style.height = `${height}px`;
+        });
+
+        // Draw waveform
+        if (ctx && canvas) {
+            waveformHistory.push(avg);
+            if (waveformHistory.length > maxHistory) {
+                waveformHistory.shift();
+            }
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#4ecdc4';
+            ctx.lineWidth = 2;
+
+            const sliceWidth = canvas.width / maxHistory;
+            let x = 0;
+
+            waveformHistory.forEach((val, i) => {
+                const y = canvas.height - (val / 255) * canvas.height;
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+                x += sliceWidth;
+            });
+
+            ctx.stroke();
+
+            // Fill under the line
+            ctx.lineTo(x, canvas.height);
+            ctx.lineTo(0, canvas.height);
+            ctx.fillStyle = 'rgba(78, 205, 196, 0.2)';
+            ctx.fill();
+        }
+    }
+
+    draw();
+}
+
+function stopAmplitudeVisualization() {
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
+
+    if (audioContext && audioContext.state !== 'closed') {
+        audioContext.close();
+        audioContext = null;
+    }
+
+    analyser = null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PRONUNCIATION TRAINER - Full real-time feedback system
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let pronunciationTrainerActive = false;
+let currentExpectedPhrase = '';
+
+function initPronunciationTrainer() {
+    // Initialize voice feedback with API key
+    voiceFeedback.init(CONFIG.ELEVENLABS_API_KEY);
+
+    // Create amplitude bars
+    if (elements.amplitudeBars) {
+        elements.amplitudeBars.innerHTML = '';
+        for (let i = 0; i < 32; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'amplitude-bar';
+            bar.style.height = '4px';
+            elements.amplitudeBars.appendChild(bar);
+        }
+    }
+
+    // Setup callbacks
+    voiceFeedback.onAmplitudeUpdate = handleAmplitudeUpdate;
+    voiceFeedback.onWordTranscribed = handleWordTranscribed;
+    voiceFeedback.onPronunciationError = handlePronunciationError;
+    voiceFeedback.onTranscriptComplete = handleTranscriptComplete;
+    voiceFeedback.onMicConnected = handleMicConnected;
+    voiceFeedback.onError = handleVoiceFeedbackError;
+
+    // Button event listeners
+    if (elements.ptClose) {
+        elements.ptClose.addEventListener('click', closePronunciationTrainer);
+    }
+
+    if (elements.ptStartBtn) {
+        elements.ptStartBtn.addEventListener('click', togglePronunciationRecording);
+    }
+
+    if (elements.ptPlaybackBtn) {
+        elements.ptPlaybackBtn.addEventListener('click', playUserRecording);
+    }
+
+    if (elements.ptRetryBtn) {
+        elements.ptRetryBtn.addEventListener('click', retryPronunciation);
+    }
+
+    if (elements.playExpectedBtn) {
+        elements.playExpectedBtn.addEventListener('click', playExpectedPronunciation);
+    }
+}
+
+function openPronunciationTrainer(phrase) {
+    if (!elements.pronunciationTrainer) return;
+
+    currentExpectedPhrase = phrase;
+    pronunciationTrainerActive = true;
+
+    // Set language
+    voiceFeedback.setLanguage(gameState.language || 'french');
+    voiceFeedback.setExpectedText(phrase);
+
+    // Get voice ID for this language
+    const voiceConfig = getVoiceForLanguage(gameState.language);
+    voiceFeedback.voiceId = voiceConfig.voiceId;
+
+    // Reset UI
+    resetPronunciationTrainerUI();
+
+    // Show expected text with words
+    const words = phrase.split(/\s+/);
+    elements.expectedText.innerHTML = words.map((word, i) =>
+        `<span class="word" data-index="${i}">${word}</span>`
+    ).join(' ');
+
+    // Show trainer
+    elements.pronunciationTrainer.classList.add('active');
+
+    console.log(`🎯 Pronunciation trainer opened: "${phrase}"`);
+}
+
+function closePronunciationTrainer() {
+    if (!elements.pronunciationTrainer) return;
+
+    pronunciationTrainerActive = false;
+    voiceFeedback.stopListening();
+
+    elements.pronunciationTrainer.classList.remove('active');
+
+    console.log('🎯 Pronunciation trainer closed');
+}
+
+function resetPronunciationTrainerUI() {
+    // Reset transcribed words
+    if (elements.transcribedWords) {
+        elements.transcribedWords.innerHTML = '<div style="color: rgba(255,255,255,0.4); font-style: italic;">Words will appear here as you speak...</div>';
+    }
+
+    // Reset error feedback
+    if (elements.errorFeedback) {
+        elements.errorFeedback.classList.add('hidden');
+        elements.errorList.innerHTML = '';
+    }
+
+    // Reset score
+    if (elements.overallScore) {
+        elements.overallScore.classList.add('hidden');
+    }
+
+    // Reset expected text highlighting
+    const words = elements.expectedText?.querySelectorAll('.word');
+    words?.forEach(w => {
+        w.classList.remove('matched', 'error', 'current');
+    });
+
+    // Reset buttons
+    if (elements.ptStartBtn) {
+        elements.ptStartBtn.innerHTML = '<span>🎤</span> Start Recording';
+    }
+    if (elements.ptPlaybackBtn) {
+        elements.ptPlaybackBtn.disabled = true;
+    }
+    if (elements.ptRetryBtn) {
+        elements.ptRetryBtn.disabled = true;
+    }
+
+    // Reset mic status
+    if (elements.micIcon) {
+        elements.micIcon.classList.remove('connected', 'speaking');
+    }
+    if (elements.micLabel) {
+        elements.micLabel.textContent = 'Ready';
+    }
+}
+
+async function togglePronunciationRecording() {
+    if (voiceFeedback.isListening) {
+        // Stop recording
+        elements.ptStartBtn.innerHTML = '<span>⏳</span> Processing...';
+        elements.ptStartBtn.disabled = true;
+
+        const results = await voiceFeedback.stopListening();
+
+        elements.ptStartBtn.innerHTML = '<span>🎤</span> Record Again';
+        elements.ptStartBtn.disabled = false;
+        elements.ptPlaybackBtn.disabled = false;
+        elements.ptRetryBtn.disabled = false;
+
+        // Show final score
+        showFinalScore(results);
+    } else {
+        // Start recording
+        resetPronunciationTrainerUI();
+        elements.ptStartBtn.innerHTML = '<span>⏹</span> Stop Recording';
+
+        try {
+            await voiceFeedback.startListening(true);
+        } catch (error) {
+            console.error('Failed to start pronunciation trainer:', error);
+            elements.ptStartBtn.innerHTML = '<span>🎤</span> Start Recording';
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PRONUNCIATION TRAINER CALLBACKS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function handleAmplitudeUpdate(data) {
+    // Update amplitude bars
+    const bars = elements.amplitudeBars?.children;
+    if (bars) {
+        const step = Math.floor(data.data.length / bars.length);
+        for (let i = 0; i < bars.length; i++) {
+            const value = data.data[i * step] || 0;
+            const height = Math.max(4, (value / 255) * 60);
+            bars[i].style.height = `${height}px`;
+        }
+    }
+
+    // Update level value
+    if (elements.levelValue) {
+        elements.levelValue.textContent = `${Math.round(data.average * 100)}%`;
+    }
+
+    // Update mic icon for speaking detection
+    if (elements.micIcon) {
+        elements.micIcon.classList.toggle('speaking', data.isSpeaking);
+    }
+}
+
+function handleMicConnected(connected) {
+    if (elements.micIcon) {
+        elements.micIcon.classList.toggle('connected', connected);
+    }
+    if (elements.micLabel) {
+        elements.micLabel.textContent = connected ? 'Connected' : 'Disconnected';
+    }
+}
+
+function handleWordTranscribed(word, index, pronunciationResult) {
+    // Clear placeholder
+    if (index === 0 && elements.transcribedWords) {
+        elements.transcribedWords.innerHTML = '';
+    }
+
+    // Add transcribed word to UI
+    const wordEl = document.createElement('div');
+    wordEl.className = `transcribed-word ${pronunciationResult.isCorrect ? 'correct' : 'incorrect'}`;
+
+    const score = Math.round((pronunciationResult.similarity || word.confidence) * 100);
+
+    wordEl.innerHTML = `
+        <span class="tw-text">${word.text}</span>
+        <span class="tw-score">${score}%</span>
+        ${!pronunciationResult.isCorrect && pronunciationResult.expected ?
+            `<span class="tw-expected">Expected: ${pronunciationResult.expected}</span>` : ''}
+    `;
+
+    elements.transcribedWords?.appendChild(wordEl);
+
+    // Update expected text highlighting
+    const expectedWords = elements.expectedText?.querySelectorAll('.word');
+    if (expectedWords && expectedWords[index]) {
+        expectedWords[index].classList.add(pronunciationResult.isCorrect ? 'matched' : 'error');
+
+        // Highlight next word as current
+        if (expectedWords[index + 1]) {
+            expectedWords[index + 1].classList.add('current');
+        }
+    }
+}
+
+function handlePronunciationError(error) {
+    // Show error feedback section
+    if (elements.errorFeedback) {
+        elements.errorFeedback.classList.remove('hidden');
+    }
+
+    // Add error item
+    const errorItem = document.createElement('div');
+    errorItem.className = 'error-item';
+
+    const suggestions = error.suggestions?.join(' ') || 'Try speaking more slowly and clearly.';
+
+    errorItem.innerHTML = `
+        <div class="error-icon">❌</div>
+        <div class="error-details">
+            <div class="error-comparison">
+                <span class="error-spoken">You said: "${error.spoken}"</span>
+                <span class="error-expected">Should be: "${error.expected}"</span>
+            </div>
+            <div class="error-suggestion">💡 ${suggestions}</div>
+        </div>
+        <button class="play-correct-btn" onclick="playWordPronunciation('${error.expected.replace(/'/g, "\\'")}')">
+            🔊 Hear it
+        </button>
+    `;
+
+    elements.errorList?.appendChild(errorItem);
+}
+
+function handleTranscriptComplete(words, errors) {
+    console.log('📝 Transcript complete:', words.map(w => w.text).join(' '));
+    console.log('⚠️ Errors:', errors.length);
+}
+
+function handleVoiceFeedbackError(error) {
+    console.error('Voice feedback error:', error);
+    if (elements.micLabel) {
+        elements.micLabel.textContent = 'Error: ' + error.message;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PRONUNCIATION TRAINER HELPERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function showFinalScore(results) {
+    if (!elements.overallScore) return;
+
+    const score = results?.overallScore || voiceFeedback.getOverallScore();
+
+    elements.overallScore.classList.remove('hidden');
+    elements.scoreValue.textContent = `${Math.round(score)}%`;
+    elements.scoreCircle.style.setProperty('--score-percent', `${score}%`);
+
+    // Color based on score
+    if (score >= 80) {
+        elements.scoreCircle.style.background = `conic-gradient(var(--accent-teal) ${score}%, rgba(255,255,255,0.1) ${score}%)`;
+    } else if (score >= 60) {
+        elements.scoreCircle.style.background = `conic-gradient(var(--accent-gold) ${score}%, rgba(255,255,255,0.1) ${score}%)`;
+    } else {
+        elements.scoreCircle.style.background = `conic-gradient(var(--accent-coral) ${score}%, rgba(255,255,255,0.1) ${score}%)`;
+    }
+}
+
+async function playExpectedPronunciation() {
+    if (!currentExpectedPhrase) return;
+
+    elements.playExpectedBtn.disabled = true;
+    elements.playExpectedBtn.innerHTML = '🔊 Playing...';
+
+    try {
+        await voiceFeedback.playCorrectPronunciation(currentExpectedPhrase);
+    } catch (error) {
+        console.error('Error playing pronunciation:', error);
+    }
+
+    elements.playExpectedBtn.disabled = false;
+    elements.playExpectedBtn.innerHTML = '🔊 Hear correct pronunciation';
+}
+
+// Global function for error item buttons
+window.playWordPronunciation = async function (word) {
+    try {
+        await voiceFeedback.playCorrectPronunciation(word);
+    } catch (error) {
+        console.error('Error playing word pronunciation:', error);
+    }
+};
+
+async function playUserRecording() {
+    elements.ptPlaybackBtn.disabled = true;
+    elements.ptPlaybackBtn.innerHTML = '<span>🔊</span> Playing...';
+
+    try {
+        await voiceFeedback.playRecording();
+    } catch (error) {
+        console.error('Error playing recording:', error);
+    }
+
+    elements.ptPlaybackBtn.disabled = false;
+    elements.ptPlaybackBtn.innerHTML = '<span>🔁</span> Hear My Recording';
+}
+
+function retryPronunciation() {
+    resetPronunciationTrainerUI();
 }
 
 async function processAudioInput(audioBlob) {
-    // For now, we'll use text input as fallback
-    // In production, this would use ElevenLabs Speech-to-Text
-    elements.textInput.placeholder = 'Voice processing... (type instead for now)';
-    setTimeout(() => {
-        elements.textInput.placeholder = 'Type your response or click the mic to speak...';
-    }, 2000);
+    elements.textInput.placeholder = 'Transcribing your voice...';
+    elements.textInput.disabled = true;
+    elements.sendBtn.disabled = true;
+
+    const language = gameState.language || 'french';
+    const langConfig = getLanguageConfig(language);
+
+    try {
+        // ═══════════════════════════════════════════════════════════════════════
+        // TRANSCRIBE AUDIO USING ELEVENLABS STT API (with word timestamps)
+        // ═══════════════════════════════════════════════════════════════════════
+
+        let transcription = '';
+        let wordsWithScores = [];
+
+        if (CONFIG.ELEVENLABS_API_KEY) {
+            console.log('🎤 Transcribing with ElevenLabs STT...');
+
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
+
+            const sttResponse = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+                method: 'POST',
+                headers: {
+                    'xi-api-key': CONFIG.ELEVENLABS_API_KEY
+                },
+                body: formData
+            });
+
+            if (sttResponse.ok) {
+                const sttData = await sttResponse.json();
+                transcription = sttData.text || '';
+
+                // Extract word-level data if available
+                if (sttData.words && Array.isArray(sttData.words)) {
+                    wordsWithScores = sttData.words.map(w => ({
+                        text: w.text || w.word,
+                        confidence: w.confidence || 0.9,
+                        start: w.start,
+                        end: w.end
+                    }));
+                } else {
+                    // Create word scores from text
+                    wordsWithScores = transcription.split(/\s+/).filter(w => w).map(w => ({
+                        text: w,
+                        confidence: 0.85
+                    }));
+                }
+
+                console.log('📝 Transcription:', transcription);
+            } else {
+                console.error('STT failed:', await sttResponse.text());
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // FALLBACK: TRY BACKEND IF DIRECT STT FAILED
+        // ═══════════════════════════════════════════════════════════════════════
+        if (!transcription) {
+            console.log('🎤 Trying backend transcription...');
+
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
+            formData.append('language', language);
+
+            const backendResponse = await fetch(`${CONFIG.BACKEND_URL}/api/transcribe`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (backendResponse.ok) {
+                const data = await backendResponse.json();
+                transcription = data.text || data.transcription || '';
+                wordsWithScores = transcription.split(/\s+/).filter(w => w).map(w => ({
+                    text: w,
+                    confidence: 0.85
+                }));
+            }
+        }
+
+        if (!transcription) {
+            elements.textInput.placeholder = 'Could not transcribe - try again or type';
+            elements.textInput.disabled = false;
+            elements.sendBtn.disabled = false;
+            return;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // DISPLAY USER'S TRANSCRIPTION WITH WORD SCORES
+        // ═══════════════════════════════════════════════════════════════════════
+        archiveCurrentNPCMessage();
+        displayUserMessageWithScores(transcription, wordsWithScores);
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // GET NPC RESPONSE
+        // ═══════════════════════════════════════════════════════════════════════
+        const response = await generateNPCResponse(transcription);
+        displayNPCMessage(response.text, response.translation);
+
+        // Speak with highlighting
+        await speakTextWithHighlight(response.text, response.expression || 'teaching');
+
+        // Update difficulty if needed
+        if (response.shouldIncreaseDifficulty) {
+            currentDifficulty = Math.min(5, currentDifficulty + 1);
+            updateDifficultyUI();
+            if (audioManager.playQuestComplete) {
+                audioManager.playQuestComplete();
+            }
+        }
+
+        // Add new words to glossary
+        if (response.newWords) {
+            response.newWords.forEach(word => {
+                if (!glossary.find(w => w.word === word.word)) {
+                    glossary.push(word);
+                }
+            });
+            updateGlossaryUI();
+        }
+
+    } catch (error) {
+        console.error('Voice processing error:', error);
+        elements.textInput.placeholder = 'Voice error - try typing instead';
+    }
+
+    elements.textInput.disabled = false;
+    elements.sendBtn.disabled = false;
+    elements.textInput.placeholder = 'Type your response or click the mic to speak...';
+    elements.textInput.focus();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DISPLAY USER'S MESSAGE (transcription)
+// ═══════════════════════════════════════════════════════════════════════════════
+function displayUserMessage(text) {
+    if (!elements.chatHistory) return;
+
+    // Create a user speech bubble
+    const userBubble = document.createElement('div');
+    userBubble.className = 'user-message';
+    userBubble.innerHTML = `
+        <div class="user-label">You said:</div>
+        <div class="user-text">${text}</div>
+    `;
+
+    // Add to chat history
+    elements.chatHistory.appendChild(userBubble);
+
+    // Scroll to show new message
+    elements.chatHistory.scrollTop = elements.chatHistory.scrollHeight;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ADD PREVIOUS MESSAGE TO HISTORY (before showing new one)
+// ═══════════════════════════════════════════════════════════════════════════════
+function archiveCurrentNPCMessage() {
+    if (!elements.chatHistory || !elements.speechText) return;
+
+    const currentText = elements.speechText.textContent || elements.speechText.innerText;
+    const currentTranslation = elements.speechTranslation?.textContent || '';
+
+    if (!currentText || currentText === 'Bonjour! Bienvenue à ma boulangerie!') return; // Don't archive default
+
+    // Create archived NPC message
+    const npcArchive = document.createElement('div');
+    npcArchive.className = 'npc-message-archived';
+    npcArchive.style.cssText = `
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px 16px 16px 4px;
+        padding: 12px 16px;
+        max-width: 70%;
+        opacity: 0.7;
+        animation: slideInLeft 0.3s ease-out;
+    `;
+    npcArchive.innerHTML = `
+        <div style="font-size: 0.9rem; color: #fff; margin-bottom: 4px;">${currentText}</div>
+        ${currentTranslation ? `<div style="font-size: 0.8rem; color: #4ecdc4; font-style: italic;">${currentTranslation}</div>` : ''}
+    `;
+
+    elements.chatHistory.appendChild(npcArchive);
+    elements.chatHistory.scrollTop = elements.chatHistory.scrollHeight;
 }
 
 // ==================== GLOSSARY ====================
@@ -1526,10 +2812,39 @@ function animate() {
         checkNPCProximity();
     }
 
-    // Gentle NPC idle animation
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CAMERA ZOOM ANIMATION (smooth lerp to NPC during conversation)
+    // ═══════════════════════════════════════════════════════════════════════════
+    if (isZoomedIn && targetCameraPos && targetLookAt) {
+        // Smoothly move camera to target position
+        camera.position.lerp(targetCameraPos, 0.05);
+
+        // Smoothly look at NPC
+        camera.lookAt(targetLookAt);
+    } else if (!isZoomedIn && originalCameraPos && !isConversationActive) {
+        // Smoothly return to original position when zooming out
+        // (handled by updatePlayer when not in conversation)
+    }
+
+    // Gentle NPC idle animation (more pronounced during conversation)
+
     if (npc) {
-        npc.position.y = Math.sin(elapsed * 2) * 0.02;
-        npc.rotation.y = Math.sin(elapsed * 0.5) * 0.1;
+        const idleIntensity = isConversationActive ? 0.03 : 0.02;
+        npc.position.y = Math.sin(elapsed * 2) * idleIntensity;
+
+        // NPC looks at player during conversation
+        if (isConversationActive && player) {
+            const lookTarget = player.position.clone();
+            lookTarget.y = npc.position.y + 1.6;
+            // Gentle rotation toward player
+            const targetRotation = Math.atan2(
+                player.position.x - npc.position.x,
+                player.position.z - npc.position.z
+            );
+            npc.rotation.y += (targetRotation - npc.rotation.y) * 0.05;
+        } else {
+            npc.rotation.y = Math.sin(elapsed * 0.5) * 0.1;
+        }
     }
 
     // Update SceneBuilder animated objects (steam, flickering lights, etc.)
