@@ -9,6 +9,8 @@ export { ConversationEngine } from './ConversationEngine.js';
 export { VoiceManager } from './VoiceManager.js';
 export { APIClient, apiClient } from './APIClient.js';
 export { AudioManager, audioManager } from './AudioManager.js';
+export { RealtimeVoice, realtimeVoice } from './RealtimeVoice.js';
+export { RealtimeVoiceFeedback, voiceFeedback } from './RealtimeVoiceFeedback.js';
 
 // Language configurations
 export { LANGUAGE_CONFIG, getLanguageConfig, getAllLanguages } from '../config/languages.js';
