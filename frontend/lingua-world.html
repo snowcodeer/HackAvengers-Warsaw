@@ -41,8 +41,8 @@
             display: block;
         }
 
-        /* Decart stylization overlay */
-        #decartOverlay {
+        /* Mirage video overlay container */
+        #mirage-container {
             position: absolute;
             top: 0;
             left: 0;
@@ -50,8 +50,18 @@
             height: 100%;
             pointer-events: none;
             z-index: 5;
-            opacity: 0.3;
-            mix-blend-mode: overlay;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #mirage-container.active {
+            opacity: 1;
+        }
+
+        #mirage-video-output {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         /* UI Overlay */
@@ -504,7 +514,11 @@
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
-        <canvas id="decartOverlay"></canvas>
+        
+        <!-- Mirage Real-time Video Stylization -->
+        <div id="mirage-container">
+            <video id="mirage-video-output" autoplay muted playsinline></video>
+        </div>
         
         <div class="ui-overlay">
             <!-- Scenario Info -->

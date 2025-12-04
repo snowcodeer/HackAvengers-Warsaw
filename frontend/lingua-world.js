@@ -1,7 +1,7 @@
-// LinguaVerse World - Three.js + Decart + ElevenLabs
+// LinguaVerse World - Three.js + Mirage + ElevenLabs
 import * as THREE from 'three';
 import { EffectComposer, RenderPass, BloomEffect, SMAAEffect, EffectPass, VignetteEffect } from 'postprocessing';
-import { DecartStylizer } from './decart-stylizer.js';
+import { startMirageStream, stopMirageStream, setMirageScenario, isMirageActive } from './mirage.js';
 
 // ==================== CONFIGURATION ====================
 const CONFIG = {
@@ -37,9 +37,8 @@ let mediaRecorder = null;
 let audioChunks = [];
 let isRecording = false;
 
-// Decart stylizer
-let decartStylizer = null;
-let decartActive = false;
+// Mirage state
+let mirageActive = false;
 
 // Player character from customization
 let playerCharacter = {
@@ -84,7 +83,7 @@ const VOICE_IDS = {
 // ==================== DOM ELEMENTS ====================
 const elements = {
     canvas: document.getElementById('gameCanvas'),
-    decartOverlay: document.getElementById('decartOverlay'),
+    mirageContainer: document.getElementById('mirage-container'),
     loadingScreen: document.getElementById('loadingScreen'),
     loadingEmoji: document.getElementById('loadingEmoji'),
     scenarioEmoji: document.getElementById('scenarioEmoji'),
@@ -166,14 +165,16 @@ async function init() {
     // Setup glossary
     setupGlossary();
     
-    // Initialize Decart stylizer (but DON'T start yet - starts on conversation)
-    decartStylizer = new DecartStylizer(elements.canvas, elements.decartOverlay);
-    await decartStylizer.initialize(gameState.scenario?.id || 'boulangerie');
-    // NOTE: Decart effect starts when conversation begins!
-    
-    // Hide loading screen
-    setTimeout(() => {
+    // Hide loading screen and start Mirage when world is ready
+    setTimeout(async () => {
         elements.loadingScreen.classList.add('hidden');
+        
+        // Start Mirage real-time stylization when world loads
+        const scenarioId = gameState.scenario?.id || 'boulangerie';
+        mirageActive = await startMirageStream(scenarioId, 'gameCanvas');
+        if (mirageActive) {
+            console.log('🎨 Mirage MirageLSD activated - immersive world rendering');
+        }
     }, 2000);
     
     // Start animation loop
@@ -933,11 +934,9 @@ async function startConversation() {
     elements.interactPrompt.classList.remove('active');
     elements.controlsHint.style.display = 'none';
     
-    // 🎨 START DECART MIRAGELSD EFFECT when conversation begins!
-    if (decartStylizer && !decartActive) {
-        decartStylizer.start();
-        decartActive = true;
-        console.log('🎨 MirageLSD activated - immersive mode ON');
+    // Mirage is already running from world load - log conversation start
+    if (isMirageActive()) {
+        console.log('🎨 Conversation started - Mirage stylization active');
     }
     
     // Get initial greeting from character
@@ -954,12 +953,8 @@ function endConversation() {
     elements.controlsHint.style.display = 'block';
     conversationHistory = [];
     
-    // 🎨 STOP DECART MIRAGELSD EFFECT when conversation ends
-    if (decartStylizer && decartActive) {
-        decartStylizer.stop();
-        decartActive = false;
-        console.log('🎨 MirageLSD deactivated - exploration mode');
-    }
+    // Mirage continues running - it's always on once world loads
+    console.log('🎨 Conversation ended - returning to exploration');
 }
 
 async function sendTextMessage() {
