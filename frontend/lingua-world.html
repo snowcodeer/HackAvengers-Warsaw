@@ -279,6 +279,36 @@
                 0 0 0 0 var(--wood-shadow),
                 inset 2px 2px 0 0 var(--wood-dark);
         }
+        
+        .speech-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        
+        .play-speech-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 18px;
+            background: var(--accent-teal);
+            border: 4px solid var(--wood-dark);
+            box-shadow: 
+                4px 4px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-light);
+            color: var(--pixel-black);
+            font-size: 0.55rem;
+            font-family: 'Press Start 2P', cursive;
+            cursor: pointer;
+            transition: all 0.05s;
+        }
+        
+        .play-speech-btn:hover {
+            transform: translateY(2px);
+            box-shadow: 
+                2px 2px 0 0 var(--wood-shadow),
+                inset 2px 2px 0 0 var(--wood-light);
+        }
 
         /* Chat history container */
         .chat-history {
@@ -1418,9 +1448,14 @@
                         <div class="speech-bubble">
                             <div class="speech-text" id="speechText">Bonjour! Bienvenue à ma boulangerie!</div>
                             <div class="speech-translation" id="speechTranslation">Hello! Welcome to my bakery!</div>
-                            <button class="practice-btn" id="practiceBtn" title="Practice this phrase">
-                                🎯 Practice Pronunciation
-                            </button>
+                            <div class="speech-actions">
+                                <button class="play-speech-btn" id="replaySpeechBtn" title="Hear this phrase again">
+                                    🔊 Replay
+                                </button>
+                                <button class="practice-btn" id="practiceBtn" title="Practice saying this phrase">
+                                    🎯 Practice Speaking
+                                </button>
+                            </div>
                             <div class="grammar-correction hidden" id="grammarCorrection">
                                 <div class="grammar-correction-title">💡 Correction</div>
                                 <div id="grammarText"></div>

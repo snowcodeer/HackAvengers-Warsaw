@@ -129,11 +129,8 @@ export class RealtimeVoiceFeedback {
                 this.setupRecording();
             }
             
-            // Connect to ElevenLabs for real-time transcription
-            await this.connectTranscriptionWebSocket();
-            
-            // Setup audio processing for WebSocket
-            this.setupAudioProcessing();
+            // We'll transcribe after recording stops (REST API)
+            // No WebSocket needed - more reliable
             
             this.isListening = true;
             console.log('🎤 Real-time voice feedback started');
@@ -203,123 +200,7 @@ export class RealtimeVoiceFeedback {
         this.isRecording = true;
     }
     
-    // ═══════════════════════════════════════════════════════════════════════════
-    // CONNECT TO ELEVENLABS TRANSCRIPTION WEBSOCKET
-    // ═══════════════════════════════════════════════════════════════════════════
-    connectTranscriptionWebSocket() {
-        return new Promise((resolve, reject) => {
-            const wsUrl = `wss://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v1&language_code=${this.language}`;
-            
-            this.ws = new WebSocket(wsUrl);
-            
-            this.ws.onopen = () => {
-                console.log('🔌 Transcription WebSocket connected');
-                
-                // Send config
-                this.ws.send(JSON.stringify({
-                    type: 'config',
-                    xi_api_key: this.elevenLabsApiKey,
-                    audio_format: 'pcm_16000',
-                    include_timestamps: true,
-                    include_word_confidence: true,
-                    language_code: this.language
-                }));
-                
-                resolve();
-            };
-            
-            this.ws.onmessage = (event) => this.handleTranscriptionMessage(event);
-            
-            this.ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
-                reject(error);
-            };
-            
-            this.ws.onclose = () => {
-                console.log('WebSocket closed');
-            };
-        });
-    }
-    
-    // ═══════════════════════════════════════════════════════════════════════════
-    // HANDLE TRANSCRIPTION MESSAGES
-    // ═══════════════════════════════════════════════════════════════════════════
-    handleTranscriptionMessage(event) {
-        try {
-            const data = JSON.parse(event.data);
-            
-            if (data.type === 'transcript' || data.type === 'partial_transcript' || 
-                data.type === 'committed_transcript' || data.type === 'committed_transcript_with_timestamps') {
-                
-                // Process words
-                if (data.words && Array.isArray(data.words)) {
-                    data.words.forEach((wordData, idx) => {
-                        const word = {
-                            text: wordData.word || wordData.text || '',
-                            confidence: wordData.confidence || 0.9,
-                            start: wordData.start || wordData.start_time || 0,
-                            end: wordData.end || wordData.end_time || 0,
-                            isFinal: data.type.includes('committed')
-                        };
-                        
-                        // Check if this word is new
-                        const existingIdx = this.transcribedWords.findIndex(w => 
-                            w.start === word.start && w.text === word.text
-                        );
-                        
-                        if (existingIdx === -1 && word.text) {
-                            // Check pronunciation against expected
-                            const pronunciationResult = this.checkPronunciation(word, this.transcribedWords.length);
-                            word.pronunciationResult = pronunciationResult;
-                            
-                            this.transcribedWords.push(word);
-                            
-                            // Callback for word transcribed
-                            if (this.onWordTranscribed) {
-                                this.onWordTranscribed(word, this.transcribedWords.length - 1, pronunciationResult);
-                            }
-                            
-                            // Callback for pronunciation error
-                            if (!pronunciationResult.isCorrect && this.onPronunciationError) {
-                                this.onPronunciationError(pronunciationResult);
-                            }
-                        }
-                    });
-                }
-                
-                // Also handle plain text
-                if (data.text && !data.words) {
-                    const words = data.text.split(/\s+/).filter(w => w);
-                    words.forEach((text, idx) => {
-                        const word = {
-                            text: text,
-                            confidence: 0.85,
-                            start: idx * 0.5,
-                            end: (idx + 1) * 0.5,
-                            isFinal: data.type.includes('committed')
-                        };
-                        
-                        if (!this.transcribedWords.find(w => w.text === text && Math.abs(w.start - word.start) < 0.1)) {
-                            const pronunciationResult = this.checkPronunciation(word, this.transcribedWords.length);
-                            word.pronunciationResult = pronunciationResult;
-                            this.transcribedWords.push(word);
-                            
-                            if (this.onWordTranscribed) {
-                                this.onWordTranscribed(word, this.transcribedWords.length - 1, pronunciationResult);
-                            }
-                        }
-                    });
-                }
-                
-                // Final transcript
-                if (data.type.includes('committed') && this.onTranscriptComplete) {
-                    this.onTranscriptComplete(this.transcribedWords, this.pronunciationErrors);
-                }
-            }
-        } catch (error) {
-            console.error('Error handling transcription:', error);
-        }
-    }
+    // REST API transcription is handled in stopListening() -> transcribeRecording()
     
     // ═══════════════════════════════════════════════════════════════════════════
     // CHECK PRONUNCIATION AGAINST EXPECTED
@@ -453,56 +334,12 @@ export class RealtimeVoiceFeedback {
         return suggestions;
     }
     
-    // ═══════════════════════════════════════════════════════════════════════════
-    // SETUP AUDIO PROCESSING FOR WEBSOCKET
-    // ═══════════════════════════════════════════════════════════════════════════
-    setupAudioProcessing() {
-        const bufferSize = 4096;
-        const scriptProcessor = this.audioContext.createScriptProcessor(bufferSize, 1, 1);
-        
-        scriptProcessor.onaudioprocess = (event) => {
-            if (!this.isListening || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
-                return;
-            }
-            
-            const inputData = event.inputBuffer.getChannelData(0);
-            const pcmData = this.float32ToInt16(inputData);
-            const base64Audio = this.arrayBufferToBase64(pcmData.buffer);
-            
-            this.ws.send(JSON.stringify({
-                type: 'input_audio_chunk',
-                audio: base64Audio
-            }));
-        };
-        
-        this.sourceNode.connect(scriptProcessor);
-        scriptProcessor.connect(this.audioContext.destination);
-        
-        this.scriptProcessor = scriptProcessor;
-    }
-    
-    float32ToInt16(float32Array) {
-        const int16Array = new Int16Array(float32Array.length);
-        for (let i = 0; i < float32Array.length; i++) {
-            const s = Math.max(-1, Math.min(1, float32Array[i]));
-            int16Array[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-        }
-        return int16Array;
-    }
-    
-    arrayBufferToBase64(buffer) {
-        const bytes = new Uint8Array(buffer);
-        let binary = '';
-        for (let i = 0; i < bytes.byteLength; i++) {
-            binary += String.fromCharCode(bytes[i]);
-        }
-        return btoa(binary);
-    }
+    // Audio recording handled by MediaRecorder (no streaming needed)
     
     // ═══════════════════════════════════════════════════════════════════════════
     // STOP LISTENING
     // ═══════════════════════════════════════════════════════════════════════════
-    stopListening() {
+    async stopListening() {
         if (!this.isListening) return;
         
         console.log('🛑 Stopping voice feedback');
@@ -513,27 +350,98 @@ export class RealtimeVoiceFeedback {
             this.animationFrame = null;
         }
         
-        // Stop recording
+        // Stop recording and wait for data
         if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
-            this.mediaRecorder.stop();
-        }
-        
-        // Send end of stream to WebSocket
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify({ type: 'end_of_stream' }));
+            await new Promise(resolve => {
+                this.mediaRecorder.onstop = resolve;
+                this.mediaRecorder.stop();
+            });
         }
         
         this.isListening = false;
         this.isRecording = false;
         
-        // Small delay then cleanup
-        setTimeout(() => this.cleanup(), 500);
+        // Transcribe the recording using REST API
+        await this.transcribeRecording();
+        
+        // Cleanup
+        this.cleanup();
         
         return {
             transcribedWords: this.transcribedWords,
             pronunciationErrors: this.pronunciationErrors,
-            recording: this.getRecording()
+            recording: this.getRecording(),
+            overallScore: this.getOverallScore()
         };
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // TRANSCRIBE RECORDING USING REST API
+    // ═══════════════════════════════════════════════════════════════════════════
+    async transcribeRecording() {
+        const recording = this.getRecording();
+        if (!recording || !this.elevenLabsApiKey) {
+            console.warn('No recording or API key for transcription');
+            return;
+        }
+        
+        console.log('📝 Transcribing recording with ElevenLabs STT...');
+        
+        try {
+            const formData = new FormData();
+            formData.append('audio', recording, 'recording.webm');
+            
+            const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+                method: 'POST',
+                headers: {
+                    'xi-api-key': this.elevenLabsApiKey
+                },
+                body: formData
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const text = data.text || '';
+                
+                console.log('📝 Transcribed:', text);
+                
+                // Parse words
+                const words = text.split(/\s+/).filter(w => w);
+                words.forEach((wordText, index) => {
+                    const word = {
+                        text: wordText,
+                        confidence: 0.85,
+                        start: index * 0.3,
+                        end: (index + 1) * 0.3,
+                        isFinal: true
+                    };
+                    
+                    // Check pronunciation
+                    const pronunciationResult = this.checkPronunciation(word, index);
+                    word.pronunciationResult = pronunciationResult;
+                    
+                    this.transcribedWords.push(word);
+                    
+                    // Callback
+                    if (this.onWordTranscribed) {
+                        this.onWordTranscribed(word, index, pronunciationResult);
+                    }
+                    
+                    if (!pronunciationResult.isCorrect && this.onPronunciationError) {
+                        this.onPronunciationError(pronunciationResult);
+                    }
+                });
+                
+                // Final callback
+                if (this.onTranscriptComplete) {
+                    this.onTranscriptComplete(this.transcribedWords, this.pronunciationErrors);
+                }
+            } else {
+                console.error('STT failed:', await response.text());
+            }
+        } catch (error) {
+            console.error('Transcription error:', error);
+        }
     }
     
     // ═══════════════════════════════════════════════════════════════════════════
@@ -620,11 +528,6 @@ export class RealtimeVoiceFeedback {
     // CLEANUP
     // ═══════════════════════════════════════════════════════════════════════════
     cleanup() {
-        if (this.scriptProcessor) {
-            this.scriptProcessor.disconnect();
-            this.scriptProcessor = null;
-        }
-        
         if (this.sourceNode) {
             this.sourceNode.disconnect();
             this.sourceNode = null;
@@ -643,11 +546,6 @@ export class RealtimeVoiceFeedback {
         if (this.stream) {
             this.stream.getTracks().forEach(track => track.stop());
             this.stream = null;
-        }
-        
-        if (this.ws) {
-            this.ws.close();
-            this.ws = null;
         }
     }
     

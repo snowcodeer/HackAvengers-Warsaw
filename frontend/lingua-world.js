@@ -119,6 +119,7 @@ const elements = {
     glossaryFalseFriends: document.getElementById('glossaryFalseFriends'),
     controlsHint: document.getElementById('controlsHint'),
     practiceBtn: document.getElementById('practiceBtn'),
+    replaySpeechBtn: document.getElementById('replaySpeechBtn'),
     // Pronunciation Trainer elements
     pronunciationTrainer: document.getElementById('pronunciationTrainer'),
     ptClose: document.getElementById('ptClose'),
@@ -1157,6 +1158,20 @@ function setupConversationUI() {
         });
     }
     
+    // Replay button: replay the NPC's last speech
+    if (elements.replaySpeechBtn) {
+        elements.replaySpeechBtn.addEventListener('click', async () => {
+            const lastSpeech = elements.speechText?.textContent || '';
+            if (lastSpeech) {
+                elements.replaySpeechBtn.disabled = true;
+                elements.replaySpeechBtn.textContent = '🔊...';
+                await speakText(lastSpeech);
+                elements.replaySpeechBtn.disabled = false;
+                elements.replaySpeechBtn.textContent = '🔊 Replay';
+            }
+        });
+    }
+    
     elements.sendBtn.addEventListener('click', sendTextMessage);
     elements.textInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendTextMessage();
@@ -1648,34 +1663,32 @@ async function startRecording() {
     if (isRecording) return;
     isRecording = true;
     
-    // Setup real-time voice callbacks
-    setupRealtimeVoiceCallbacks();
+    // Check if we have API key
+    const hasApiKey = CONFIG.ELEVENLABS_API_KEY && CONFIG.ELEVENLABS_API_KEY.length > 10;
     
-    // Set language for transcription
-    realtimeVoice.setLanguage(gameState.language || 'french');
-    
-    // Show real-time transcript area
-    showRealtimeTranscriptUI();
-    
-    // Start real-time listening
-    try {
-        await realtimeVoice.startListening();
-        elements.voiceBtn.classList.add('recording');
-        elements.voiceBtn.innerHTML = '<span class="pulse-dot"></span>';
-    } catch (error) {
-        console.error('Error starting real-time listening:', error);
-        isRecording = false;
-        // Fallback to regular recording
-        await startRegularRecording();
+    if (!hasApiKey) {
+        console.warn('═══════════════════════════════════════════════════════════════════');
+        console.warn('⚠️ No ElevenLabs API key found!');
+        console.warn('To enable voice transcription:');
+        console.warn('1. Create a .env file in the frontend folder');
+        console.warn('2. Add: VITE_ELEVENLABS_API_KEY=your_api_key_here');
+        console.warn('3. Get your API key at: https://elevenlabs.io/');
+        console.warn('═══════════════════════════════════════════════════════════════════');
     }
+    
+    // Use regular recording with post-recording transcription
+    // (Real-time WebSocket STT requires enterprise access)
+    await startRegularRecording();
 }
 
 function stopRecording() {
     if (!isRecording) return;
     isRecording = false;
     
-    // Stop real-time listening
-    realtimeVoice.stopListening();
+    // Stop MediaRecorder
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+    }
     
     elements.voiceBtn.classList.remove('recording');
     elements.voiceBtn.textContent = '🎤';
@@ -1920,13 +1933,20 @@ function displayUserMessageWithScores(transcript, words) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// FALLBACK: REGULAR RECORDING (if WebSocket fails)
+// REGULAR RECORDING WITH AMPLITUDE VISUALIZATION
 // ═══════════════════════════════════════════════════════════════════════════════
+
+let audioContext = null;
+let analyser = null;
+let animationFrameId = null;
+
 async function startRegularRecording() {
-    console.log('⚠️ Falling back to regular recording');
+    console.log('🎤 Starting recording with amplitude visualization...');
     
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        // Setup MediaRecorder
         mediaRecorder = new MediaRecorder(stream);
         audioChunks = [];
         
@@ -1935,19 +1955,230 @@ async function startRegularRecording() {
         };
         
         mediaRecorder.onstop = async () => {
+            stopAmplitudeVisualization();
+            hideAmplitudeUI();
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
             await processAudioInput(audioBlob);
             stream.getTracks().forEach(track => track.stop());
         };
         
+        // Setup Audio Context for amplitude analysis
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.8;
+        
+        const source = audioContext.createMediaStreamSource(stream);
+        source.connect(analyser);
+        
+        // Show amplitude UI
+        showAmplitudeUI();
+        
+        // Start visualization
+        startAmplitudeVisualization();
+        
+        // Start recording
         mediaRecorder.start();
         
         elements.voiceBtn.classList.add('recording');
-        elements.voiceBtn.textContent = '⏹';
+        elements.voiceBtn.innerHTML = '<span class="pulse-dot"></span>';
+        
+        console.log('✅ Recording started with visualization');
+        
     } catch (error) {
-        console.error('Error starting fallback recording:', error);
+        console.error('Error starting recording:', error);
         isRecording = false;
     }
+}
+
+function showAmplitudeUI() {
+    // Create or show the amplitude visualization UI
+    let ampUI = document.getElementById('amplitudeUI');
+    if (!ampUI) {
+        ampUI = document.createElement('div');
+        ampUI.id = 'amplitudeUI';
+        ampUI.innerHTML = `
+            <div class="amp-container">
+                <div class="amp-header">
+                    <span class="amp-pulse"></span>
+                    <span class="amp-label">🎤 Recording...</span>
+                    <span class="amp-level">0%</span>
+                </div>
+                <div class="amp-bars" id="ampBars"></div>
+                <div class="amp-waveform" id="ampWaveform">
+                    <canvas id="waveformCanvas" width="300" height="60"></canvas>
+                </div>
+            </div>
+        `;
+        
+        // Add styles
+        const style = document.createElement('style');
+        style.textContent = `
+            #amplitudeUI {
+                position: fixed;
+                bottom: 120px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(15, 15, 25, 0.95);
+                border: 2px solid rgba(78, 205, 196, 0.5);
+                border-radius: 16px;
+                padding: 16px;
+                z-index: 1001;
+                min-width: 320px;
+                animation: slideUp 0.3s ease;
+            }
+            @keyframes slideUp {
+                from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+                to { opacity: 1; transform: translateX(-50%) translateY(0); }
+            }
+            .amp-container { display: flex; flex-direction: column; gap: 12px; }
+            .amp-header { display: flex; align-items: center; gap: 10px; }
+            .amp-pulse {
+                width: 12px; height: 12px;
+                background: #ff6b6b;
+                border-radius: 50%;
+                animation: pulse 1s ease-in-out infinite;
+            }
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.3); opacity: 0.7; }
+            }
+            .amp-label { flex: 1; color: #fff; font-size: 0.9rem; }
+            .amp-level { 
+                font-size: 1.2rem; font-weight: bold; 
+                color: #4ecdc4; min-width: 50px; text-align: right;
+            }
+            .amp-bars {
+                display: flex; align-items: flex-end;
+                height: 40px; gap: 2px;
+            }
+            .amp-bar {
+                flex: 1; background: linear-gradient(to top, #4ecdc4, #f4b942);
+                border-radius: 2px; min-height: 2px;
+                transition: height 0.05s ease;
+            }
+            .amp-waveform { margin-top: 8px; }
+            #waveformCanvas {
+                width: 100%; height: 60px;
+                border-radius: 8px;
+                background: rgba(0,0,0,0.3);
+            }
+        `;
+        document.head.appendChild(style);
+        document.body.appendChild(ampUI);
+        
+        // Create bars
+        const barsContainer = document.getElementById('ampBars');
+        for (let i = 0; i < 32; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'amp-bar';
+            barsContainer.appendChild(bar);
+        }
+    }
+    
+    ampUI.style.display = 'block';
+}
+
+function hideAmplitudeUI() {
+    const ampUI = document.getElementById('amplitudeUI');
+    if (ampUI) {
+        ampUI.style.display = 'none';
+    }
+}
+
+function startAmplitudeVisualization() {
+    if (!analyser) return;
+    
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    const bars = document.querySelectorAll('.amp-bar');
+    const levelDisplay = document.querySelector('.amp-level');
+    const canvas = document.getElementById('waveformCanvas');
+    const ctx = canvas?.getContext('2d');
+    
+    // Waveform history
+    const waveformHistory = [];
+    const maxHistory = 150;
+    
+    function draw() {
+        animationFrameId = requestAnimationFrame(draw);
+        
+        analyser.getByteFrequencyData(dataArray);
+        
+        // Calculate average amplitude
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+            sum += dataArray[i];
+        }
+        const avg = sum / bufferLength;
+        const percent = Math.round((avg / 255) * 100);
+        
+        // Update level display
+        if (levelDisplay) {
+            levelDisplay.textContent = `${percent}%`;
+            levelDisplay.style.color = percent > 50 ? '#4ecdc4' : percent > 20 ? '#f4b942' : '#ff6b6b';
+        }
+        
+        // Update bars
+        const step = Math.floor(bufferLength / bars.length);
+        bars.forEach((bar, i) => {
+            const value = dataArray[i * step] || 0;
+            const height = Math.max(2, (value / 255) * 40);
+            bar.style.height = `${height}px`;
+        });
+        
+        // Draw waveform
+        if (ctx && canvas) {
+            waveformHistory.push(avg);
+            if (waveformHistory.length > maxHistory) {
+                waveformHistory.shift();
+            }
+            
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.beginPath();
+            ctx.strokeStyle = '#4ecdc4';
+            ctx.lineWidth = 2;
+            
+            const sliceWidth = canvas.width / maxHistory;
+            let x = 0;
+            
+            waveformHistory.forEach((val, i) => {
+                const y = canvas.height - (val / 255) * canvas.height;
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+                x += sliceWidth;
+            });
+            
+            ctx.stroke();
+            
+            // Fill under the line
+            ctx.lineTo(x, canvas.height);
+            ctx.lineTo(0, canvas.height);
+            ctx.fillStyle = 'rgba(78, 205, 196, 0.2)';
+            ctx.fill();
+        }
+    }
+    
+    draw();
+}
+
+function stopAmplitudeVisualization() {
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
+    
+    if (audioContext && audioContext.state !== 'closed') {
+        audioContext.close();
+        audioContext = null;
+    }
+    
+    analyser = null;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2088,8 +2319,13 @@ function resetPronunciationTrainerUI() {
 async function togglePronunciationRecording() {
     if (voiceFeedback.isListening) {
         // Stop recording
-        const results = voiceFeedback.stopListening();
-        elements.ptStartBtn.innerHTML = '<span>🎤</span> Start Recording';
+        elements.ptStartBtn.innerHTML = '<span>⏳</span> Processing...';
+        elements.ptStartBtn.disabled = true;
+        
+        const results = await voiceFeedback.stopListening();
+        
+        elements.ptStartBtn.innerHTML = '<span>🎤</span> Record Again';
+        elements.ptStartBtn.disabled = false;
         elements.ptPlaybackBtn.disabled = false;
         elements.ptRetryBtn.disabled = false;
         
@@ -2290,73 +2526,121 @@ async function processAudioInput(audioBlob) {
     elements.textInput.disabled = true;
     elements.sendBtn.disabled = true;
     
+    const language = gameState.language || 'french';
+    const langConfig = getLanguageConfig(language);
+    
     try {
         // ═══════════════════════════════════════════════════════════════════════
-        // SEND TO BACKEND FOR TRANSCRIPTION + NPC RESPONSE
+        // TRANSCRIBE AUDIO USING ELEVENLABS STT API (with word timestamps)
         // ═══════════════════════════════════════════════════════════════════════
         
-        const language = gameState.language || 'french';
-        const langConfig = getLanguageConfig(language);
-        const characterId = langConfig?.character?.name || 'default';
+        let transcription = '';
+        let wordsWithScores = [];
         
-        // Create form data
-        const formData = new FormData();
-        formData.append('audio', audioBlob, 'recording.webm');
-        formData.append('language', language);
-        formData.append('character_id', characterId);
-        formData.append('difficulty_level', currentDifficulty.toString());
-        
-        console.log('🎤 Sending voice to backend...');
-        
-        // Try backend voice conversation endpoint
-        const response = await fetch(`${CONFIG.BACKEND_URL}/api/conversation/voice/respond`, {
-            method: 'POST',
-            body: formData
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
+        if (CONFIG.ELEVENLABS_API_KEY) {
+            console.log('🎤 Transcribing with ElevenLabs STT...');
             
-            // ═══════════════════════════════════════════════════════════════════
-            // ARCHIVE PREVIOUS & DISPLAY USER'S TRANSCRIPTION
-            // ═══════════════════════════════════════════════════════════════════
-            if (data.transcription) {
-                archiveCurrentNPCMessage();
-                displayUserMessage(data.transcription);
-                console.log('📝 User said:', data.transcription);
-            }
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
             
-            // ═══════════════════════════════════════════════════════════════════
-            // DISPLAY & SPEAK NPC RESPONSE
-            // ═══════════════════════════════════════════════════════════════════
-            if (data.response) {
-                displayNPCMessage(data.response, data.translation);
+            const sttResponse = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+                method: 'POST',
+                headers: {
+                    'xi-api-key': CONFIG.ELEVENLABS_API_KEY
+                },
+                body: formData
+            });
+            
+            if (sttResponse.ok) {
+                const sttData = await sttResponse.json();
+                transcription = sttData.text || '';
                 
-                // Speak with highlighting
-                await speakTextWithHighlight(data.response, data.expression || 'teaching');
-                
-                // Update difficulty if needed
-                if (data.should_increase_difficulty) {
-                    currentDifficulty = Math.min(5, currentDifficulty + 1);
-                    updateDifficultyUI();
-                    if (audioManager.playQuestComplete) {
-                        audioManager.playQuestComplete();
-                    }
+                // Extract word-level data if available
+                if (sttData.words && Array.isArray(sttData.words)) {
+                    wordsWithScores = sttData.words.map(w => ({
+                        text: w.text || w.word,
+                        confidence: w.confidence || 0.9,
+                        start: w.start,
+                        end: w.end
+                    }));
+                } else {
+                    // Create word scores from text
+                    wordsWithScores = transcription.split(/\s+/).filter(w => w).map(w => ({
+                        text: w,
+                        confidence: 0.85
+                    }));
                 }
                 
-                // Add new words to glossary
-                if (data.new_words && Array.isArray(data.new_words)) {
-                    data.new_words.forEach(word => {
-                        if (!glossary.find(w => w.word === word.word)) {
-                            glossary.push(word);
-                        }
-                    });
-                    updateGlossaryUI();
-                }
+                console.log('📝 Transcription:', transcription);
+            } else {
+                console.error('STT failed:', await sttResponse.text());
             }
-        } else {
-            console.error('Backend voice error:', await response.text());
-            elements.textInput.placeholder = 'Voice failed - try typing instead';
+        }
+        
+        // ═══════════════════════════════════════════════════════════════════════
+        // FALLBACK: TRY BACKEND IF DIRECT STT FAILED
+        // ═══════════════════════════════════════════════════════════════════════
+        if (!transcription) {
+            console.log('🎤 Trying backend transcription...');
+            
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
+            formData.append('language', language);
+            
+            const backendResponse = await fetch(`${CONFIG.BACKEND_URL}/api/transcribe`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (backendResponse.ok) {
+                const data = await backendResponse.json();
+                transcription = data.text || data.transcription || '';
+                wordsWithScores = transcription.split(/\s+/).filter(w => w).map(w => ({
+                    text: w,
+                    confidence: 0.85
+                }));
+            }
+        }
+        
+        if (!transcription) {
+            elements.textInput.placeholder = 'Could not transcribe - try again or type';
+            elements.textInput.disabled = false;
+            elements.sendBtn.disabled = false;
+            return;
+        }
+        
+        // ═══════════════════════════════════════════════════════════════════════
+        // DISPLAY USER'S TRANSCRIPTION WITH WORD SCORES
+        // ═══════════════════════════════════════════════════════════════════════
+        archiveCurrentNPCMessage();
+        displayUserMessageWithScores(transcription, wordsWithScores);
+        
+        // ═══════════════════════════════════════════════════════════════════════
+        // GET NPC RESPONSE
+        // ═══════════════════════════════════════════════════════════════════════
+        const response = await generateNPCResponse(transcription);
+        displayNPCMessage(response.text, response.translation);
+        
+        // Speak with highlighting
+        await speakTextWithHighlight(response.text, response.expression || 'teaching');
+        
+        // Update difficulty if needed
+        if (response.shouldIncreaseDifficulty) {
+            currentDifficulty = Math.min(5, currentDifficulty + 1);
+            updateDifficultyUI();
+            if (audioManager.playQuestComplete) {
+                audioManager.playQuestComplete();
+            }
+        }
+        
+        // Add new words to glossary
+        if (response.newWords) {
+            response.newWords.forEach(word => {
+                if (!glossary.find(w => w.word === word.word)) {
+                    glossary.push(word);
+                }
+            });
+            updateGlossaryUI();
         }
         
     } catch (error) {

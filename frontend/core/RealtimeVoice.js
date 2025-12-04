@@ -119,23 +119,26 @@ export class RealtimeVoice {
     // ═══════════════════════════════════════════════════════════════════════════
     connectWebSocket() {
         return new Promise((resolve, reject) => {
-            const wsUrl = `wss://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v1&language_code=${this.language}`;
+            const apiKey = getApiKey();
+            
+            if (!apiKey) {
+                console.error('❌ No ElevenLabs API key found');
+                reject(new Error('Missing ElevenLabs API key'));
+                return;
+            }
+            
+            // API key must be in the URL for WebSocket auth (browser doesn't support headers)
+            const wsUrl = `wss://api.elevenlabs.io/v1/speech-to-text/realtime?` + 
+                `model_id=scribe_v1` +
+                `&language_code=${this.language}` +
+                `&xi_api_key=${apiKey}`;
+            
+            console.log('🔌 Connecting to ElevenLabs STT WebSocket...');
             
             this.ws = new WebSocket(wsUrl);
             
             this.ws.onopen = () => {
-                console.log('🔌 ElevenLabs WebSocket connected');
-                
-                // Send initial configuration
-                this.ws.send(JSON.stringify({
-                    type: 'config',
-                    xi_api_key: getApiKey(),
-                    audio_format: 'pcm_16000',
-                    include_timestamps: true,
-                    include_confidence: true,
-                    language_code: this.language
-                }));
-                
+                console.log('✅ ElevenLabs WebSocket connected');
                 resolve();
             };
             
@@ -144,7 +147,7 @@ export class RealtimeVoice {
             };
             
             this.ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
+                console.error('❌ WebSocket error:', error);
                 if (this.onError) this.onError(error);
                 reject(error);
             };
