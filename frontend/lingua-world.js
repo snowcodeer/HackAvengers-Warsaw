@@ -1,7 +1,7 @@
 // LinguaVerse World - Three.js + Mirage + ElevenLabs
 import * as THREE from 'three';
 import { EffectComposer, RenderPass, BloomEffect, SMAAEffect, EffectPass, VignetteEffect } from 'postprocessing';
-import { startMirageStream, stopMirageStream, setMirageScenario, isMirageActive } from './mirage.js';
+import { startMirageStream, stopMirageStream, setMirageScenario, isMirageActive, updateMiragePrompt } from './mirage.js';
 import { audioManager } from './core/AudioManager.js';
 import { LANGUAGE_CONFIG, getLanguageConfig, getDifficultyInstruction, getCharacterVoice } from './config/languages.js';
 import { RealtimeVoice, realtimeVoice } from './core/RealtimeVoice.js';
@@ -52,6 +52,33 @@ let isRecording = false;
 
 // Mirage state
 let mirageActive = false;
+
+// Base Mirage prompts per language
+const MIRAGE_BASE_PROMPTS = {
+    french: "Soft warm impressionist style, cozy Parisian boulangerie",
+    spanish: "Warm Mediterranean atmosphere, Spanish tapas bar",
+    german: "Dark industrial atmosphere, moody Berlin club",
+    japanese: "Warm Studio Ghibli atmosphere, cozy izakaya",
+    mandarin: "Sumi-e ink wash style, serene Chinese tea house",
+    italian: "Renaissance warmth, elegant Italian café",
+    polish: "Nostalgic Eastern European aesthetic, Polish milk bar",
+    english: "Cozy Victorian pub, amber firelight glow"
+};
+
+// Feed NPC actions/mood into Mirage for dynamic visual style
+function updateMirageFromResponse(response) {
+    if (!isMirageActive()) return;
+    
+    const language = gameState.language || 'french';
+    const base = MIRAGE_BASE_PROMPTS[language] || MIRAGE_BASE_PROMPTS.french;
+    
+    let prompt = base;
+    if (response.mood) prompt += `, ${response.mood}`;
+    if (response.action) prompt += `, character ${response.action}`;
+    
+    updateMiragePrompt(prompt);
+    console.log(`🎨 Mirage: ${response.mood || '-'} | ${response.action || '-'}`);
+}
 
 // Camera zoom state (for NPC conversation close-up)
 let isZoomedIn = false;
@@ -1985,6 +2012,9 @@ async function startConversation() {
     // Get initial greeting from character
     const greeting = await generateNPCResponse(null, true);
     displayNPCMessage(greeting.text, greeting.translation);
+    
+    // Feed action/mood to Decart Mirage
+    updateMirageFromResponse(greeting);
 
     // Store the next objective from greeting but DON'T show it yet
     // The first objective should always be to greet back
@@ -2084,6 +2114,9 @@ async function sendTextMessage() {
     // Get NPC response
     const response = await generateNPCResponse(text);
     displayNPCMessage(response.text, response.translation, response.correction);
+    
+    // Feed action/mood to Decart Mirage
+    updateMirageFromResponse(response);
 
     // Update objective from NPC response (dynamic objectives)
     updateObjectiveFromResponse(response);
@@ -2692,6 +2725,9 @@ async function processRealtimeTranscript(transcript, words) {
 
     const response = await generateNPCResponse(transcript);
     displayNPCMessage(response.text, response.translation);
+    
+    // Feed action/mood to Decart Mirage
+    updateMirageFromResponse(response);
 
     // Update objective from NPC response (dynamic objectives)
     updateObjectiveFromResponse(response);
@@ -3377,6 +3413,7 @@ async function processAudioInput(audioBlob) {
 
             const formData = new FormData();
             formData.append('audio', audioBlob, 'recording.webm');
+            formData.append('model_id', 'scribe_v1');
 
             const sttResponse = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
                 method: 'POST',
@@ -3459,6 +3496,9 @@ async function processAudioInput(audioBlob) {
         // ═══════════════════════════════════════════════════════════════════════
         const response = await generateNPCResponse(transcription);
         displayNPCMessage(response.text, response.translation);
+        
+        // Feed action/mood to Decart Mirage
+        updateMirageFromResponse(response);
 
         // Update objective from NPC response (dynamic objectives)
         updateObjectiveFromResponse(response);
