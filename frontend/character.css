@@ -126,6 +126,18 @@ body {
     pointer-events: none;
 }
 
+/* Background Elements Container */
+.background-elements {
+    position: absolute;
+    bottom: 50px;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 50px);
+    z-index: 2;
+    pointer-events: none;
+    overflow: hidden;
+}
+
 /* Main Content - Fixed viewport */
 .content {
     position: absolute;
@@ -180,17 +192,6 @@ body {
     flex: 1;
     min-height: 350px;
     position: relative;
-    overflow: hidden;
-}
-
-.preview-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    pointer-events: none;
     overflow: hidden;
 }
 

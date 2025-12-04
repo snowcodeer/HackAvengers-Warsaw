@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initSnowfall();
     initCharacterCustomisation();
     initSubmitButton();
-    initPreviewBackground();
+    initPageBackground();
     updateCharacterPreview();
 });
 
@@ -266,36 +266,35 @@ function initSnowfall() {
     setInterval(createSnowflake, 200);
 }
 
-// Initialize preview background with trees, flowers, rocks, and bushes
-function initPreviewBackground() {
-    const container = document.getElementById('previewBackground');
+// Initialize page background with trees, flowers, rocks, and bushes
+function initPageBackground() {
+    const container = document.getElementById('backgroundElements');
     if (!container) return;
     
-    createPreviewTrees(container);
-    createPreviewFlowers(container);
-    createPreviewBushes(container);
-    createPreviewRocks(container);
+    createPageTrees(container);
+    createPageFlowers(container);
+    createPageBushes(container);
+    createPageRocks(container);
 }
 
-// Create trees in preview (fewer than home page)
-function createPreviewTrees(container) {
-    const treePositions = [15, 75]; // 2 trees instead of 4
+// Create trees on page background (fewer than home page)
+function createPageTrees(container) {
+    const treePositions = [8, 35, 65, 92]; // 4 trees instead of 4 (same but positioned differently)
     
     for (let i = 0; i < treePositions.length; i++) {
-        createPreviewTree(container, treePositions[i], i);
+        createPageTree(container, treePositions[i], i);
     }
 }
 
-function createPreviewTree(container, leftPos, index) {
+function createPageTree(container, leftPos, index) {
     const tree = document.createElement('div');
     tree.className = 'pixel-tree';
     tree.style.left = `${leftPos}%`;
     tree.style.position = 'absolute';
     tree.style.bottom = '0';
     
-    const containerHeight = container.offsetHeight || 350;
-    const treeHeight = containerHeight * 0.8;
-    const trunkWidth = 20 + Math.floor(Math.random() * 15);
+    const treeHeight = window.innerHeight * (1.0 + Math.random() * 0.4);
+    const trunkWidth = 30 + Math.floor(Math.random() * 25);
     
     const baseDelay = 0.1 + index * 0.3;
     
@@ -319,12 +318,12 @@ function createPreviewTree(container, leftPos, index) {
     const foliageRows = 5 + Math.floor(Math.random() * 3);
     let foliageHTML = '';
     
-    const baseWidth = trunkWidth * 3;
+    const baseWidth = trunkWidth * 4;
     for (let row = 0; row < foliageRows; row++) {
-        const rowWidth = baseWidth - (row * (baseWidth / foliageRows) * 0.6);
-        const rowHeight = 20 + Math.floor(Math.random() * 10);
+        const rowWidth = baseWidth - (row * (baseWidth / foliageRows) * 0.7);
+        const rowHeight = 28 + Math.floor(Math.random() * 14);
         const greenShade = row % 3 === 0 ? '#208020' : row % 3 === 1 ? '#30a030' : '#48c048';
-        const offsetY = row * 18;
+        const offsetY = row * 26;
         
         foliageHTML += `
             <div class="tree-foliage-row" style="
@@ -369,49 +368,50 @@ function createPreviewTree(container, leftPos, index) {
     container.appendChild(tree);
 }
 
-// Create flowers in preview (fewer than home page)
-function createPreviewFlowers(container) {
-    const flowerCount = 4; // 4 instead of 8
+// Create flowers on page background (fewer than home page)
+function createPageFlowers(container) {
+    const flowerCount = 5; // 5 instead of 8
     const flowerColors = [
         { petals: '#ff6b8a', center: '#ffeb3b' },
+        { petals: '#ff8a65', center: '#fff176' },
         { petals: '#ba68c8', center: '#ffcc02' },
         { petals: '#64b5f6', center: '#fff59d' },
         { petals: '#ec407a', center: '#fff176' },
     ];
     
-    const sectionWidth = 80 / flowerCount;
+    const sectionWidth = 85 / flowerCount;
     
     for (let i = 0; i < flowerCount; i++) {
-        const sectionStart = 10 + (i * sectionWidth);
+        const sectionStart = 7.5 + (i * sectionWidth);
         const offset = Math.random() * (sectionWidth * 0.6);
         const leftPos = sectionStart + offset;
         
-        createPreviewFlower(container, i, leftPos, flowerColors[i % flowerColors.length]);
+        createPageFlower(container, i, leftPos, flowerColors[i % flowerColors.length]);
     }
 }
 
-function createPreviewFlower(container, index, leftPos, colorScheme) {
+function createPageFlower(container, index, leftPos, colorScheme) {
     const flower = document.createElement('div');
     flower.className = 'flower';
     flower.style.left = `${leftPos}%`;
     flower.style.position = 'absolute';
     flower.style.bottom = '0';
     
-    const containerHeight = container.offsetHeight || 350;
-    const heightPercent = 30 + Math.random() * 15;
-    const totalHeight = (heightPercent / 100) * containerHeight;
+    const heightPercent = 45 + Math.random() * 20;
+    const totalHeight = (heightPercent / 100) * window.innerHeight;
     
-    const flowerSize = 30 + Math.floor(Math.random() * 25);
+    const flowerSize = 40 + Math.floor(Math.random() * 40);
     const petalSize = Math.floor(flowerSize * 0.4);
+    const petalStyle = ['round', 'star', 'diamond', 'tulip', 'daisy'][Math.floor(Math.random() * 5)];
     
-    const stemWidth = 8 + Math.floor(Math.random() * 4);
+    const stemWidth = 12 + Math.floor(Math.random() * 6);
     const curveDirection = Math.random() > 0.5 ? 1 : -1;
-    const curveIntensity = 20 + Math.random() * 30;
+    const curveIntensity = 40 + Math.random() * 50;
     
-    const stemHTML = createPreviewStem(totalHeight, stemWidth, curveDirection, curveIntensity);
+    const stemHTML = createPageStem(totalHeight, stemWidth, curveDirection, curveIntensity);
     const headOffsetX = curveDirection * curveIntensity;
     
-    const containerSize = flowerSize + (petalSize * 2);
+    const containerSize = flowerSize + (petalSize * 3);
     
     flower.innerHTML = `
         <div class="flower-head-wrapper" style="
@@ -422,59 +422,64 @@ function createPreviewFlower(container, index, leftPos, colorScheme) {
             left: 50%;
             transform: translateX(calc(-50% + ${headOffsetX}px));
             z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         ">
             <div class="flower-head" style="
                 width: ${flowerSize}px; 
                 height: ${flowerSize}px;
                 position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             ">
-                ${createPreviewPetals(petalSize, colorScheme.petals)}
+                ${createPagePetals(petalSize, colorScheme.petals, petalStyle)}
                 <div class="flower-center" style="
                     width: ${Math.floor(flowerSize * 0.28)}px;
                     height: ${Math.floor(flowerSize * 0.28)}px;
                     background: ${colorScheme.center};
                     position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
                     z-index: 5;
                     box-shadow: 
-                        inset 2px 2px 0 0 ${lightenColor(colorScheme.center, 30)},
-                        inset -2px -2px 0 0 ${darkenColor(colorScheme.center, 20)};
+                        inset 3px 3px 0 0 ${lightenColor(colorScheme.center, 30)},
+                        inset -3px -3px 0 0 ${darkenColor(colorScheme.center, 20)};
                 "></div>
             </div>
         </div>
         <div class="flower-stem-container" style="
             height: ${totalHeight}px; 
-            width: ${curveIntensity * 2 + stemWidth + 30}px;
+            width: ${curveIntensity * 2 + stemWidth + 60}px;
             position: relative;
         ">
             ${stemHTML}
         </div>
     `;
     
-    flower.style.animationDelay = `${0.2 + index * 0.15}s`;
-    flower.style.opacity = '0';
-    flower.style.animation = 'flowerGrow 2s ease-out forwards';
+    const growDelay = 0.2 + (index * 0.15);
+    flower.style.animationDelay = `${growDelay}s`;
+    flower.style.setProperty('--grow-delay', `${growDelay}s`);
+    flower.style.setProperty('--sway-amount', `${1 + Math.random() * 2}deg`);
+    flower.style.setProperty('--sway-duration', `${3 + Math.random() * 2}s`);
     
     container.appendChild(flower);
     
     setTimeout(() => {
         flower.classList.add('sway');
-    }, (0.2 + index * 0.15 + 2.2) * 1000);
+    }, (growDelay + 2.2) * 1000);
 }
 
-function createPreviewStem(height, width, direction, intensity) {
-    const segments = Math.floor(height / 15);
+function createPageStem(height, width, direction, intensity) {
+    const segments = Math.floor(height / 20);
     let stemHTML = '';
-    const midX = intensity + width / 2 + 15;
+    const midX = intensity + width / 2 + 30;
     
     for (let i = 0; i < segments; i++) {
         const progress = i / segments;
         const nextProgress = (i + 1) / segments;
         const curveOffset = Math.sin(progress * Math.PI * 0.8) * intensity * direction;
         const nextCurveOffset = Math.sin(nextProgress * Math.PI * 0.8) * intensity * direction;
-        const segmentHeight = 15;
+        const segmentHeight = 20;
         const yPos = i * segmentHeight;
         const xPos = midX + curveOffset;
         const angle = Math.atan2(nextCurveOffset - curveOffset, segmentHeight) * (180 / Math.PI);
@@ -485,36 +490,87 @@ function createPreviewStem(height, width, direction, intensity) {
                 bottom: ${yPos}px;
                 left: ${xPos}px;
                 width: ${width}px;
-                height: ${segmentHeight + 4}px;
+                height: ${segmentHeight + 6}px;
                 background: #40a040;
                 transform: translateX(-50%) rotate(${angle * 0.3}deg);
                 box-shadow:
                     ${Math.floor(width * 0.25)}px 0 0 0 #308030,
                     -${Math.floor(width * 0.25)}px 0 0 0 #50c850,
-                    0 2px 0 0 #308030;
+                    0 4px 0 0 #308030;
             "></div>
         `;
+        
+        if (i % 4 === 2 && i < segments - 2) {
+            const leafSide = (i % 2 === 0) ? -1 : 1;
+            const leafSize = 20 + Math.floor(Math.random() * 12);
+            
+            stemHTML += `
+                <div class="pixel-leaf" style="
+                    position: absolute;
+                    bottom: ${yPos + 6}px;
+                    left: ${xPos + (leafSide * width * 0.8)}px;
+                    width: ${leafSize}px;
+                    height: ${Math.floor(leafSize * 0.5)}px;
+                    background: #48c048;
+                    transform: translateX(${leafSide > 0 ? '0' : '-100%'}) rotate(${leafSide * 25}deg);
+                    box-shadow:
+                        ${leafSide * 3}px 3px 0 0 #308030,
+                        inset ${leafSide * 3}px 2px 0 0 #60d860;
+                "></div>
+            `;
+        }
     }
     return stemHTML;
 }
 
-function createPreviewPetals(size, color) {
+function createPagePetals(size, color, style) {
     const darkColor = darkenColor(color, 25);
+    const darkerColor = darkenColor(color, 40);
     const lightColor = lightenColor(color, 30);
-    const s = Math.floor(size * 1.4);
-    const spread = Math.floor(size * 0.35);
-    const smallSpread = Math.floor(size * 0.2);
-    const inner = Math.floor(s * 0.5);
+    const lighterColor = lightenColor(color, 50);
+    const highlightColor = lightenColor(color, 70);
     
+    const s = Math.floor(size * 1.6);
+    const spread = Math.floor(size * 0.45);
+    const smallSpread = Math.floor(size * 0.25);
+    const tinySpread = Math.floor(size * 0.15);
+    const centerSize = Math.floor(size * 1.4);
+    const inner = Math.floor(s * 0.5);
+    const mid = Math.floor(s * 0.75);
+    
+    if (style === 'round') {
+        return `
+            <div style="
+                position: absolute;
+                width: ${centerSize}px;
+                height: ${centerSize}px;
+                background: ${color};
+                box-shadow:
+                    0 -${s}px 0 ${spread}px ${darkColor},
+                    0 ${s}px 0 ${spread}px ${darkerColor},
+                    -${s}px 0 0 ${spread}px ${darkColor},
+                    ${s}px 0 0 ${spread}px ${darkerColor},
+                    0 -${Math.floor(s * 0.85)}px 0 ${smallSpread}px ${color},
+                    0 ${Math.floor(s * 0.85)}px 0 ${smallSpread}px ${darkColor},
+                    -${Math.floor(s * 0.85)}px 0 0 ${smallSpread}px ${lightColor},
+                    ${Math.floor(s * 0.85)}px 0 0 ${smallSpread}px ${color},
+                    0 -${inner}px 0 ${smallSpread}px ${lightColor},
+                    0 ${inner}px 0 ${smallSpread}px ${color},
+                    -${inner}px 0 0 ${smallSpread}px ${lighterColor},
+                    ${inner}px 0 0 ${smallSpread}px ${lightColor},
+                    0 -${Math.floor(s * 0.6)}px 0 4px ${highlightColor},
+                    -${Math.floor(s * 0.6)}px 0 0 4px ${highlightColor};
+            "></div>
+        `;
+    }
+    
+    // Simplified version for other styles
     return `
         <div style="
             position: absolute;
-            width: ${Math.floor(size * 1.2)}px;
-            height: ${Math.floor(size * 1.2)}px;
+            width: ${centerSize}px;
+            height: ${centerSize}px;
             background: ${color};
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             box-shadow:
                 0 -${s}px 0 ${spread}px ${darkColor},
                 0 ${s}px 0 ${spread}px ${darkColor},
@@ -523,18 +579,14 @@ function createPreviewPetals(size, color) {
                 0 -${Math.floor(s * 0.85)}px 0 ${smallSpread}px ${color},
                 0 ${Math.floor(s * 0.85)}px 0 ${smallSpread}px ${color},
                 -${Math.floor(s * 0.85)}px 0 0 ${smallSpread}px ${lightColor},
-                ${Math.floor(s * 0.85)}px 0 0 ${smallSpread}px ${color},
-                0 -${inner}px 0 ${smallSpread}px ${lightColor},
-                0 ${inner}px 0 ${smallSpread}px ${color},
-                -${inner}px 0 0 ${smallSpread}px ${lightColor},
-                ${inner}px 0 0 ${smallSpread}px ${lightColor};
+                ${Math.floor(s * 0.85)}px 0 0 ${smallSpread}px ${color};
         "></div>
     `;
 }
 
-// Create bushes in preview (fewer than home page)
-function createPreviewBushes(container) {
-    const bushCount = 6; // 6 instead of 12
+// Create bushes on page background (fewer than home page)
+function createPageBushes(container) {
+    const bushCount = 8; // 8 instead of 12
     
     for (let i = 0; i < bushCount; i++) {
         const bush = document.createElement('div');
@@ -545,7 +597,7 @@ function createPreviewBushes(container) {
         const leftPos = 5 + (i / bushCount) * 88;
         bush.style.left = `${leftPos}%`;
         
-        const size = 25 + Math.floor(Math.random() * 30);
+        const size = 35 + Math.floor(Math.random() * 40);
         const height = size * (0.6 + Math.random() * 0.3);
         
         const greens = ['#2d8a2d', '#3da03d', '#4db84d', '#35a035'];
@@ -590,9 +642,9 @@ function createPreviewBushes(container) {
     }
 }
 
-// Create rocks in preview (fewer than home page)
-function createPreviewRocks(container) {
-    const rockCount = 4; // 4 instead of 8
+// Create rocks on page background (fewer than home page)
+function createPageRocks(container) {
+    const rockCount = 5; // 5 instead of 8
     
     for (let i = 0; i < rockCount; i++) {
         const rock = document.createElement('div');
@@ -603,7 +655,7 @@ function createPreviewRocks(container) {
         const leftPos = 8 + Math.random() * 82;
         rock.style.left = `${leftPos}%`;
         
-        const width = 15 + Math.floor(Math.random() * 20);
+        const width = 20 + Math.floor(Math.random() * 30);
         const height = width * (0.5 + Math.random() * 0.3);
         
         const grays = ['#808080', '#909090', '#707070', '#858585'];
