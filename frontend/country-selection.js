@@ -2,13 +2,13 @@
 
 // ==================== COUNTRY DATA (8 COUNTRIES) ====================
 const COUNTRIES = [
-    // Top row (3 houses)
+    // Top row (3 houses) - more horizontal spacing
     {
         id: 'france',
         name: 'FRANCE',
         flag: '🇫🇷',
         lang: 'french',
-        posX: 150,
+        posX: 180,
         posY: 130
     },
     {
@@ -16,7 +16,7 @@ const COUNTRIES = [
         name: 'GERMANY',
         flag: '🇩🇪',
         lang: 'german',
-        posX: 400,
+        posX: 500,
         posY: 130
     },
     {
@@ -24,7 +24,7 @@ const COUNTRIES = [
         name: 'UK',
         flag: '🇬🇧',
         lang: 'english',
-        posX: 650,
+        posX: 820,
         posY: 130
     },
     // Middle row (2 houses)
@@ -33,7 +33,7 @@ const COUNTRIES = [
         name: 'SPAIN',
         flag: '🇪🇸',
         lang: 'spanish',
-        posX: 275,
+        posX: 340,
         posY: 310
     },
     {
@@ -41,7 +41,7 @@ const COUNTRIES = [
         name: 'ITALY',
         flag: '🇮🇹',
         lang: 'italian',
-        posX: 525,
+        posX: 660,
         posY: 310
     },
     // Bottom row (3 houses)
@@ -50,7 +50,7 @@ const COUNTRIES = [
         name: 'JAPAN',
         flag: '🇯🇵',
         lang: 'japanese',
-        posX: 150,
+        posX: 180,
         posY: 490
     },
     {
@@ -58,7 +58,7 @@ const COUNTRIES = [
         name: 'CHINA',
         flag: '🇨🇳',
         lang: 'mandarin',
-        posX: 400,
+        posX: 500,
         posY: 490
     },
     {
@@ -66,7 +66,7 @@ const COUNTRIES = [
         name: 'POLAND',
         flag: '🇵🇱',
         lang: 'polish',
-        posX: 650,
+        posX: 820,
         posY: 490
     }
 ];
@@ -83,12 +83,12 @@ canvas.height = window.innerHeight;
 let cameraX = 0;
 let cameraY = 0;
 const TILE_SIZE = 32;
-const WORLD_WIDTH = 800;
+const WORLD_WIDTH = 1000;
 const WORLD_HEIGHT = 700;
 
 // ==================== GAME STATE ====================
 let player = {
-    worldX: 400,  // Start in center of neighborhood
+    worldX: 500,  // Start in center of neighborhood
     worldY: 400,
     width: 24,
     height: 32,
@@ -138,15 +138,15 @@ function createWorld() {
     // Add trees around the neighborhood perimeter
     const treePositions = [
         // Top edge
-        { x: 50, y: 50 }, { x: 150, y: 30 }, { x: 280, y: 40 }, { x: 400, y: 30 }, { x: 520, y: 40 }, { x: 650, y: 30 }, { x: 750, y: 50 },
+        { x: 50, y: 50 }, { x: 180, y: 30 }, { x: 340, y: 40 }, { x: 500, y: 30 }, { x: 660, y: 40 }, { x: 820, y: 30 }, { x: 950, y: 50 },
         // Bottom edge
-        { x: 50, y: 650 }, { x: 180, y: 660 }, { x: 320, y: 650 }, { x: 480, y: 660 }, { x: 620, y: 650 }, { x: 750, y: 650 },
+        { x: 50, y: 650 }, { x: 180, y: 660 }, { x: 340, y: 650 }, { x: 500, y: 660 }, { x: 660, y: 650 }, { x: 820, y: 660 }, { x: 950, y: 650 },
         // Left edge
         { x: 30, y: 150 }, { x: 40, y: 310 }, { x: 30, y: 490 },
         // Right edge
-        { x: 770, y: 150 }, { x: 760, y: 310 }, { x: 770, y: 490 },
+        { x: 970, y: 150 }, { x: 960, y: 310 }, { x: 970, y: 490 },
         // Scattered between houses
-        { x: 275, y: 210 }, { x: 525, y: 210 }, { x: 80, y: 310 }, { x: 720, y: 310 }, { x: 275, y: 410 }, { x: 525, y: 410 }
+        { x: 340, y: 210 }, { x: 660, y: 210 }, { x: 80, y: 310 }, { x: 920, y: 310 }, { x: 340, y: 410 }, { x: 660, y: 410 }
     ];
     
     treePositions.forEach(pos => {
@@ -413,7 +413,7 @@ function drawTerrain() {
 
 function drawPaths() {
     // Central plaza/intersection
-    const centerX = 400 - cameraX;
+    const centerX = 500 - cameraX;
     const centerY = 310 - cameraY;
     
     // Plaza (circular dirt area in center)
@@ -549,7 +549,14 @@ function drawHouse(house, x, y) {
     }
     
     // Draw flagpole with country flag (centered on house)
-    drawFlagpole(x, y - h/2 - 25, country);
+    // Adjust flagpole height based on roof type (some houses have lower roofs)
+    let roofOffset = 25;
+    if (country.id === 'france' || country.id === 'spain') {
+        roofOffset = 18; // Lower mansard/terracotta roofs
+    } else if (country.id === 'japan') {
+        roofOffset = 20; // Lower curved roof
+    }
+    drawFlagpole(x, y - h/2 - roofOffset, country);
     
     // Country label (below the flag)
     ctx.fillStyle = '#F8F0D8';
@@ -557,8 +564,8 @@ function drawHouse(house, x, y) {
     ctx.textAlign = 'center';
     ctx.strokeStyle = '#402808';
     ctx.lineWidth = 3;
-    ctx.strokeText(country.name, x, y - h/2 - 75);
-    ctx.fillText(country.name, x, y - h/2 - 75);
+    ctx.strokeText(country.name, x, y - h/2 - 70 - (roofOffset - 18));
+    ctx.fillText(country.name, x, y - h/2 - 70 - (roofOffset - 18));
 }
 
 // ==================== FLAGPOLE ====================
