@@ -10,28 +10,28 @@ let stream = null;
 const STYLE_PROMPTS = {
     // 🇫🇷 French Bakery - Soft impressionist, Monet-inspired
     boulangerie: "Soft warm impressionist style, gentle golden morning light through lace curtains, subtle Monet-inspired brushstrokes, creamy beiges and warm honey tones, cozy intimate Parisian atmosphere, soft focus on edges, painterly but recognizable, calm and inviting",
-    
+
     // 🇩🇪 German Club - Subtle cyberpunk, controlled neon
     berghain: "Dark industrial atmosphere, subtle cyberpunk aesthetic, controlled neon accents in blues and magentas, brutalist concrete textures, cinematic Blade Runner mood, dramatic shadows with detail, moody but navigable, consistent low-key lighting",
-    
+
     // 🇨🇳 Chinese Tea House - Sumi-e ink wash, zen
     teahouse: "Traditional sumi-e ink wash painting style, soft misty atmosphere, minimalist zen aesthetic, gentle gradient washes, muted earth tones and jade greens, serene and meditative, watercolor softness, recognizable forms, peaceful continuity",
-    
+
     // 🇯🇵 Japanese Izakaya - Studio Ghibli warmth
     izakaya: "Warm Studio Ghibli inspired atmosphere, soft orange lantern glow, cozy evening ambiance, gentle anime aesthetic, warm amber and soft reds, intimate and inviting, painterly but clear, nostalgic and comforting",
-    
+
     // 🇪🇸 Spanish Tapas Bar - Mediterranean golden hour
     tapas: "Warm Mediterranean atmosphere, soft golden hour sunlight, gentle terracotta and ochre tones, subtle impressionist touches, cozy Spanish cafe ambiance, warm inviting light, painterly but recognizable, calm and relaxed",
-    
+
     // 🇩🇪 German Beer Garden - Fairy tale forest
     biergarten: "Soft fairy tale forest aesthetic, dappled golden afternoon sunlight, gentle storybook illustration style, warm natural greens and browns, cozy outdoor atmosphere, painterly but clear, inviting and peaceful",
-    
+
     // 🇵🇱 Polish Milk Bar - Nostalgic vintage
     milk_bar: "Nostalgic Eastern European aesthetic, soft muted colors, gentle polaroid warmth, vintage film grain, subtle retro atmosphere, warm amber undertones, recognizable but dreamy, calm and inviting",
-    
+
     // 🇬🇧 British Pub - Cozy Victorian
     pub: "Warm cozy Victorian pub atmosphere, soft amber firelight glow, gentle wood and brass tones, subtle oil painting style, intimate and welcoming, rich browns and deep reds, painterly but clear, comfortable and nostalgic",
-    
+
     // 🇮🇹 Italian Café - Renaissance warmth  
     cafe: "Warm Renaissance-inspired atmosphere, soft Tuscan golden light, gentle ochre and terracotta palette, subtle classical painting style, cozy Italian piazza feel, warm inviting tones, painterly but recognizable, elegant and relaxed"
 };
@@ -40,12 +40,13 @@ const STYLE_PROMPTS = {
  * Start the Mirage real-time video transformation stream
  * @param {string} scenario - The scenario ID to determine the style prompt
  * @param {string} canvasId - The ID of the canvas element to capture
+ * @param {object} characterConfig - Optional character configuration for dynamic prompts
  */
-export async function startMirageStream(scenario = "boulangerie", canvasId = "gameCanvas") {
+export async function startMirageStream(scenario = "boulangerie", canvasId = "gameCanvas", characterConfig = null) {
     try {
         const model = models.realtime("mirage_v2");
         const canvas = document.getElementById(canvasId);
-        
+
         if (!canvas) {
             console.error(`Canvas with ID ${canvasId} not found`);
             return false;
@@ -57,7 +58,7 @@ export async function startMirageStream(scenario = "boulangerie", canvasId = "ga
 
         // Get API key from environment
         const apiKey = import.meta.env.VITE_DECART_API_KEY || '';
-        
+
         if (!apiKey) {
             console.warn("Decart API key not found, Mirage disabled");
             return false;
@@ -81,8 +82,8 @@ export async function startMirageStream(scenario = "boulangerie", canvasId = "ga
             }
         });
 
-        // Set the style based on scenario
-        const prompt = STYLE_PROMPTS[scenario] || STYLE_PROMPTS.boulangerie;
+        // Set the style based on scenario and character
+        const prompt = generateDynamicPrompt(scenario, characterConfig);
         realtimeClient.setPrompt(prompt);
 
         // Show the video container
@@ -98,6 +99,27 @@ export async function startMirageStream(scenario = "boulangerie", canvasId = "ga
         console.error("Failed to start Mirage stream:", error);
         return false;
     }
+}
+
+/**
+ * Generate a dynamic prompt combining scenario style and character visuals
+ */
+function generateDynamicPrompt(scenario, character) {
+    const baseStyle = STYLE_PROMPTS[scenario] || STYLE_PROMPTS.boulangerie;
+
+    if (!character || !character.visuals) {
+        return baseStyle + ", photorealistic, detailed textures, 8k resolution";
+    }
+
+    const v = character.visuals;
+
+    // Construct character description
+    // We explicitly request facial features to ensure they are rendered on the 3D geometry
+    const charPrompt = `Photorealistic human character, detailed face with expressive eyes, nose, and mouth. 
+    ${v.hairStyle} hair (${v.hairColor}), ${v.style} outfit in ${v.outfitColor}. 
+    Realistic skin texture, natural lighting, cinematic composition.`;
+
+    return `${baseStyle}, ${charPrompt}`;
 }
 
 /**

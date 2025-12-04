@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -88,7 +89,7 @@
         .pixel-panel {
             background: rgba(40, 30, 20, 0.95);
             border: 4px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 4px 4px 0 0 var(--wood-shadow),
                 inset 2px 2px 0 0 var(--wood-light);
             color: var(--cream);
@@ -101,7 +102,7 @@
             left: 20px;
             background: rgba(40, 30, 20, 0.95);
             border: 6px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 6px 6px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 var(--wood-light);
             padding: 20px 24px;
@@ -148,6 +149,31 @@
             border-color: var(--cozy-orange);
         }
 
+        /* Custom Scenario Button */
+        .custom-scenario-btn {
+            margin-top: 15px;
+            background: var(--accent-teal);
+            border: 4px solid #3aa39b;
+            color: var(--pixel-black);
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.6rem;
+            padding: 10px;
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 0 var(--wood-shadow);
+            transition: all 0.1s;
+        }
+
+        .custom-scenario-btn:hover {
+            transform: translateY(2px);
+            box-shadow: 2px 2px 0 0 var(--wood-shadow);
+        }
+
+        .custom-scenario-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
         /* Glossary button - Top Right */
         .glossary-btn {
             position: absolute;
@@ -155,7 +181,7 @@
             right: 20px;
             background: var(--wood-main);
             border: 5px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 5px 5px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 var(--wood-light);
             width: 70px;
@@ -171,14 +197,14 @@
 
         .glossary-btn:hover {
             transform: translateY(2px);
-            box-shadow: 
+            box-shadow:
                 2px 2px 0 0 var(--wood-shadow),
                 inset 2px 2px 0 0 var(--wood-light);
         }
 
         .glossary-btn:active {
             transform: translateY(4px);
-            box-shadow: 
+            box-shadow:
                 0 0 0 0 var(--wood-shadow),
                 inset 2px 2px 0 0 var(--wood-dark);
         }
@@ -191,7 +217,7 @@
             transform: translateX(-50%);
             background: rgba(40, 30, 20, 0.95);
             border: 6px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 6px 6px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 var(--wood-light);
             padding: 16px 28px;
@@ -280,9 +306,18 @@
         }
 
         @keyframes objectiveComplete {
-            0% { transform: translateX(-50%) scale(1); }
-            50% { transform: translateX(-50%) scale(1.05); border-color: var(--cozy-yellow); }
-            100% { transform: translateX(-50%) scale(1); }
+            0% {
+                transform: translateX(-50%) scale(1);
+            }
+
+            50% {
+                transform: translateX(-50%) scale(1.05);
+                border-color: var(--cozy-yellow);
+            }
+
+            100% {
+                transform: translateX(-50%) scale(1);
+            }
         }
 
         .objective-bar.level-up {
@@ -290,14 +325,31 @@
         }
 
         @keyframes notificationPop {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
-            50% { transform: translate(-50%, -50%) scale(1.1); }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
         }
 
         @keyframes notificationFade {
-            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0; }
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(0.9);
+                opacity: 0;
+            }
         }
 
         /* Conversation panel - Bottom */
@@ -345,7 +397,7 @@
         .speech-bubble {
             background: rgba(40, 30, 20, 0.95);
             border: 5px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 5px 5px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 var(--wood-light);
             padding: 20px;
@@ -364,7 +416,7 @@
             color: var(--accent-teal);
             line-height: 2;
         }
-        
+
         .practice-btn {
             display: inline-flex;
             align-items: center;
@@ -373,7 +425,7 @@
             padding: 12px 18px;
             background: var(--cozy-yellow);
             border: 4px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 4px 4px 0 0 var(--wood-shadow),
                 inset 2px 2px 0 0 var(--wood-light);
             color: var(--pixel-black);
@@ -382,27 +434,27 @@
             cursor: pointer;
             transition: all 0.05s;
         }
-        
+
         .practice-btn:hover {
             transform: translateY(2px);
-            box-shadow: 
+            box-shadow:
                 2px 2px 0 0 var(--wood-shadow),
                 inset 2px 2px 0 0 var(--wood-light);
         }
 
         .practice-btn:active {
             transform: translateY(4px);
-            box-shadow: 
+            box-shadow:
                 0 0 0 0 var(--wood-shadow),
                 inset 2px 2px 0 0 var(--wood-dark);
         }
-        
+
         .speech-actions {
             display: flex;
             gap: 10px;
             margin-top: 12px;
         }
-        
+
         .play-speech-btn {
             display: inline-flex;
             align-items: center;
@@ -410,7 +462,7 @@
             padding: 12px 18px;
             background: var(--accent-teal);
             border: 4px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 4px 4px 0 0 var(--wood-shadow),
                 inset 2px 2px 0 0 var(--wood-light);
             color: var(--pixel-black);
@@ -419,10 +471,10 @@
             cursor: pointer;
             transition: all 0.05s;
         }
-        
+
         .play-speech-btn:hover {
             transform: translateY(2px);
-            box-shadow: 
+            box-shadow:
                 2px 2px 0 0 var(--wood-shadow),
                 inset 2px 2px 0 0 var(--wood-light);
         }
@@ -437,15 +489,15 @@
             gap: 12px;
             scroll-behavior: smooth;
         }
-        
+
         .chat-history::-webkit-scrollbar {
             width: 6px;
         }
-        
+
         .chat-history::-webkit-scrollbar-track {
             background: transparent;
         }
-        
+
         .chat-history::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.2);
             border-radius: 3px;
@@ -462,7 +514,7 @@
             text-align: right;
             animation: slideInRight 0.3s ease-out;
         }
-        
+
         .user-message .user-label {
             font-size: 0.75rem;
             color: var(--accent-teal);
@@ -470,28 +522,30 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
+
         .user-message .user-text {
             font-size: 1rem;
             color: #fff;
         }
-        
+
         @keyframes slideInRight {
             from {
                 opacity: 0;
                 transform: translateX(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0);
             }
         }
-        
+
         @keyframes slideInLeft {
             from {
                 opacity: 0;
                 transform: translateX(-20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0);
@@ -501,7 +555,7 @@
         /* ═══════════════════════════════════════════════════════════════════════════
            REAL-TIME TRANSCRIPT UI - Words appear as you speak
            ═══════════════════════════════════════════════════════════════════════════ */
-        
+
         .realtime-transcript {
             background: linear-gradient(135deg, rgba(30, 30, 45, 0.95), rgba(20, 20, 35, 0.95));
             border: 2px solid rgba(78, 205, 196, 0.4);
@@ -513,12 +567,12 @@
             transform: translateY(-10px);
             transition: all 0.3s ease;
         }
-        
+
         .realtime-transcript.active {
             opacity: 1;
             transform: translateY(0);
         }
-        
+
         .rt-header {
             display: flex;
             align-items: center;
@@ -527,7 +581,7 @@
             padding-bottom: 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .rt-pulse {
             width: 12px;
             height: 12px;
@@ -535,18 +589,27 @@
             border-radius: 50%;
             animation: rtPulse 1s ease-in-out infinite;
         }
-        
+
         @keyframes rtPulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.7; }
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.3);
+                opacity: 0.7;
+            }
         }
-        
+
         .rt-label {
             font-size: 0.85rem;
             color: rgba(255, 255, 255, 0.7);
             flex: 1;
         }
-        
+
         .rt-avg-score {
             font-size: 0.8rem;
             font-weight: 600;
@@ -554,11 +617,22 @@
             border-radius: 20px;
             background: rgba(255, 255, 255, 0.1);
         }
-        
-        .rt-avg-score.score-high { color: #4ecdc4; background: rgba(78, 205, 196, 0.2); }
-        .rt-avg-score.score-medium { color: #f4b942; background: rgba(244, 185, 66, 0.2); }
-        .rt-avg-score.score-low { color: #ff6b6b; background: rgba(255, 107, 107, 0.2); }
-        
+
+        .rt-avg-score.score-high {
+            color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.2);
+        }
+
+        .rt-avg-score.score-medium {
+            color: #f4b942;
+            background: rgba(244, 185, 66, 0.2);
+        }
+
+        .rt-avg-score.score-low {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.2);
+        }
+
         .rt-words {
             display: flex;
             flex-wrap: wrap;
@@ -566,7 +640,7 @@
             min-height: 40px;
             margin-bottom: 12px;
         }
-        
+
         .rt-word {
             display: inline-flex;
             flex-direction: column;
@@ -577,41 +651,57 @@
             opacity: 0;
             transform: scale(0.8);
         }
-        
+
         @keyframes wordAppear {
-            0% { opacity: 0; transform: scale(0.8) translateY(10px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
+            0% {
+                opacity: 0;
+                transform: scale(0.8) translateY(10px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
         }
-        
+
         .rt-word .word-text {
             font-size: 1rem;
             font-weight: 500;
         }
-        
+
         .rt-word .word-score {
             font-size: 0.65rem;
             opacity: 0.7;
             margin-top: 2px;
         }
-        
+
         .rt-word.confidence-high {
             background: rgba(78, 205, 196, 0.2);
             border: 1px solid rgba(78, 205, 196, 0.4);
         }
-        .rt-word.confidence-high .word-text { color: #4ecdc4; }
-        
+
+        .rt-word.confidence-high .word-text {
+            color: #4ecdc4;
+        }
+
         .rt-word.confidence-medium {
             background: rgba(244, 185, 66, 0.2);
             border: 1px solid rgba(244, 185, 66, 0.4);
         }
-        .rt-word.confidence-medium .word-text { color: #f4b942; }
-        
+
+        .rt-word.confidence-medium .word-text {
+            color: #f4b942;
+        }
+
         .rt-word.confidence-low {
             background: rgba(255, 107, 107, 0.2);
             border: 1px solid rgba(255, 107, 107, 0.4);
         }
-        .rt-word.confidence-low .word-text { color: #ff6b6b; }
-        
+
+        .rt-word.confidence-low .word-text {
+            color: #ff6b6b;
+        }
+
         .rt-full-text {
             font-size: 0.9rem;
             color: rgba(255, 255, 255, 0.5);
@@ -621,54 +711,67 @@
             border-radius: 8px;
             min-height: 24px;
         }
-        
+
         .rt-full-text.final {
             color: rgba(255, 255, 255, 0.8);
             font-style: normal;
         }
-        
+
         /* Scored words in user messages */
         .user-message.with-scores .user-text.scored {
             display: flex;
             flex-wrap: wrap;
             gap: 4px;
         }
-        
+
         .scored-word {
             padding: 2px 6px;
             border-radius: 4px;
             cursor: help;
             transition: all 0.2s ease;
         }
-        
+
         .scored-word:hover {
             transform: scale(1.1);
         }
-        
-        .scored-word.high { 
+
+        .scored-word.high {
             background: rgba(78, 205, 196, 0.2);
             color: #4ecdc4;
         }
-        .scored-word.medium { 
+
+        .scored-word.medium {
             background: rgba(244, 185, 66, 0.2);
             color: #f4b942;
         }
-        .scored-word.low { 
+
+        .scored-word.low {
             background: rgba(255, 107, 107, 0.2);
             color: #ff6b6b;
         }
-        
+
         .overall-score {
             font-size: 0.7rem;
             padding: 2px 8px;
             border-radius: 10px;
             margin-left: 8px;
         }
-        
-        .overall-score.high { background: rgba(78, 205, 196, 0.3); color: #4ecdc4; }
-        .overall-score.medium { background: rgba(244, 185, 66, 0.3); color: #f4b942; }
-        .overall-score.low { background: rgba(255, 107, 107, 0.3); color: #ff6b6b; }
-        
+
+        .overall-score.high {
+            background: rgba(78, 205, 196, 0.3);
+            color: #4ecdc4;
+        }
+
+        .overall-score.medium {
+            background: rgba(244, 185, 66, 0.3);
+            color: #f4b942;
+        }
+
+        .overall-score.low {
+            background: rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+        }
+
         /* Pulse dot animation for recording button */
         .pulse-dot {
             display: inline-block;
@@ -678,16 +781,25 @@
             border-radius: 50%;
             animation: pulseDot 1s ease-in-out infinite;
         }
-        
+
         @keyframes pulseDot {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7); }
-            50% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(255, 107, 107, 0); }
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
+            }
+
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 0 10px rgba(255, 107, 107, 0);
+            }
         }
 
         /* ═══════════════════════════════════════════════════════════════════════════
            PRONUNCIATION FEEDBACK UI - Full training interface
            ═══════════════════════════════════════════════════════════════════════════ */
-        
+
         .pronunciation-trainer {
             position: fixed;
             bottom: 0;
@@ -702,24 +814,24 @@
             max-height: 60vh;
             overflow-y: auto;
         }
-        
+
         .pronunciation-trainer.active {
             transform: translateY(0);
         }
-        
+
         .pt-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 16px;
         }
-        
+
         .pt-title {
             font-size: 1.2rem;
             font-weight: 600;
             color: var(--accent-gold);
         }
-        
+
         .pt-close {
             background: none;
             border: none;
@@ -728,11 +840,11 @@
             cursor: pointer;
             padding: 4px 8px;
         }
-        
+
         .pt-close:hover {
             color: #fff;
         }
-        
+
         /* Amplitude Visualizer */
         .amplitude-visualizer {
             display: flex;
@@ -743,14 +855,14 @@
             background: rgba(0, 0, 0, 0.3);
             border-radius: 12px;
         }
-        
+
         .mic-status {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 8px;
         }
-        
+
         .mic-icon {
             width: 50px;
             height: 50px;
@@ -762,27 +874,34 @@
             font-size: 1.5rem;
             transition: all 0.3s ease;
         }
-        
+
         .mic-icon.connected {
             background: rgba(78, 205, 196, 0.2);
             box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
         }
-        
+
         .mic-icon.speaking {
             background: rgba(78, 205, 196, 0.4);
             animation: micPulse 0.5s ease-in-out infinite;
         }
-        
+
         @keyframes micPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
         }
-        
+
         .mic-label {
             font-size: 0.75rem;
             color: rgba(255, 255, 255, 0.6);
         }
-        
+
         .amplitude-bars {
             flex: 1;
             display: flex;
@@ -790,7 +909,7 @@
             height: 60px;
             gap: 2px;
         }
-        
+
         .amplitude-bar {
             flex: 1;
             max-width: 8px;
@@ -799,28 +918,28 @@
             min-height: 4px;
             transition: height 0.05s ease;
         }
-        
+
         .amplitude-level {
             text-align: right;
             min-width: 60px;
         }
-        
+
         .amplitude-level .level-value {
             font-size: 1.5rem;
             font-weight: bold;
             color: var(--accent-teal);
         }
-        
+
         .amplitude-level .level-label {
             font-size: 0.7rem;
             color: rgba(255, 255, 255, 0.5);
         }
-        
+
         /* Expected Text */
         .expected-text-section {
             margin-bottom: 20px;
         }
-        
+
         .section-label {
             font-size: 0.8rem;
             color: rgba(255, 255, 255, 0.5);
@@ -828,7 +947,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        
+
         .expected-text {
             font-size: 1.3rem;
             color: rgba(255, 255, 255, 0.8);
@@ -837,7 +956,7 @@
             border-radius: 12px;
             border-left: 4px solid var(--accent-gold);
         }
-        
+
         .expected-text .word {
             display: inline-block;
             padding: 4px 8px;
@@ -845,34 +964,41 @@
             border-radius: 4px;
             transition: all 0.3s ease;
         }
-        
+
         .expected-text .word.matched {
             background: rgba(78, 205, 196, 0.3);
             color: var(--accent-teal);
         }
-        
+
         .expected-text .word.error {
             background: rgba(255, 107, 107, 0.3);
             color: var(--accent-coral);
             text-decoration: underline wavy var(--accent-coral);
         }
-        
+
         .expected-text .word.current {
             background: rgba(244, 185, 66, 0.3);
             color: var(--accent-gold);
             animation: currentWordPulse 1s ease-in-out infinite;
         }
-        
+
         @keyframes currentWordPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
         }
-        
+
         /* Transcription Section */
         .transcription-section {
             margin-bottom: 20px;
         }
-        
+
         .transcribed-words {
             display: flex;
             flex-wrap: wrap;
@@ -882,7 +1008,7 @@
             background: rgba(0, 0, 0, 0.2);
             border-radius: 12px;
         }
-        
+
         .transcribed-word {
             display: flex;
             flex-direction: column;
@@ -894,53 +1020,54 @@
             transition: all 0.3s ease;
             animation: wordSlideIn 0.3s ease forwards;
         }
-        
+
         @keyframes wordSlideIn {
             from {
                 opacity: 0;
                 transform: translateY(20px) scale(0.8);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0) scale(1);
             }
         }
-        
+
         .transcribed-word.correct {
             background: rgba(78, 205, 196, 0.2);
             border-color: rgba(78, 205, 196, 0.5);
         }
-        
+
         .transcribed-word.incorrect {
             background: rgba(255, 107, 107, 0.2);
             border-color: rgba(255, 107, 107, 0.5);
         }
-        
+
         .transcribed-word .tw-text {
             font-size: 1.1rem;
             font-weight: 500;
         }
-        
+
         .transcribed-word.correct .tw-text {
             color: var(--accent-teal);
         }
-        
+
         .transcribed-word.incorrect .tw-text {
             color: var(--accent-coral);
         }
-        
+
         .transcribed-word .tw-score {
             font-size: 0.7rem;
             opacity: 0.7;
             margin-top: 4px;
         }
-        
+
         .transcribed-word .tw-expected {
             font-size: 0.65rem;
             color: rgba(255, 255, 255, 0.5);
             margin-top: 2px;
         }
-        
+
         /* Error Feedback */
         .error-feedback {
             background: rgba(255, 107, 107, 0.1);
@@ -949,11 +1076,11 @@
             padding: 16px;
             margin-bottom: 20px;
         }
-        
+
         .error-feedback.hidden {
             display: none;
         }
-        
+
         .error-item {
             display: flex;
             align-items: flex-start;
@@ -963,39 +1090,39 @@
             border-radius: 8px;
             margin-bottom: 8px;
         }
-        
+
         .error-item:last-child {
             margin-bottom: 0;
         }
-        
+
         .error-icon {
             font-size: 1.5rem;
         }
-        
+
         .error-details {
             flex: 1;
         }
-        
+
         .error-comparison {
             display: flex;
             gap: 16px;
             margin-bottom: 8px;
         }
-        
+
         .error-spoken {
             color: var(--accent-coral);
         }
-        
+
         .error-expected {
             color: var(--accent-teal);
         }
-        
+
         .error-suggestion {
             font-size: 0.85rem;
             color: rgba(255, 255, 255, 0.7);
             font-style: italic;
         }
-        
+
         .play-correct-btn {
             display: flex;
             align-items: center;
@@ -1009,12 +1136,12 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .play-correct-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
         }
-        
+
         /* Control Buttons */
         .pt-controls {
             display: flex;
@@ -1023,7 +1150,7 @@
             padding-top: 16px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .pt-btn {
             display: flex;
             align-items: center;
@@ -1035,36 +1162,36 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .pt-btn.primary {
             background: linear-gradient(135deg, var(--accent-coral), var(--accent-violet));
             color: white;
         }
-        
+
         .pt-btn.secondary {
             background: rgba(255, 255, 255, 0.1);
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .pt-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
-        
+
         .pt-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
         }
-        
+
         /* Overall Score */
         .overall-score-display {
             text-align: center;
             padding: 20px;
             margin-top: 16px;
         }
-        
+
         .score-circle {
             width: 100px;
             height: 100px;
@@ -1075,13 +1202,11 @@
             justify-content: center;
             font-size: 2rem;
             font-weight: bold;
-            background: conic-gradient(
-                var(--accent-teal) var(--score-percent, 0%),
-                rgba(255, 255, 255, 0.1) var(--score-percent, 0%)
-            );
+            background: conic-gradient(var(--accent-teal) var(--score-percent, 0%),
+                    rgba(255, 255, 255, 0.1) var(--score-percent, 0%));
             position: relative;
         }
-        
+
         .score-circle::before {
             content: '';
             position: absolute;
@@ -1090,12 +1215,12 @@
             border-radius: 50%;
             background: rgba(15, 15, 25, 0.95);
         }
-        
+
         .score-circle .score-value {
             position: relative;
             z-index: 1;
         }
-        
+
         .score-label {
             font-size: 0.9rem;
             color: rgba(255, 255, 255, 0.6);
@@ -1131,7 +1256,7 @@
             height: 75px;
             background: var(--cozy-yellow);
             border: 5px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 5px 5px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 var(--wood-light);
             cursor: pointer;
@@ -1144,7 +1269,7 @@
 
         .voice-btn:hover {
             transform: translateY(3px);
-            box-shadow: 
+            box-shadow:
                 2px 2px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 var(--wood-light);
         }
@@ -1155,15 +1280,20 @@
         }
 
         @keyframes pixel-pulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.05); }
+            0% {
+                transform: scale(1);
+            }
+
+            100% {
+                transform: scale(1.05);
+            }
         }
 
         .voice-hint {
             flex: 1;
             background: rgba(40, 30, 20, 0.95);
             border: 5px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 5px 5px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 var(--wood-light);
             padding: 18px 20px;
@@ -1181,7 +1311,7 @@
             flex: 1;
             background: rgba(40, 30, 20, 0.95);
             border: 5px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 inset 3px 3px 0 0 var(--wood-shadow);
             padding: 18px 20px;
             font-size: 0.65rem;
@@ -1203,7 +1333,7 @@
             height: 65px;
             background: var(--accent-teal);
             border: 5px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 5px 5px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 #6ee6dc;
             cursor: pointer;
@@ -1214,7 +1344,7 @@
 
         .send-btn:hover {
             transform: translateY(3px);
-            box-shadow: 
+            box-shadow:
                 2px 2px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 #6ee6dc;
         }
@@ -1241,7 +1371,7 @@
         .glossary-content {
             background: rgba(40, 30, 20, 0.98);
             border: 6px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 8px 8px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 var(--wood-light);
             width: 90%;
@@ -1363,8 +1493,15 @@
         }
 
         @keyframes pixel-float {
-            0%, 100% { transform: translate(-50%, -50%); }
-            50% { transform: translate(-50%, calc(-50% - 8px)); }
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%);
+            }
+
+            50% {
+                transform: translate(-50%, calc(-50% - 8px));
+            }
         }
 
         /* Loading screen */
@@ -1374,13 +1511,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(180deg, 
-                #3878b8 0%, 
-                #50a0d8 30%, 
-                #78c0e8 60%, 
-                #50c850 80%, 
-                #40a840 100%
-            );
+            background: linear-gradient(180deg,
+                    #3878b8 0%,
+                    #50a0d8 30%,
+                    #78c0e8 60%,
+                    #50c850 80%,
+                    #40a840 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -1397,7 +1533,7 @@
         .loading-box {
             background: rgba(40, 30, 20, 0.95);
             border: 8px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 10px 10px 0 0 var(--wood-shadow),
                 inset 4px 4px 0 0 var(--wood-light);
             padding: 60px 80px;
@@ -1412,26 +1548,41 @@
         }
 
         @keyframes pixel-bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
         }
 
         /* Word highlighting animation during speech */
         @keyframes wordPulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.15); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
-        
+
         .word-current {
             display: inline-block;
             animation: wordPulse 0.3s ease-in-out;
         }
-        
+
         .word-spoken {
             transition: color 0.2s ease, opacity 0.2s ease;
         }
-        
+
         .word-pending {
             transition: opacity 0.2s ease;
         }
@@ -1467,8 +1618,13 @@
         }
 
         @keyframes loading-fill {
-            0% { width: 0%; }
-            100% { width: 100%; }
+            0% {
+                width: 0%;
+            }
+
+            100% {
+                width: 100%;
+            }
         }
 
         /* Controls hint - Bottom Left */
@@ -1478,7 +1634,7 @@
             left: 20px;
             background: rgba(40, 30, 20, 0.95);
             border: 5px solid var(--wood-dark);
-            box-shadow: 
+            box-shadow:
                 5px 5px 0 0 var(--wood-shadow),
                 inset 3px 3px 0 0 var(--wood-light);
             padding: 14px 18px;
@@ -1514,15 +1670,16 @@
         }
     </style>
 </head>
+
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
-        
+
         <!-- Mirage Real-time Video Stylization -->
         <div id="mirage-container">
             <video id="mirage-video-output" autoplay muted playsinline></video>
         </div>
-        
+
         <div class="ui-overlay">
             <!-- Scenario Info - Top Left -->
             <div class="scenario-info" id="scenarioInfo">
@@ -1538,11 +1695,11 @@
                     <div class="difficulty-pip"></div>
                     <div class="difficulty-pip"></div>
                 </div>
+                <button id="customScenarioBtn" class="custom-scenario-btn">✨ Custom Scenario</button>
             </div>
-            
+
             <!-- Glossary Button - Top Right -->
             <button class="glossary-btn" id="glossaryBtn" title="Glossary">📖</button>
-            
             <!-- Objective Bar - Top Center -->
             <div class="objective-bar" id="objectiveBar">
                 <div class="objective-header">
@@ -1557,23 +1714,23 @@
                     <span class="hint-text" id="hintText">"Bonjour!"</span>
                 </div>
             </div>
-            
+
             <!-- Interaction Prompt -->
             <div class="interact-prompt" id="interactPrompt">
                 Press <kbd>E</kbd> to talk
             </div>
-            
+
             <!-- Controls Hint - Bottom Left -->
             <div class="controls-hint" id="controlsHint">
                 <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move · <kbd>E</kbd> Talk · <kbd>ESC</kbd> Exit
             </div>
-            
+
             <!-- Conversation Panel - Bottom -->
             <div class="conversation-panel" id="conversationPanel">
                 <div class="conversation-content">
                     <!-- Chat History (scrollable) -->
                     <div class="chat-history" id="chatHistory"></div>
-                    
+
                     <!-- Current NPC Speech -->
                     <div class="character-speaking" id="characterSpeaking">
                         <div class="character-avatar-small" id="charAvatarSmall">👩‍🍳</div>
@@ -1594,7 +1751,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Voice/Text Input -->
                     <div class="voice-input-area">
                         <button class="voice-btn" id="voiceBtn">🎤</button>
@@ -1604,7 +1761,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Glossary Modal -->
         <div class="glossary-modal" id="glossaryModal">
             <div class="glossary-content">
@@ -1612,14 +1769,14 @@
                     <h2 class="glossary-title">📖 GLOSSARY</h2>
                     <button class="glossary-close" id="glossaryClose">✕ CLOSE</button>
                 </div>
-                
+
                 <div class="glossary-section">
                     <h3 class="glossary-section-title">Words Learned</h3>
                     <div class="glossary-grid" id="glossaryWords">
                         <!-- Populated by JS -->
                     </div>
                 </div>
-                
+
                 <div class="glossary-section">
                     <h3 class="glossary-section-title">⚠️ False Friends</h3>
                     <div class="glossary-grid" id="glossaryFalseFriends">
@@ -1628,14 +1785,13 @@
                 </div>
             </div>
         </div>
-        
         <!-- Pronunciation Trainer Panel -->
         <div class="pronunciation-trainer" id="pronunciationTrainer">
             <div class="pt-header">
                 <div class="pt-title">🎯 Pronunciation Practice</div>
                 <button class="pt-close" id="ptClose">×</button>
             </div>
-            
+
             <!-- Amplitude Visualizer (Mic Check) -->
             <div class="amplitude-visualizer">
                 <div class="mic-status">
@@ -1650,7 +1806,7 @@
                     <div class="level-label">Volume</div>
                 </div>
             </div>
-            
+
             <!-- Expected Text -->
             <div class="expected-text-section">
                 <div class="section-label">📝 Say this phrase:</div>
@@ -1661,7 +1817,7 @@
                     🔊 Hear correct pronunciation
                 </button>
             </div>
-            
+
             <!-- Real-time Transcription -->
             <div class="transcription-section">
                 <div class="section-label">🎙️ What you're saying:</div>
@@ -1669,7 +1825,7 @@
                     <!-- Words appear here with scores -->
                 </div>
             </div>
-            
+
             <!-- Error Feedback -->
             <div class="error-feedback hidden" id="errorFeedback">
                 <div class="section-label">⚠️ Pronunciation Tips:</div>
@@ -1677,7 +1833,7 @@
                     <!-- Error items populated by JS -->
                 </div>
             </div>
-            
+
             <!-- Overall Score -->
             <div class="overall-score-display hidden" id="overallScore">
                 <div class="score-circle" id="scoreCircle">
@@ -1685,7 +1841,7 @@
                 </div>
                 <div class="score-label">Pronunciation Accuracy</div>
             </div>
-            
+
             <!-- Controls -->
             <div class="pt-controls">
                 <button class="pt-btn primary" id="ptStartBtn">
@@ -1699,7 +1855,7 @@
                 </button>
             </div>
         </div>
-        
+
         <!-- Loading Screen -->
         <div class="loading-screen" id="loadingScreen">
             <div class="loading-box">
@@ -1712,7 +1868,8 @@
             </div>
         </div>
     </div>
-    
+
     <script type="module" src="lingua-world.js"></script>
 </body>
+
 </html>
