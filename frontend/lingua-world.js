@@ -1657,7 +1657,10 @@ function createBeerTable(x, y, z) {
 
 // ==================== NPC CREATION ====================
 function createNPC() {
-    const character = gameState.scenario?.character || {
+    // Get character from language config first, fallback to scenario
+    const language = gameState.language || 'french';
+    const langConfig = getLanguageConfig(language);
+    const character = langConfig?.character || gameState.scenario?.character || {
         name: 'Guide',
         emoji: '👤'
     };
@@ -1681,17 +1684,19 @@ function createNPC() {
     const accessoryMat = new THREE.MeshStandardMaterial({ color: visuals.accessoryColor });
     const pantsMat = new THREE.MeshStandardMaterial({ color: 0x2c3e50 }); // Dark pants default
 
-    // 1. Legs (Cylinders)
-    const legGeo = new THREE.CylinderGeometry(0.12, 0.1, 0.9, 8);
-    const leftLeg = new THREE.Mesh(legGeo, pantsMat);
-    leftLeg.position.set(-0.2, 0.45, 0);
-    leftLeg.castShadow = true;
-    npc.add(leftLeg);
+    // 1. Legs (Cylinders) - hidden for dress styles
+    if (visuals.style !== 'flamenco' && visuals.style !== 'dress') {
+        const legGeo = new THREE.CylinderGeometry(0.12, 0.1, 0.9, 8);
+        const leftLeg = new THREE.Mesh(legGeo, pantsMat);
+        leftLeg.position.set(-0.2, 0.45, 0);
+        leftLeg.castShadow = true;
+        npc.add(leftLeg);
 
-    const rightLeg = new THREE.Mesh(legGeo, pantsMat);
-    rightLeg.position.set(0.2, 0.45, 0);
-    rightLeg.castShadow = true;
-    npc.add(rightLeg);
+        const rightLeg = new THREE.Mesh(legGeo, pantsMat);
+        rightLeg.position.set(0.2, 0.45, 0);
+        rightLeg.castShadow = true;
+        npc.add(rightLeg);
+    }
 
     // 2. Torso (Box/Cylinder mix)
     // Main body
@@ -1828,7 +1833,30 @@ function createNPC() {
         string.position.set(0, 1.5, 0.2);
         npc.add(string);
     } else if (visuals.style === 'flamenco') {
-        // Flower
+        // Flamenco dress - flowing skirt
+        const skirtGeo = new THREE.CylinderGeometry(0.15, 0.45, 0.9, 16);
+        const skirtMat = new THREE.MeshStandardMaterial({ color: visuals.outfitColor });
+        const skirt = new THREE.Mesh(skirtGeo, skirtMat);
+        skirt.position.y = 0.45;
+        skirt.castShadow = true;
+        npc.add(skirt);
+
+        // Dress ruffle at bottom
+        const ruffleGeo = new THREE.TorusGeometry(0.45, 0.08, 8, 24);
+        const ruffleMat = new THREE.MeshStandardMaterial({ color: visuals.outfitColor });
+        const ruffle = new THREE.Mesh(ruffleGeo, ruffleMat);
+        ruffle.position.y = 0.05;
+        ruffle.rotation.x = Math.PI / 2;
+        npc.add(ruffle);
+
+        // Second ruffle layer
+        const ruffle2Geo = new THREE.TorusGeometry(0.38, 0.06, 8, 24);
+        const ruffle2 = new THREE.Mesh(ruffle2Geo, ruffleMat);
+        ruffle2.position.y = 0.25;
+        ruffle2.rotation.x = Math.PI / 2;
+        npc.add(ruffle2);
+
+        // Flower in hair
         const flowerGeo = new THREE.SphereGeometry(0.08, 8, 8);
         const flower = new THREE.Mesh(flowerGeo, accessoryMat);
         flower.position.set(0.2, 1.85, 0.15);
