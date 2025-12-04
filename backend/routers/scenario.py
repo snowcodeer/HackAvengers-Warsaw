@@ -9,6 +9,7 @@ router = APIRouter(prefix="/api/scenario", tags=["Scenario"])
 class ScenarioRequest(BaseModel):
     prompt: str
     language: str
+    vibe: str = "neutral"
 
 @router.post("/generate")
 async def generate_scenario(request: ScenarioRequest):
@@ -21,12 +22,19 @@ async def generate_scenario(request: ScenarioRequest):
 
     client = anthropic.Anthropic(api_key=api_key)
 
-    system_prompt = f"""
-    You are an expert 3D environment designer for a language learning game.
-    Your task is to generate a JSON blueprint for a 3D scene based on the user's description.
-    The scene should be appropriate for learning {request.language}.
+    You are an expert 3D environment designer and character stylist for a high-end language learning game.
+    Your task is to generate a JSON blueprint for a 3D scene based on the user's description and desired "vibe".
+    
+    CONTEXT:
+    - Language: {request.language}
+    - Vibe: {request.vibe} (This is CRITICAL. The scene MUST feel like this.)
+    - User Prompt: {request.prompt}
 
-    The output must be a valid JSON object with the following structure:
+    OBJECTIVE:
+    Create a highly immersive, detailed, and "cool" 3D scene. Avoid generic "box" props. 
+    Use specific, evocative names and colors that match the vibe.
+    
+    JSON STRUCTURE:
     {{
         "id": "custom_generated",
         "name": "Custom Scenario",
@@ -34,12 +42,24 @@ async def generate_scenario(request: ScenarioRequest):
         "country": "Custom",
         "flag": "🏳️",
         "description": "A custom generated scenario.",
-        "vocab": ["word1", "word2", "word3", "word4"],
-                "floor": {{ "type": "wood", "color": "#8B4513" }},
+        "scene": {{
+            "layout": {{
+                "floor": {{ "type": "wood", "color": "#8B4513" }}, 
                 "walls": {{ "type": "plaster", "color": "#F5F5F5" }},
                 "props": [
-                    {{ "type": "counter", "position": {{ "x": 0, "y": 0, "z": -3 }}, "color": "#8B4513", "name": "counter" }}
+                    {{ "type": "counter", "position": {{ "x": 0, "y": 0, "z": -3 }}, "color": "#8B4513", "name": "rustic_oak_counter", "rotation": 0 }}
                 ]
+            }},
+            "lighting": {{
+                "primary": {{ "color": "#FFFFFF", "intensity": 0.8 }},
+                "secondary": {{ "color": "#FFF8DC", "intensity": 0.4 }},
+                "accent": [
+                    {{ "color": "#FFAA44", "intensity": 0.5, "position": {{ "x": 0, "y": 3, "z": -2 }} }}
+                ]
+            }},
+            "atmosphere": {{
+                "fog": {{ "color": "#FFFFFF", "near": 10, "far": 50 }},
+                "background": "#87CEEB"
             }}
         }},
         "character": {{
@@ -50,7 +70,7 @@ async def generate_scenario(request: ScenarioRequest):
             "visuals": {{
                 "skinColor": "#f5c09a",
                 "hairColor": "#000000",
-                "hairStyle": "short",
+                "hairStyle": "short", 
                 "outfitColor": "#3498db",
                 "accessoryColor": "#ffffff",
                 "style": "casual"
@@ -72,11 +92,39 @@ async def generate_scenario(request: ScenarioRequest):
         }}
     }}
     
-    Ensure the 'layout' section includes 'floor', 'walls', and a list of 'props' with 3D positions (x, y, z).
-    Keep the scene simple but representative of the description.
-    """
+    CREATIVE GUIDELINES:
+
+    1. PROPS & DECOR (Be specific!):
+       - Don't just say "table". Say "neon_glass_table" (for cyberpunk) or "antique_oak_table" (for cozy).
+       - Use 'type' keywords that map to our assets:
+         * Furniture: 'counter', 'bar', 'table', 'chair', 'bench', 'shelf', 'cabinet', 'sofa', 'stool'
+         * Decor: 'plant', 'flower_vase', 'poster', 'painting', 'mirror', 'clock', 'rug', 'curtains', 'bamboo', 'lantern'
+         * Lighting: 'pendant_light', 'lamp', 'neon_sign', 'candle', 'street_light'
+         * Food/Drink: 'croissant_display', 'bread_basket', 'coffee_machine', 'tea_set', 'wine_rack', 'beer_stein', 'fruit_bowl', 'sushi_plate', 'ramen_bowl'
+         * Special: 'cash_register', 'chalkboard', 'piano', 'guitar', 'fountain', 'statue', 'arcade_machine', 'hologram'
+         * Structures: 'window', 'door', 'pillar', 'archway', 'fireplace', 'torii_gate'
+
+    2. VIBE MAPPING:
+       - COZY: Warm lights (#FFA500), wood textures, plants, rugs, fireplaces, bakery items.
+       - MODERN: Cool lights (#E0FFFF), glass/metal textures, sleek furniture, abstract art.
+       - CYBERPUNK: Neon lights (#FF00FF, #00FFFF), dark walls, holograms, arcade machines, rain-slicked floors.
+       - HISTORICAL: Sepia/Gold lights, antique furniture, paintings, candle light, stone/wood.
+       - SPOOKY: Dim/Green lights (#32CD32), fog, cobwebs (use 'curtains'), old statues, flickering candles.
+       - NATURE: Sunlight, flowers, bamboo, wooden structures, fountains.
+
+    3. CHARACTER VISUALS:
+       - 'hairStyle': 'short', 'long', 'bun', 'bald', 'spiky' (cyberpunk), 'wavy'.
+       - 'style': 'casual', 'formal', 'traditional' (kimono/dirndl), 'futuristic' (cyberpunk), 'gothic' (spooky).
+       - 'outfitColor': Match the vibe! (e.g., Neon Green for cyberpunk, Tweed Brown for historical).
+
+    4. LAYOUT:
+       - Place the main interaction point (counter/table) at (0, 0, -3).
+       - Place decorative props around it to frame the scene.
+       - Use 'rotation' (in radians) to orient props naturally.
+    
 
     try:
+        print(f"🎨 Generating scenario for: {request.prompt} (Vibe: {request.vibe})")
         message = client.messages.create(
             model="claude-3-haiku-20240307",
             max_tokens=2000,
@@ -86,6 +134,7 @@ async def generate_scenario(request: ScenarioRequest):
             ]
         )
         
+        print("✅ Generation complete, parsing response...")
         content = message.content[0].text
         # Extract JSON if needed
         json_start = content.find('{')
