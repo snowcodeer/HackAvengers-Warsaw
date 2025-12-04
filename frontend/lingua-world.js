@@ -1600,11 +1600,9 @@ async function speakTextAndGetAudio(text, expression = null) {
     const langConfig = getLanguageConfig(language);
     const characterId = langConfig?.character?.name || 'default';
     
-    // Apply expression tag if available
+    // V3 model - don't prepend custom expression tags (they get read aloud)
+    // V3 only supports specific tags like [whispers], [laughs], [sighs]
     let processedText = text;
-    if (expression && voiceConfig.expressionTags && voiceConfig.expressionTags[expression]) {
-        processedText = `${voiceConfig.expressionTags[expression]} ${text}`;
-    }
     
     try {
         // Try backend API first
@@ -1650,7 +1648,7 @@ async function speakTextAndGetAudio(text, expression = null) {
             },
             body: JSON.stringify({
                 text: processedText,
-                model_id: 'eleven_multilingual_v2',
+                model_id: 'eleven_v3',
                 voice_settings: {
                     stability: 0.5,
                     similarity_boost: 0.75
@@ -2746,7 +2744,7 @@ function archiveCurrentNPCMessage() {
     const currentText = elements.speechText.textContent || elements.speechText.innerText;
     const currentTranslation = elements.speechTranslation?.textContent || '';
     
-    if (!currentText || currentText === 'Bonjour! Bienvenue à ma boulangerie!') return; // Don't archive default
+    if (!currentText || currentText === 'waiting awkwardly...') return; // Don't archive default
     
     // Create archived NPC message
     const npcArchive = document.createElement('div');
