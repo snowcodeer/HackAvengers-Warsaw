@@ -179,13 +179,27 @@ body {
     justify-content: center;
     flex: 1;
     min-height: 350px;
+    position: relative;
+    overflow: hidden;
+}
+
+.preview-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
 }
 
 .pixel-character {
     width: 180px;
     height: 270px;
     position: relative;
-    transform: scale(2.5);
+    transform: scale(1.8);
+    z-index: 1;
 }
 
 .preview-label {

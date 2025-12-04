@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initSnowfall();
     initCharacterCustomisation();
     initSubmitButton();
+    initPreviewBackground();
     updateCharacterPreview();
 });
 
@@ -19,8 +20,8 @@ const characterData = {
     pantsColor: '#3a3a5a' // Default value, no longer customizable
 };
 
-const hairStyles = ['Spiky', 'Mohawk', 'Flat Top', 'Long', 'Short', 'Ponytail', 'Bald', 'Curly', 'Afro', 'Pigtails', 'Buzz Cut', 'Side Part', 'Wavy', 'Slick Back'];
-const outfits = ['Adventurer', 'T-Shirt', 'Striped', 'Hoodie', 'Suit', 'Overalls', 'Tank Top', 'Uniform', 'Sweater', 'Jacket', 'Polo', 'V-Neck', 'Vest', 'Lab Coat'];
+const hairStyles = ['Spiky', 'Short', 'Long', 'Curly', 'Bald'];
+const outfits = ['Adventurer', 'T-Shirt', 'Hoodie', 'Suit'];
 
 // Initialize customisation controls
 function initCharacterCustomisation() {
@@ -81,250 +82,42 @@ function initColorButtons(containerId, dataKey) {
 // Update the character preview
 function updateCharacterPreview() {
     const preview = document.getElementById('characterPreview');
+    if (!preview) return; // Safety check
+    
     const hairStyle = hairStyles[characterData.hairStyle];
-    const bodyType = bodyTypes[characterData.bodyType];
     const outfit = outfits[characterData.outfit];
-    const accessory = accessories[characterData.accessory];
-    const hat = hats[characterData.hat];
-    const facialHair = facialHairs[characterData.facialHair];
 
     // Generate hair based on style
     let hairHTML = '';
     switch (hairStyle) {
         case 'Spiky':
             hairHTML = `
-                <div style="position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); width: 52px; height: 20px; background: ${characterData.hairColor}; box-shadow: -8px -8px 0 0 ${characterData.hairColor}, 8px -8px 0 0 ${characterData.hairColor}, 0 -16px 0 0 ${characterData.hairColor}, -16px 0 0 0 ${characterData.hairColor}, 16px 0 0 0 ${characterData.hairColor};"></div>
-            `;
-            break;
-        case 'Mohawk':
-            hairHTML = `
-                <div style="position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); width: 12px; height: 32px; background: ${characterData.hairColor};"></div>
-                <div style="position: absolute; bottom: 145px; left: 50%; transform: translateX(-50%); width: 8px; height: 20px; background: ${characterData.hairColor};"></div>
-            `;
-            break;
-        case 'Flat Top':
-            hairHTML = `
-                <div style="position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); width: 50px; height: 16px; background: ${characterData.hairColor};"></div>
-            `;
-            break;
-        case 'Long':
-            hairHTML = `
-                <div style="position: absolute; bottom: 90px; left: 50%; transform: translateX(-50%); width: 56px; height: 60px; background: ${characterData.hairColor}; border-radius: 8px 8px 0 0;"></div>
+                <div style="position: absolute; bottom: 145px; left: 50%; transform: translateX(-50%); width: 52px; height: 20px; background: ${characterData.hairColor}; box-shadow: -8px -8px 0 0 ${characterData.hairColor}, 8px -8px 0 0 ${characterData.hairColor}, 0 -16px 0 0 ${characterData.hairColor}, -16px 0 0 0 ${characterData.hairColor}, 16px 0 0 0 ${characterData.hairColor};"></div>
             `;
             break;
         case 'Short':
             hairHTML = `
-                <div style="position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); width: 48px; height: 16px; background: ${characterData.hairColor}; border-radius: 8px 8px 0 0;"></div>
+                <div style="position: absolute; bottom: 145px; left: 50%; transform: translateX(-50%); width: 48px; height: 16px; background: ${characterData.hairColor}; border-radius: 8px 8px 0 0;"></div>
             `;
             break;
-        case 'Ponytail':
+        case 'Long':
             hairHTML = `
-                <div style="position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); width: 48px; height: 16px; background: ${characterData.hairColor}; border-radius: 8px 8px 0 0;"></div>
-                <div style="position: absolute; bottom: 80px; right: 20px; width: 12px; height: 45px; background: ${characterData.hairColor}; border-radius: 0 0 6px 6px;"></div>
+                <div style="position: absolute; bottom: 110px; left: 50%; transform: translateX(-50%); width: 56px; height: 60px; background: ${characterData.hairColor}; border-radius: 8px 8px 0 0;"></div>
+            `;
+            break;
+        case 'Curly':
+            hairHTML = `
+                <div style="position: absolute; bottom: 142px; left: 50%; transform: translateX(-50%); width: 54px; height: 24px; background: ${characterData.hairColor}; border-radius: 50%; box-shadow: -6px 0 0 0 ${characterData.hairColor}, 6px 0 0 0 ${characterData.hairColor}, 0 -6px 0 0 ${characterData.hairColor};"></div>
             `;
             break;
         case 'Bald':
             hairHTML = '';
             break;
-        case 'Curly':
-            hairHTML = `
-                <div style="position: absolute; bottom: 122px; left: 50%; transform: translateX(-50%); width: 54px; height: 24px; background: ${characterData.hairColor}; border-radius: 50%; box-shadow: -6px 0 0 0 ${characterData.hairColor}, 6px 0 0 0 ${characterData.hairColor}, 0 -6px 0 0 ${characterData.hairColor};"></div>
-            `;
-            break;
-        case 'Afro':
-            hairHTML = `
-                <div style="position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%); width: 60px; height: 50px; background: ${characterData.hairColor}; border-radius: 50%;"></div>
-            `;
-            break;
-        case 'Pigtails':
-            hairHTML = `
-                <div style="position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); width: 48px; height: 14px; background: ${characterData.hairColor};"></div>
-                <div style="position: absolute; bottom: 100px; left: 20px; width: 14px; height: 30px; background: ${characterData.hairColor}; border-radius: 0 0 7px 7px;"></div>
-                <div style="position: absolute; bottom: 100px; right: 20px; width: 14px; height: 30px; background: ${characterData.hairColor}; border-radius: 0 0 7px 7px;"></div>
-            `;
-            break;
-        case 'Buzz Cut':
-            hairHTML = `
-                <div style="position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); width: 46px; height: 10px; background: ${characterData.hairColor};"></div>
-            `;
-            break;
-        case 'Side Part':
-            hairHTML = `
-                <div style="position: absolute; bottom: 125px; left: calc(50% - 5px); transform: translateX(-50%); width: 52px; height: 18px; background: ${characterData.hairColor}; border-radius: 8px 0 0 0;"></div>
-            `;
-            break;
-        case 'Wavy':
-            hairHTML = `
-                <div style="position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); width: 50px; height: 28px; background: ${characterData.hairColor}; border-radius: 12px 12px 0 0;"></div>
-                <div style="position: absolute; bottom: 100px; left: 24px; width: 12px; height: 35px; background: ${characterData.hairColor}; border-radius: 0 0 8px 8px;"></div>
-                <div style="position: absolute; bottom: 100px; right: 24px; width: 12px; height: 35px; background: ${characterData.hairColor}; border-radius: 0 0 8px 8px;"></div>
-            `;
-            break;
-        case 'Slick Back':
-            hairHTML = `
-                <div style="position: absolute; bottom: 118px; left: 50%; transform: translateX(-50%); width: 48px; height: 24px; background: ${characterData.hairColor}; border-radius: 50% 50% 0 0;"></div>
-            `;
-            break;
     }
 
-    // Generate accessory
-    let accessoryHTML = '';
-    switch (accessory) {
-        case 'Glasses':
-            accessoryHTML = `
-                <div style="position: absolute; bottom: 105px; left: calc(50% - 20px); width: 40px; height: 12px; border: 3px solid #333; background: transparent; border-radius: 2px;"></div>
-            `;
-            break;
-        case 'Sunglasses':
-            accessoryHTML = `
-                <div style="position: absolute; bottom: 104px; left: calc(50% - 18px); width: 14px; height: 10px; background: #111; border-radius: 2px;"></div>
-                <div style="position: absolute; bottom: 104px; left: calc(50% + 4px); width: 14px; height: 10px; background: #111; border-radius: 2px;"></div>
-                <div style="position: absolute; bottom: 108px; left: calc(50% - 4px); width: 8px; height: 3px; background: #333;"></div>
-            `;
-            break;
-        case 'Round Glasses':
-            accessoryHTML = `
-                <div style="position: absolute; bottom: 103px; left: calc(50% - 18px); width: 14px; height: 14px; border: 3px solid #daa520; border-radius: 50%; background: transparent;"></div>
-                <div style="position: absolute; bottom: 103px; left: calc(50% + 4px); width: 14px; height: 14px; border: 3px solid #daa520; border-radius: 50%; background: transparent;"></div>
-            `;
-            break;
-        case 'Eye Patch':
-            accessoryHTML = `
-                <div style="position: absolute; bottom: 103px; left: calc(50% - 18px); width: 16px; height: 14px; background: #222;"></div>
-                <div style="position: absolute; bottom: 110px; left: calc(50% - 22px); width: 60px; height: 3px; background: #333; transform: rotate(-10deg);"></div>
-            `;
-            break;
-        case 'Monocle':
-            accessoryHTML = `
-                <div style="position: absolute; bottom: 102px; left: calc(50% + 2px); width: 16px; height: 16px; border: 3px solid #daa520; border-radius: 50%; background: transparent;"></div>
-                <div style="position: absolute; bottom: 88px; left: calc(50% + 14px); width: 2px; height: 20px; background: #daa520;"></div>
-            `;
-            break;
-        case 'Bandana':
-            accessoryHTML = `
-                <div style="position: absolute; bottom: 118px; left: 50%; transform: translateX(-50%); width: 50px; height: 10px; background: #c0392b;"></div>
-                <div style="position: absolute; bottom: 108px; right: 22px; width: 8px; height: 16px; background: #c0392b; transform: rotate(20deg);"></div>
-            `;
-            break;
-        case 'Scarf':
-            accessoryHTML = `
-                <div style="position: absolute; bottom: 78px; left: 50%; transform: translateX(-50%); width: 52px; height: 12px; background: #e74c3c; box-shadow: 0 4px 0 0 #c0392b;"></div>
-                <div style="position: absolute; bottom: 55px; left: calc(50% + 10px); width: 10px; height: 28px; background: #e74c3c; border-radius: 0 0 4px 4px;"></div>
-            `;
-            break;
-        case 'Necklace':
-            accessoryHTML = `
-                <div style="position: absolute; bottom: 75px; left: 50%; transform: translateX(-50%); width: 30px; height: 6px; background: #f1c40f; border-radius: 0 0 15px 15px;"></div>
-                <div style="position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); width: 8px; height: 8px; background: #e74c3c; border-radius: 50%;"></div>
-            `;
-            break;
-        case 'Bow Tie':
-            accessoryHTML = `
-                <div style="position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); width: 24px; height: 10px; background: #c0392b;"></div>
-                <div style="position: absolute; bottom: 82px; left: 50%; transform: translateX(-50%); width: 6px; height: 6px; background: #a02320;"></div>
-            `;
-            break;
-        case 'Tie':
-            accessoryHTML = `
-                <div style="position: absolute; bottom: 78px; left: 50%; transform: translateX(-50%); width: 8px; height: 6px; background: #c0392b;"></div>
-                <div style="position: absolute; bottom: 45px; left: 50%; transform: translateX(-50%); width: 10px; height: 35px; background: #c0392b; clip-path: polygon(50% 100%, 0% 0%, 100% 0%);"></div>
-            `;
-            break;
-    }
-
-    // Generate hat
-    let hatHTML = '';
-    switch (hat) {
-        case 'Cap':
-            hatHTML = `
-                <div style="position: absolute; bottom: 128px; left: 50%; transform: translateX(-50%); width: 50px; height: 18px; background: #2c3e50; border-radius: 20px 20px 0 0;"></div>
-                <div style="position: absolute; bottom: 126px; left: calc(50% - 5px); width: 36px; height: 8px; background: #2c3e50;"></div>
-            `;
-            break;
-        case 'Beanie':
-            hatHTML = `
-                <div style="position: absolute; bottom: 124px; left: 50%; transform: translateX(-50%); width: 52px; height: 28px; background: #8e44ad; border-radius: 10px 10px 0 0;"></div>
-                <div style="position: absolute; bottom: 148px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; background: #8e44ad; border-radius: 50%;"></div>
-            `;
-            break;
-        case 'Top Hat':
-            hatHTML = `
-                <div style="position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); width: 56px; height: 10px; background: #1a1a1a;"></div>
-                <div style="position: absolute; bottom: 133px; left: 50%; transform: translateX(-50%); width: 40px; height: 35px; background: #1a1a1a;"></div>
-                <div style="position: absolute; bottom: 135px; left: 50%; transform: translateX(-50%); width: 42px; height: 6px; background: #c0392b;"></div>
-            `;
-            break;
-        case 'Cowboy':
-            hatHTML = `
-                <div style="position: absolute; bottom: 124px; left: 50%; transform: translateX(-50%); width: 64px; height: 12px; background: #8b6914; border-radius: 50%;"></div>
-                <div style="position: absolute; bottom: 132px; left: 50%; transform: translateX(-50%); width: 44px; height: 24px; background: #8b6914; border-radius: 50% 50% 0 0;"></div>
-            `;
-            break;
-        case 'Hard Hat':
-            hatHTML = `
-                <div style="position: absolute; bottom: 124px; left: 50%; transform: translateX(-50%); width: 54px; height: 26px; background: #f39c12; border-radius: 50% 50% 0 0;"></div>
-                <div style="position: absolute; bottom: 124px; left: 50%; transform: translateX(-50%); width: 58px; height: 8px; background: #e67e22;"></div>
-            `;
-            break;
-        case 'Crown':
-            hatHTML = `
-                <div style="position: absolute; bottom: 125px; left: 50%; transform: translateX(-50%); width: 50px; height: 12px; background: #f1c40f;"></div>
-                <div style="position: absolute; bottom: 135px; left: calc(50% - 20px); width: 10px; height: 18px; background: #f1c40f;"></div>
-                <div style="position: absolute; bottom: 135px; left: 50%; transform: translateX(-50%); width: 10px; height: 22px; background: #f1c40f;"></div>
-                <div style="position: absolute; bottom: 135px; left: calc(50% + 10px); width: 10px; height: 18px; background: #f1c40f;"></div>
-                <div style="position: absolute; bottom: 150px; left: 50%; transform: translateX(-50%); width: 6px; height: 6px; background: #e74c3c; border-radius: 50%;"></div>
-            `;
-            break;
-        case 'Headphones':
-            hatHTML = `
-                <div style="position: absolute; bottom: 130px; left: 50%; transform: translateX(-50%); width: 54px; height: 8px; background: #333; border-radius: 20px 20px 0 0;"></div>
-                <div style="position: absolute; bottom: 100px; left: 22px; width: 14px; height: 20px; background: #333; border-radius: 4px;"></div>
-                <div style="position: absolute; bottom: 100px; right: 22px; width: 14px; height: 20px; background: #333; border-radius: 4px;"></div>
-            `;
-            break;
-        case 'Police Cap':
-            hatHTML = `
-                <div style="position: absolute; bottom: 124px; left: 50%; transform: translateX(-50%); width: 52px; height: 20px; background: #2c3e50;"></div>
-                <div style="position: absolute; bottom: 124px; left: calc(50% - 5px); width: 35px; height: 10px; background: #2c3e50;"></div>
-                <div style="position: absolute; bottom: 130px; left: 50%; transform: translateX(-50%); width: 14px; height: 10px; background: #f1c40f;"></div>
-            `;
-            break;
-        case 'Beret':
-            hatHTML = `
-                <div style="position: absolute; bottom: 124px; left: calc(50% - 5px); width: 52px; height: 20px; background: #c0392b; border-radius: 50% 50% 0 50%;"></div>
-                <div style="position: absolute; bottom: 138px; left: calc(50% + 10px); width: 8px; height: 8px; background: #c0392b; border-radius: 50%;"></div>
-            `;
-            break;
-        case 'Bandana':
-            hatHTML = `
-                <div style="position: absolute; bottom: 122px; left: 50%; transform: translateX(-50%); width: 52px; height: 14px; background: #e74c3c;"></div>
-                <div style="position: absolute; bottom: 108px; right: 20px; width: 10px; height: 20px; background: #e74c3c; transform: rotate(15deg);"></div>
-            `;
-            break;
-        case 'Wizard Hat':
-            hatHTML = `
-                <div style="position: absolute; bottom: 124px; left: 50%; transform: translateX(-50%); width: 56px; height: 10px; background: #4a148c;"></div>
-                <div style="position: absolute; bottom: 132px; left: 50%; transform: translateX(-50%); width: 40px; height: 45px; background: #4a148c; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>
-                <div style="position: absolute; bottom: 160px; left: 50%; transform: translateX(-50%); width: 8px; height: 8px; background: #f1c40f; border-radius: 50%;"></div>
-            `;
-            break;
-        case 'Viking Helmet':
-            hatHTML = `
-                <div style="position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); width: 54px; height: 28px; background: #95a5a6; border-radius: 50% 50% 0 0;"></div>
-                <div style="position: absolute; bottom: 140px; left: 16px; width: 8px; height: 25px; background: #f5f5dc; border-radius: 50% 50% 0 0; transform: rotate(-20deg);"></div>
-                <div style="position: absolute; bottom: 140px; right: 16px; width: 8px; height: 25px; background: #f5f5dc; border-radius: 50% 50% 0 0; transform: rotate(20deg);"></div>
-            `;
-            break;
-    }
-
-    // Body width based on type
-    let bodyWidth = 48;
-    let bodyHeight = 56;
-    switch (bodyType) {
-        case 'Athletic': bodyWidth = 52; bodyHeight = 58; break;
-        case 'Slim': bodyWidth = 40; bodyHeight = 60; break;
-        case 'Stocky': bodyWidth = 56; bodyHeight = 50; break;
-    }
+    // Body dimensions (standard size)
+    const bodyWidth = 48;
+    const bodyHeight = 56;
 
     // Generate outfit pattern
     let outfitHTML = '';
@@ -332,191 +125,76 @@ function updateCharacterPreview() {
     const outfitLight = lightenColor(characterData.outfitColor, 15);
 
     switch (outfit) {
-        case 'Striped':
-            outfitHTML = `
-                <div style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: repeating-linear-gradient(0deg, ${characterData.outfitColor} 0px, ${characterData.outfitColor} 8px, #fff 8px, #fff 16px); box-shadow: 4px 0 0 0 ${outfitDark};"></div>
-            `;
-            break;
         case 'Hoodie':
             outfitHTML = `
-                <div style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: ${characterData.outfitColor}; box-shadow: 4px 0 0 0 ${outfitDark};"></div>
-                <div style="position: absolute; bottom: 78px; left: 50%; transform: translateX(-50%); width: 20px; height: 10px; background: ${outfitDark}; border-radius: 0 0 10px 10px;"></div>
-                <div style="position: absolute; bottom: 45px; left: 50%; transform: translateX(-50%); width: 20px; height: 20px; background: ${outfitDark};"></div>
+                <div style="position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: ${characterData.outfitColor}; box-shadow: 4px 0 0 0 ${outfitDark};"></div>
+                <div style="position: absolute; bottom: 98px; left: 50%; transform: translateX(-50%); width: 20px; height: 10px; background: ${outfitDark}; border-radius: 0 0 10px 10px;"></div>
+                <div style="position: absolute; bottom: 65px; left: 50%; transform: translateX(-50%); width: 20px; height: 20px; background: ${outfitDark};"></div>
             `;
             break;
         case 'Suit':
             outfitHTML = `
-                <div style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: #2c3e50; box-shadow: 4px 0 0 0 #1a252f;"></div>
-                <div style="position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); width: 8px; height: 24px; background: #fff;"></div>
-                <div style="position: absolute; bottom: 72px; left: 50%; transform: translateX(-50%); width: 10px; height: 12px; background: #c0392b;"></div>
+                <div style="position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: #2c3e50; box-shadow: 4px 0 0 0 #1a252f;"></div>
+                <div style="position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); width: 8px; height: 24px; background: #fff;"></div>
+                <div style="position: absolute; bottom: 92px; left: 50%; transform: translateX(-50%); width: 10px; height: 12px; background: #c0392b;"></div>
             `;
             break;
-        case 'Overalls':
+        case 'T-Shirt':
+        case 'Adventurer':
+        default:
             outfitHTML = `
-                <div style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: #3498db; box-shadow: 4px 0 0 0 #2980b9;"></div>
-                <div style="position: absolute; bottom: 70px; left: calc(50% - 14px); width: 8px; height: 20px; background: #3498db;"></div>
-                <div style="position: absolute; bottom: 70px; left: calc(50% + 6px); width: 8px; height: 20px; background: #3498db;"></div>
-                <div style="position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); width: 16px; height: 16px; background: #2980b9;"></div>
-            `;
-            break;
-        case 'Tank Top':
-            outfitHTML = `
-                <div style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: ${bodyWidth - 8}px; height: ${bodyHeight}px; background: ${characterData.outfitColor}; box-shadow: 4px 0 0 0 ${outfitDark};"></div>
-            `;
-            break;
-        case 'Uniform':
-            outfitHTML = `
-                <div style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: #2c3e50; box-shadow: 4px 0 0 0 #1a252f;"></div>
-                <div style="position: absolute; bottom: 70px; left: calc(50% - 12px); width: 6px; height: 6px; background: #f1c40f; border-radius: 50%;"></div>
-                <div style="position: absolute; bottom: 60px; left: calc(50% - 12px); width: 6px; height: 6px; background: #f1c40f; border-radius: 50%;"></div>
-                <div style="position: absolute; bottom: 70px; left: calc(50% + 6px); width: 6px; height: 6px; background: #f1c40f; border-radius: 50%;"></div>
-                <div style="position: absolute; bottom: 60px; left: calc(50% + 6px); width: 6px; height: 6px; background: #f1c40f; border-radius: 50%;"></div>
-                <div style="position: absolute; bottom: 74px; left: calc(50% - 6px); width: 12px; height: 8px; background: #34495e;"></div>
-            `;
-            break;
-        case 'Sweater':
-            outfitHTML = `
-                <div style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: ${characterData.outfitColor}; box-shadow: 4px 0 0 0 ${outfitDark};"></div>
-                <div style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: 12px; background: repeating-linear-gradient(90deg, ${outfitDark} 0px, ${outfitDark} 4px, ${characterData.outfitColor} 4px, ${characterData.outfitColor} 8px);"></div>
-                <div style="position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: 8px; background: repeating-linear-gradient(90deg, ${outfitDark} 0px, ${outfitDark} 4px, ${characterData.outfitColor} 4px, ${characterData.outfitColor} 8px);"></div>
-            `;
-            break;
-        case 'Jacket':
-            outfitHTML = `
-                <div style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: ${characterData.outfitColor}; box-shadow: 4px 0 0 0 ${outfitDark};"></div>
-                <div style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: 4px; height: ${bodyHeight - 10}px; background: #f1c40f;"></div>
-                <div style="position: absolute; bottom: 70px; left: calc(50% - 16px); width: 12px; height: 12px; background: ${outfitDark};"></div>
-                <div style="position: absolute; bottom: 70px; left: calc(50% + 4px); width: 12px; height: 12px; background: ${outfitDark};"></div>
-            `;
-            break;
-        case 'Polo':
-            outfitHTML = `
-                <div style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: ${characterData.outfitColor}; box-shadow: 4px 0 0 0 ${outfitDark};"></div>
-                <div style="position: absolute; bottom: 75px; left: 50%; transform: translateX(-50%); width: 12px; height: 10px; background: ${outfitDark};"></div>
-                <div style="position: absolute; bottom: 68px; left: calc(50% - 3px); width: 6px; height: 6px; background: #fff; border-radius: 50%;"></div>
-                <div style="position: absolute; bottom: 60px; left: calc(50% - 3px); width: 6px; height: 6px; background: #fff; border-radius: 50%;"></div>
-            `;
-            break;
-        case 'V-Neck':
-            outfitHTML = `
-                <div style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: ${characterData.outfitColor}; box-shadow: 4px 0 0 0 ${outfitDark};"></div>
-                <div style="position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); width: 16px; height: 16px; background: ${characterData.skinColor}; clip-path: polygon(50% 100%, 0% 0%, 100% 0%);"></div>
-            `;
-            break;
-        case 'Vest':
-            outfitHTML = `
-                <div style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: #fff; box-shadow: 4px 0 0 0 #ddd;"></div>
-                <div style="position: absolute; bottom: 28px; left: calc(50% - 22px); width: 16px; height: ${bodyHeight}px; background: ${characterData.outfitColor};"></div>
-                <div style="position: absolute; bottom: 28px; left: calc(50% + 6px); width: 16px; height: ${bodyHeight}px; background: ${characterData.outfitColor};"></div>
-            `;
-            break;
-        case 'Lab Coat':
-            outfitHTML = `
-                <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: ${bodyWidth + 8}px; height: ${bodyHeight + 15}px; background: #ffffff; box-shadow: 4px 0 0 0 #ddd;"></div>
-                <div style="position: absolute; bottom: 55px; left: calc(50% - 18px); width: 10px; height: 10px; background: ${characterData.outfitColor}; border-radius: 50%;"></div>
-                <div style="position: absolute; bottom: 40px; left: calc(50% - 18px); width: 10px; height: 10px; background: ${characterData.outfitColor}; border-radius: 50%;"></div>
-            `;
-            break;
-        default: // T-Shirt, Adventurer
-            outfitHTML = `
-                <div style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: ${characterData.outfitColor}; box-shadow: 4px 0 0 0 ${outfitDark}, -4px 0 0 0 ${outfitLight};"></div>
-            `;
-    }
-
-    // Generate facial hair
-    let facialHairHTML = '';
-    const facialHairColor = darkenColor(characterData.hairColor, 10);
-    switch (facialHair) {
-        case 'Stubble':
-            facialHairHTML = `
-                <div style="position: absolute; bottom: 88px; left: calc(50% - 16px); width: 32px; height: 8px; background: ${facialHairColor}; opacity: 0.4;"></div>
-            `;
-            break;
-        case 'Beard':
-            facialHairHTML = `
-                <div style="position: absolute; bottom: 82px; left: calc(50% - 14px); width: 28px; height: 14px; background: ${facialHairColor}; border-radius: 0 0 6px 6px;"></div>
-            `;
-            break;
-        case 'Goatee':
-            facialHairHTML = `
-                <div style="position: absolute; bottom: 82px; left: calc(50% - 6px); width: 12px; height: 14px; background: ${facialHairColor}; border-radius: 0 0 4px 4px;"></div>
-            `;
-            break;
-        case 'Mustache':
-            facialHairHTML = `
-                <div style="position: absolute; bottom: 92px; left: calc(50% - 12px); width: 24px; height: 6px; background: ${facialHairColor};"></div>
-            `;
-            break;
-        case 'Full Beard':
-            facialHairHTML = `
-                <div style="position: absolute; bottom: 75px; left: calc(50% - 18px); width: 36px; height: 22px; background: ${facialHairColor}; border-radius: 0 0 10px 10px;"></div>
-                <div style="position: absolute; bottom: 92px; left: calc(50% - 12px); width: 24px; height: 6px; background: ${facialHairColor};"></div>
-            `;
-            break;
-        case 'Handlebar':
-            facialHairHTML = `
-                <div style="position: absolute; bottom: 92px; left: calc(50% - 16px); width: 32px; height: 6px; background: ${facialHairColor};"></div>
-                <div style="position: absolute; bottom: 88px; left: calc(50% - 20px); width: 6px; height: 10px; background: ${facialHairColor}; border-radius: 0 0 0 4px;"></div>
-                <div style="position: absolute; bottom: 88px; left: calc(50% + 14px); width: 6px; height: 10px; background: ${facialHairColor}; border-radius: 0 0 4px 0;"></div>
+                <div style="position: absolute; bottom: 48px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: ${characterData.outfitColor}; box-shadow: 4px 0 0 0 ${outfitDark}, -4px 0 0 0 ${outfitLight};"></div>
             `;
             break;
     }
+
 
     const pantsColor = characterData.pantsColor;
     const pantsDark = darkenColor(pantsColor, 15);
 
     preview.innerHTML = `
         <!-- Legs -->
-        <div style="position: absolute; bottom: 0; left: calc(50% - 16px); width: 14px; height: 30px; background: ${pantsColor}; box-shadow: 4px 0 0 0 ${pantsDark};"></div>
-        <div style="position: absolute; bottom: 0; left: calc(50% + 2px); width: 14px; height: 30px; background: ${pantsColor}; box-shadow: 4px 0 0 0 ${pantsDark};"></div>
+        <div style="position: absolute; bottom: 20px; left: calc(50% - 16px); width: 14px; height: 30px; background: ${pantsColor}; box-shadow: 4px 0 0 0 ${pantsDark};"></div>
+        <div style="position: absolute; bottom: 20px; left: calc(50% + 2px); width: 14px; height: 30px; background: ${pantsColor}; box-shadow: 4px 0 0 0 ${pantsDark};"></div>
         
         <!-- Shoes -->
-        <div style="position: absolute; bottom: 0; left: calc(50% - 20px); width: 18px; height: 10px; background: #4a3020; box-shadow: 2px 0 0 0 #3a2010;"></div>
-        <div style="position: absolute; bottom: 0; left: calc(50% + 2px); width: 18px; height: 10px; background: #4a3020; box-shadow: 2px 0 0 0 #3a2010;"></div>
+        <div style="position: absolute; bottom: 20px; left: calc(50% - 20px); width: 18px; height: 10px; background: #4a3020; box-shadow: 2px 0 0 0 #3a2010;"></div>
+        <div style="position: absolute; bottom: 20px; left: calc(50% + 2px); width: 18px; height: 10px; background: #4a3020; box-shadow: 2px 0 0 0 #3a2010;"></div>
         
         <!-- Body/Outfit -->
         ${outfitHTML}
         
         <!-- Arms -->
-        <div style="position: absolute; bottom: 50px; left: calc(50% - ${bodyWidth / 2 + 12}px); width: 12px; height: 40px; background: ${characterData.skinColor}; box-shadow: 2px 0 0 0 ${darkenColor(characterData.skinColor, 15)};"></div>
-        <div style="position: absolute; bottom: 50px; left: calc(50% + ${bodyWidth / 2}px); width: 12px; height: 40px; background: ${characterData.skinColor}; box-shadow: 2px 0 0 0 ${darkenColor(characterData.skinColor, 15)};"></div>
+        <div style="position: absolute; bottom: 70px; left: calc(50% - ${bodyWidth / 2 + 12}px); width: 12px; height: 40px; background: ${characterData.skinColor}; box-shadow: 2px 0 0 0 ${darkenColor(characterData.skinColor, 15)};"></div>
+        <div style="position: absolute; bottom: 70px; left: calc(50% + ${bodyWidth / 2}px); width: 12px; height: 40px; background: ${characterData.skinColor}; box-shadow: 2px 0 0 0 ${darkenColor(characterData.skinColor, 15)};"></div>
         
         <!-- Hands -->
-        <div style="position: absolute; bottom: 45px; left: calc(50% - ${bodyWidth / 2 + 14}px); width: 14px; height: 14px; background: ${characterData.skinColor}; border-radius: 4px;"></div>
-        <div style="position: absolute; bottom: 45px; left: calc(50% + ${bodyWidth / 2}px); width: 14px; height: 14px; background: ${characterData.skinColor}; border-radius: 4px;"></div>
+        <div style="position: absolute; bottom: 65px; left: calc(50% - ${bodyWidth / 2 + 14}px); width: 14px; height: 14px; background: ${characterData.skinColor}; border-radius: 4px;"></div>
+        <div style="position: absolute; bottom: 65px; left: calc(50% + ${bodyWidth / 2}px); width: 14px; height: 14px; background: ${characterData.skinColor}; border-radius: 4px;"></div>
         
         <!-- Head -->
-        <div style="position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%); width: 44px; height: 44px; background: ${characterData.skinColor}; border-radius: 8px; box-shadow: 4px 0 0 0 ${darkenColor(characterData.skinColor, 15)}, -4px 0 0 0 ${lightenColor(characterData.skinColor, 10)};"></div>
+        <div style="position: absolute; bottom: 105px; left: 50%; transform: translateX(-50%); width: 44px; height: 44px; background: ${characterData.skinColor}; border-radius: 8px; box-shadow: 4px 0 0 0 ${darkenColor(characterData.skinColor, 15)}, -4px 0 0 0 ${lightenColor(characterData.skinColor, 10)};"></div>
         
         <!-- Hair (behind head if long) -->
-        ${hairStyle === 'Long' || hairStyle === 'Afro' ? hairHTML : ''}
+        ${hairStyle === 'Long' ? hairHTML : ''}
         
         <!-- Eyes -->
-        <div style="position: absolute; bottom: 105px; left: calc(50% - 12px); width: 8px; height: 10px; background: ${characterData.eyeColor}; box-shadow: inset 2px 2px 0 0 ${lightenColor(characterData.eyeColor, 30)};"></div>
-        <div style="position: absolute; bottom: 105px; left: calc(50% + 4px); width: 8px; height: 10px; background: ${characterData.eyeColor}; box-shadow: inset 2px 2px 0 0 ${lightenColor(characterData.eyeColor, 30)};"></div>
+        <div style="position: absolute; bottom: 125px; left: calc(50% - 12px); width: 8px; height: 10px; background: ${characterData.eyeColor}; box-shadow: inset 2px 2px 0 0 ${lightenColor(characterData.eyeColor, 30)};"></div>
+        <div style="position: absolute; bottom: 125px; left: calc(50% + 4px); width: 8px; height: 10px; background: ${characterData.eyeColor}; box-shadow: inset 2px 2px 0 0 ${lightenColor(characterData.eyeColor, 30)};"></div>
         
         <!-- Eye highlights -->
-        <div style="position: absolute; bottom: 111px; left: calc(50% - 10px); width: 3px; height: 3px; background: white;"></div>
-        <div style="position: absolute; bottom: 111px; left: calc(50% + 6px); width: 3px; height: 3px; background: white;"></div>
+        <div style="position: absolute; bottom: 131px; left: calc(50% - 10px); width: 3px; height: 3px; background: white;"></div>
+        <div style="position: absolute; bottom: 131px; left: calc(50% + 6px); width: 3px; height: 3px; background: white;"></div>
         
         <!-- Eyebrows -->
-        <div style="position: absolute; bottom: 116px; left: calc(50% - 14px); width: 10px; height: 3px; background: ${darkenColor(characterData.hairColor, 10)};"></div>
-        <div style="position: absolute; bottom: 116px; left: calc(50% + 4px); width: 10px; height: 3px; background: ${darkenColor(characterData.hairColor, 10)};"></div>
+        <div style="position: absolute; bottom: 136px; left: calc(50% - 14px); width: 10px; height: 3px; background: ${darkenColor(characterData.hairColor, 10)};"></div>
+        <div style="position: absolute; bottom: 136px; left: calc(50% + 4px); width: 10px; height: 3px; background: ${darkenColor(characterData.hairColor, 10)};"></div>
         
         <!-- Mouth -->
-        <div style="position: absolute; bottom: 93px; left: 50%; transform: translateX(-50%); width: 12px; height: 4px; background: ${darkenColor(characterData.skinColor, 30)}; border-radius: 0 0 4px 4px;"></div>
-        
-        <!-- Facial Hair -->
-        ${facialHairHTML}
+        <div style="position: absolute; bottom: 113px; left: 50%; transform: translateX(-50%); width: 12px; height: 4px; background: ${darkenColor(characterData.skinColor, 30)}; border-radius: 0 0 4px 4px;"></div>
         
         <!-- Hair (in front if not long) -->
-        ${hairStyle !== 'Long' && hairStyle !== 'Afro' ? hairHTML : ''}
-        
-        <!-- Accessory -->
-        ${accessoryHTML}
-        
-        <!-- Hat -->
-        ${hatHTML}
+        ${hairStyle !== 'Long' ? hairHTML : ''}
     `;
 }
 
@@ -586,5 +264,381 @@ function initSnowfall() {
         setTimeout(() => createSnowflake(), i * 100);
     }
     setInterval(createSnowflake, 200);
+}
+
+// Initialize preview background with trees, flowers, rocks, and bushes
+function initPreviewBackground() {
+    const container = document.getElementById('previewBackground');
+    if (!container) return;
+    
+    createPreviewTrees(container);
+    createPreviewFlowers(container);
+    createPreviewBushes(container);
+    createPreviewRocks(container);
+}
+
+// Create trees in preview (fewer than home page)
+function createPreviewTrees(container) {
+    const treePositions = [15, 75]; // 2 trees instead of 4
+    
+    for (let i = 0; i < treePositions.length; i++) {
+        createPreviewTree(container, treePositions[i], i);
+    }
+}
+
+function createPreviewTree(container, leftPos, index) {
+    const tree = document.createElement('div');
+    tree.className = 'pixel-tree';
+    tree.style.left = `${leftPos}%`;
+    tree.style.position = 'absolute';
+    tree.style.bottom = '0';
+    
+    const containerHeight = container.offsetHeight || 350;
+    const treeHeight = containerHeight * 0.8;
+    const trunkWidth = 20 + Math.floor(Math.random() * 15);
+    
+    const baseDelay = 0.1 + index * 0.3;
+    
+    const trunkHTML = `
+        <div class="tree-trunk" style="
+            width: ${trunkWidth}px;
+            height: ${treeHeight * 0.5}px;
+            background: #6a4420;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow:
+                ${Math.floor(trunkWidth * 0.2)}px 0 0 0 #4a2a10,
+                -${Math.floor(trunkWidth * 0.2)}px 0 0 0 #8a5a30,
+                inset 4px 0 0 0 #8a5a30,
+                inset -4px 0 0 0 #4a2a10;
+        "></div>
+    `;
+    
+    const foliageRows = 5 + Math.floor(Math.random() * 3);
+    let foliageHTML = '';
+    
+    const baseWidth = trunkWidth * 3;
+    for (let row = 0; row < foliageRows; row++) {
+        const rowWidth = baseWidth - (row * (baseWidth / foliageRows) * 0.6);
+        const rowHeight = 20 + Math.floor(Math.random() * 10);
+        const greenShade = row % 3 === 0 ? '#208020' : row % 3 === 1 ? '#30a030' : '#48c048';
+        const offsetY = row * 18;
+        
+        foliageHTML += `
+            <div class="tree-foliage-row" style="
+                width: ${rowWidth}px;
+                height: ${rowHeight}px;
+                background: ${greenShade};
+                position: absolute;
+                bottom: ${treeHeight * 0.4 + offsetY}px;
+                left: 50%;
+                transform: translateX(-50%);
+                box-shadow: 
+                    ${Math.floor(rowWidth * 0.15)}px 0 0 0 #1a6a1a,
+                    -${Math.floor(rowWidth * 0.15)}px 0 0 0 #50d050,
+                    0 2px 0 0 #1a5a1a;
+            "></div>
+        `;
+        
+        if (row % 2 === 0) {
+            foliageHTML += `
+                <div class="tree-snow-row" style="
+                    width: ${rowWidth * 0.8}px;
+                    height: 10px;
+                    background: #f8f8f8;
+                    position: absolute;
+                    bottom: ${treeHeight * 0.4 + offsetY + rowHeight - 5}px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    box-shadow: 
+                        -${Math.floor(rowWidth * 0.2)}px 2px 0 0 #f8f8f8,
+                        ${Math.floor(rowWidth * 0.2)}px 2px 0 0 #f8f8f8,
+                        0 2px 0 0 #d0d8e0;
+                "></div>
+            `;
+        }
+    }
+    
+    tree.innerHTML = `${trunkHTML}${foliageHTML}`;
+    tree.style.animationDelay = `${baseDelay}s`;
+    tree.style.opacity = '0';
+    tree.style.animation = 'treeGrow 1.5s ease-out forwards';
+    
+    container.appendChild(tree);
+}
+
+// Create flowers in preview (fewer than home page)
+function createPreviewFlowers(container) {
+    const flowerCount = 4; // 4 instead of 8
+    const flowerColors = [
+        { petals: '#ff6b8a', center: '#ffeb3b' },
+        { petals: '#ba68c8', center: '#ffcc02' },
+        { petals: '#64b5f6', center: '#fff59d' },
+        { petals: '#ec407a', center: '#fff176' },
+    ];
+    
+    const sectionWidth = 80 / flowerCount;
+    
+    for (let i = 0; i < flowerCount; i++) {
+        const sectionStart = 10 + (i * sectionWidth);
+        const offset = Math.random() * (sectionWidth * 0.6);
+        const leftPos = sectionStart + offset;
+        
+        createPreviewFlower(container, i, leftPos, flowerColors[i % flowerColors.length]);
+    }
+}
+
+function createPreviewFlower(container, index, leftPos, colorScheme) {
+    const flower = document.createElement('div');
+    flower.className = 'flower';
+    flower.style.left = `${leftPos}%`;
+    flower.style.position = 'absolute';
+    flower.style.bottom = '0';
+    
+    const containerHeight = container.offsetHeight || 350;
+    const heightPercent = 30 + Math.random() * 15;
+    const totalHeight = (heightPercent / 100) * containerHeight;
+    
+    const flowerSize = 30 + Math.floor(Math.random() * 25);
+    const petalSize = Math.floor(flowerSize * 0.4);
+    
+    const stemWidth = 8 + Math.floor(Math.random() * 4);
+    const curveDirection = Math.random() > 0.5 ? 1 : -1;
+    const curveIntensity = 20 + Math.random() * 30;
+    
+    const stemHTML = createPreviewStem(totalHeight, stemWidth, curveDirection, curveIntensity);
+    const headOffsetX = curveDirection * curveIntensity;
+    
+    const containerSize = flowerSize + (petalSize * 2);
+    
+    flower.innerHTML = `
+        <div class="flower-head-wrapper" style="
+            width: ${containerSize}px; 
+            height: ${containerSize}px;
+            position: absolute;
+            bottom: ${totalHeight - containerSize / 2}px;
+            left: 50%;
+            transform: translateX(calc(-50% + ${headOffsetX}px));
+            z-index: 10;
+        ">
+            <div class="flower-head" style="
+                width: ${flowerSize}px; 
+                height: ${flowerSize}px;
+                position: relative;
+            ">
+                ${createPreviewPetals(petalSize, colorScheme.petals)}
+                <div class="flower-center" style="
+                    width: ${Math.floor(flowerSize * 0.28)}px;
+                    height: ${Math.floor(flowerSize * 0.28)}px;
+                    background: ${colorScheme.center};
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    z-index: 5;
+                    box-shadow: 
+                        inset 2px 2px 0 0 ${lightenColor(colorScheme.center, 30)},
+                        inset -2px -2px 0 0 ${darkenColor(colorScheme.center, 20)};
+                "></div>
+            </div>
+        </div>
+        <div class="flower-stem-container" style="
+            height: ${totalHeight}px; 
+            width: ${curveIntensity * 2 + stemWidth + 30}px;
+            position: relative;
+        ">
+            ${stemHTML}
+        </div>
+    `;
+    
+    flower.style.animationDelay = `${0.2 + index * 0.15}s`;
+    flower.style.opacity = '0';
+    flower.style.animation = 'flowerGrow 2s ease-out forwards';
+    
+    container.appendChild(flower);
+    
+    setTimeout(() => {
+        flower.classList.add('sway');
+    }, (0.2 + index * 0.15 + 2.2) * 1000);
+}
+
+function createPreviewStem(height, width, direction, intensity) {
+    const segments = Math.floor(height / 15);
+    let stemHTML = '';
+    const midX = intensity + width / 2 + 15;
+    
+    for (let i = 0; i < segments; i++) {
+        const progress = i / segments;
+        const nextProgress = (i + 1) / segments;
+        const curveOffset = Math.sin(progress * Math.PI * 0.8) * intensity * direction;
+        const nextCurveOffset = Math.sin(nextProgress * Math.PI * 0.8) * intensity * direction;
+        const segmentHeight = 15;
+        const yPos = i * segmentHeight;
+        const xPos = midX + curveOffset;
+        const angle = Math.atan2(nextCurveOffset - curveOffset, segmentHeight) * (180 / Math.PI);
+        
+        stemHTML += `
+            <div class="stem-segment" style="
+                position: absolute;
+                bottom: ${yPos}px;
+                left: ${xPos}px;
+                width: ${width}px;
+                height: ${segmentHeight + 4}px;
+                background: #40a040;
+                transform: translateX(-50%) rotate(${angle * 0.3}deg);
+                box-shadow:
+                    ${Math.floor(width * 0.25)}px 0 0 0 #308030,
+                    -${Math.floor(width * 0.25)}px 0 0 0 #50c850,
+                    0 2px 0 0 #308030;
+            "></div>
+        `;
+    }
+    return stemHTML;
+}
+
+function createPreviewPetals(size, color) {
+    const darkColor = darkenColor(color, 25);
+    const lightColor = lightenColor(color, 30);
+    const s = Math.floor(size * 1.4);
+    const spread = Math.floor(size * 0.35);
+    const smallSpread = Math.floor(size * 0.2);
+    const inner = Math.floor(s * 0.5);
+    
+    return `
+        <div style="
+            position: absolute;
+            width: ${Math.floor(size * 1.2)}px;
+            height: ${Math.floor(size * 1.2)}px;
+            background: ${color};
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow:
+                0 -${s}px 0 ${spread}px ${darkColor},
+                0 ${s}px 0 ${spread}px ${darkColor},
+                -${s}px 0 0 ${spread}px ${darkColor},
+                ${s}px 0 0 ${spread}px ${darkColor},
+                0 -${Math.floor(s * 0.85)}px 0 ${smallSpread}px ${color},
+                0 ${Math.floor(s * 0.85)}px 0 ${smallSpread}px ${color},
+                -${Math.floor(s * 0.85)}px 0 0 ${smallSpread}px ${lightColor},
+                ${Math.floor(s * 0.85)}px 0 0 ${smallSpread}px ${color},
+                0 -${inner}px 0 ${smallSpread}px ${lightColor},
+                0 ${inner}px 0 ${smallSpread}px ${color},
+                -${inner}px 0 0 ${smallSpread}px ${lightColor},
+                ${inner}px 0 0 ${smallSpread}px ${lightColor};
+        "></div>
+    `;
+}
+
+// Create bushes in preview (fewer than home page)
+function createPreviewBushes(container) {
+    const bushCount = 6; // 6 instead of 12
+    
+    for (let i = 0; i < bushCount; i++) {
+        const bush = document.createElement('div');
+        bush.className = 'pixel-bush';
+        bush.style.position = 'absolute';
+        bush.style.bottom = '0';
+        
+        const leftPos = 5 + (i / bushCount) * 88;
+        bush.style.left = `${leftPos}%`;
+        
+        const size = 25 + Math.floor(Math.random() * 30);
+        const height = size * (0.6 + Math.random() * 0.3);
+        
+        const greens = ['#2d8a2d', '#3da03d', '#4db84d', '#35a035'];
+        const mainColor = greens[Math.floor(Math.random() * greens.length)];
+        const darkColor = darkenColor(mainColor, 20);
+        const lightColor = lightenColor(mainColor, 15);
+        
+        const lumps = 2 + Math.floor(Math.random() * 2);
+        let bushHTML = '';
+        
+        for (let j = 0; j < lumps; j++) {
+            const lumpSize = size * (0.5 + Math.random() * 0.4);
+            const lumpX = (j - lumps / 2 + 0.5) * (size * 0.3);
+            const lumpY = Math.random() * 5;
+            const lumpColor = j % 2 === 0 ? mainColor : lightColor;
+            
+            bushHTML += `
+                <div style="
+                    position: absolute;
+                    bottom: ${lumpY}px;
+                    left: 50%;
+                    transform: translateX(calc(-50% + ${lumpX}px));
+                    width: ${lumpSize}px;
+                    height: ${lumpSize * 0.7}px;
+                    background: ${lumpColor};
+                    box-shadow:
+                        ${Math.floor(lumpSize * 0.15)}px 0 0 0 ${darkColor},
+                        -${Math.floor(lumpSize * 0.15)}px 0 0 0 ${lightColor},
+                        0 2px 0 0 ${darkColor};
+                "></div>
+            `;
+        }
+        
+        bush.innerHTML = bushHTML;
+        bush.style.width = `${size * 1.3}px`;
+        bush.style.height = `${height + 15}px`;
+        bush.style.animationDelay = `${0.3 + i * 0.1}s`;
+        bush.style.opacity = '0';
+        bush.style.animation = 'bushGrow 1s ease-out forwards';
+        
+        container.appendChild(bush);
+    }
+}
+
+// Create rocks in preview (fewer than home page)
+function createPreviewRocks(container) {
+    const rockCount = 4; // 4 instead of 8
+    
+    for (let i = 0; i < rockCount; i++) {
+        const rock = document.createElement('div');
+        rock.className = 'pixel-rock';
+        rock.style.position = 'absolute';
+        rock.style.bottom = '0';
+        
+        const leftPos = 8 + Math.random() * 82;
+        rock.style.left = `${leftPos}%`;
+        
+        const width = 15 + Math.floor(Math.random() * 20);
+        const height = width * (0.5 + Math.random() * 0.3);
+        
+        const grays = ['#808080', '#909090', '#707070', '#858585'];
+        const mainColor = grays[Math.floor(Math.random() * grays.length)];
+        
+        rock.innerHTML = `
+            <div style="
+                width: ${width}px;
+                height: ${height}px;
+                background: ${mainColor};
+                box-shadow:
+                    ${Math.floor(width * 0.2)}px 0 0 0 ${darkenColor(mainColor, 20)},
+                    -${Math.floor(width * 0.15)}px 0 0 0 ${lightenColor(mainColor, 15)},
+                    0 2px 0 0 ${darkenColor(mainColor, 30)},
+                    inset ${Math.floor(width * 0.2)}px ${Math.floor(height * 0.2)}px 0 0 ${lightenColor(mainColor, 20)};
+            "></div>
+            ${Math.random() > 0.5 ? `
+                <div style="
+                    position: absolute;
+                    top: -4px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: ${width * 0.6}px;
+                    height: 6px;
+                    background: #f8f8f8;
+                    box-shadow: 0 1px 0 0 #d0d8e0;
+                "></div>
+            ` : ''}
+        `;
+        
+        rock.style.animationDelay = `${0.5 + i * 0.15}s`;
+        rock.style.opacity = '0';
+        rock.style.animation = 'rockAppear 0.5s ease-out forwards';
+        
+        container.appendChild(rock);
+    }
 }
 
