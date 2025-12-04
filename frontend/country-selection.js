@@ -548,8 +548,8 @@ function drawHouse(house, x, y) {
         ctx.fillText('PRESS E', doorX, doorY - door.height/2 - 12);
     }
     
-    // Draw flagpole with country flag
-    drawFlagpole(x + w/2 - 10, y - h/2 - 25, country);
+    // Draw flagpole with country flag (centered on house)
+    drawFlagpole(x, y - h/2 - 25, country);
     
     // Country label (below the flag)
     ctx.fillStyle = '#F8F0D8';
@@ -557,41 +557,41 @@ function drawHouse(house, x, y) {
     ctx.textAlign = 'center';
     ctx.strokeStyle = '#402808';
     ctx.lineWidth = 3;
-    ctx.strokeText(country.name, x, y - h/2 - 70);
-    ctx.fillText(country.name, x, y - h/2 - 70);
+    ctx.strokeText(country.name, x, y - h/2 - 75);
+    ctx.fillText(country.name, x, y - h/2 - 75);
 }
 
 // ==================== FLAGPOLE ====================
 function drawFlagpole(x, y, country) {
-    const poleHeight = 50;
-    const flagWidth = 36;
-    const flagHeight = 24;
+    const poleHeight = 55;
+    const flagWidth = 40;
+    const flagHeight = 26;
     
     // Pole shadow
     ctx.fillStyle = 'rgba(0,0,0,0.2)';
     ctx.fillRect(x + 2, y - poleHeight + 2, 4, poleHeight);
     
-    // Wooden pole
+    // Wooden pole (centered)
     ctx.fillStyle = '#8B6914';
-    ctx.fillRect(x, y - poleHeight, 4, poleHeight);
+    ctx.fillRect(x - 2, y - poleHeight, 4, poleHeight);
     
     // Pole highlight
     ctx.fillStyle = '#A8841C';
-    ctx.fillRect(x, y - poleHeight, 2, poleHeight);
+    ctx.fillRect(x - 2, y - poleHeight, 2, poleHeight);
     
     // Pole top ornament (gold ball)
     ctx.fillStyle = '#C9A227';
     ctx.beginPath();
-    ctx.arc(x + 2, y - poleHeight - 4, 5, 0, Math.PI * 2);
+    ctx.arc(x, y - poleHeight - 5, 6, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#E8C84A';
     ctx.beginPath();
-    ctx.arc(x + 1, y - poleHeight - 5, 2, 0, Math.PI * 2);
+    ctx.arc(x - 1, y - poleHeight - 6, 2, 0, Math.PI * 2);
     ctx.fill();
     
-    // Flag position (waving to the left)
-    const flagX = x - flagWidth;
-    const flagY = y - poleHeight + 2;
+    // Flag position (waving to the right from centered pole)
+    const flagX = x + 2;
+    const flagY = y - poleHeight + 3;
     
     // Flag shadow
     ctx.fillStyle = 'rgba(0,0,0,0.15)';
