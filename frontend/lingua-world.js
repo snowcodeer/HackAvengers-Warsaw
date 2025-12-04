@@ -1058,9 +1058,11 @@ function setupControls() {
         if (e.code === 'Escape') {
             if (isConversationActive) {
                 endConversation();
-            }
-            if (elements.glossaryModal.classList.contains('active')) {
+            } else if (elements.glossaryModal.classList.contains('active')) {
                 elements.glossaryModal.classList.remove('active');
+            } else {
+                // Exit scene - go back to country selection
+                window.location.href = 'country-selection.html';
             }
         }
     });
