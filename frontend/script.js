@@ -836,15 +836,20 @@ function initButtonEffects() {
     const languageModal = document.getElementById('languageModal');
     const langBtns = document.querySelectorAll('.lang-btn');
 
-    beginBtn.addEventListener('click', () => {
-        beginBtn.style.transform = 'translateY(8px)';
-        createPixelBurst(beginBtn);
-        setTimeout(() => {
-            beginBtn.style.transform = '';
-            // Show language selection modal instead of direct navigation
-            languageModal.classList.add('active');
-        }, 300);
-    });
+    if (beginBtn && languageModal) {
+        beginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            beginBtn.style.transform = 'translateY(8px)';
+            createPixelBurst(beginBtn);
+            setTimeout(() => {
+                beginBtn.style.transform = '';
+                // Show language selection modal
+                languageModal.classList.add('active');
+            }, 300);
+        });
+    }
 
     langBtns.forEach(btn => {
         btn.addEventListener('click', () => {
