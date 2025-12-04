@@ -9,82 +9,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    <style>
-        .language-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .language-modal.active {
-            display: flex;
-            opacity: 1;
-        }
-
-        .modal-content {
-            background: #2a1810;
-            border: 8px solid #684010;
-            padding: 40px;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            max-width: 600px;
-            width: 90%;
-        }
-
-        .modal-content h2 {
-            color: #f8e038;
-            margin-bottom: 30px;
-            font-size: 1.5rem;
-            text-shadow: 4px 4px 0 #402808;
-            font-family: 'Press Start 2P', cursive;
-        }
-
-        .language-options {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
-
-        .lang-btn {
-            background: #8b6914;
-            border: 4px solid #684010;
-            padding: 20px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            transition: transform 0.1s, background 0.1s;
-        }
-
-        .lang-btn:hover {
-            transform: scale(1.05);
-            background: #a87a20;
-        }
-
-        .lang-btn:active {
-            transform: scale(0.95);
-        }
-
-        .flag {
-            font-size: 3rem;
-        }
-
-        .lang-name {
-            color: #f8f0d8;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 0.8rem;
-        }
-    </style>
 </head>
 
 <body>
@@ -111,7 +35,7 @@
             </div>
 
             <div class="button-container">
-                <button class="begin-btn" id="beginBtn">
+                <button class="begin-btn" id="beginBtn" onclick="window.location.href='character.html'">
                     <span class="btn-text">Jazda!</span>
                     <div class="snow-pile">
                         <div class="snow-chunk chunk-1"></div>
@@ -123,30 +47,6 @@
 
 
 
-            <!-- Language Selection Modal -->
-            <div class="language-modal" id="languageModal">
-                <div class="modal-content">
-                    <h2>Choose Your Path</h2>
-                    <div class="language-options">
-                        <button class="lang-btn" data-lang="polish" data-country="Poland">
-                            <span class="flag">🇵🇱</span>
-                            <span class="lang-name">Polish</span>
-                        </button>
-                        <button class="lang-btn" data-lang="chinese" data-country="China">
-                            <span class="flag">🇨🇳</span>
-                            <span class="lang-name">Chinese</span>
-                        </button>
-                        <button class="lang-btn" data-lang="french" data-country="France">
-                            <span class="flag">🇫🇷</span>
-                            <span class="lang-name">French</span>
-                        </button>
-                        <button class="lang-btn" data-lang="japanese" data-country="Japan">
-                            <span class="flag">🇯🇵</span>
-                            <span class="lang-name">Japanese</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
 
         </div>
 
@@ -155,7 +55,7 @@
         </footer>
     </div>
 
-    <script type="module" src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>

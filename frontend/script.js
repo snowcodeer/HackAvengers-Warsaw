@@ -833,32 +833,21 @@ function darkenColor(color, percent) {
 
 function initButtonEffects() {
     const beginBtn = document.getElementById('beginBtn');
-    const languageModal = document.getElementById('languageModal');
-    const langBtns = document.querySelectorAll('.lang-btn');
 
-    beginBtn.addEventListener('click', () => {
-        beginBtn.style.transform = 'translateY(8px)';
-        createPixelBurst(beginBtn);
-        setTimeout(() => {
-            beginBtn.style.transform = '';
-            // Navigate to country selection game
-            window.location.href = 'country-selection.html';
-        }, 300);
-    });
-
-    langBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const lang = btn.dataset.lang;
-            const country = btn.dataset.country;
-
-            // Store selection
-            localStorage.setItem('selectedLanguage', lang);
-            localStorage.setItem('selectedCountry', country);
-
-            // Navigate to character customisation
-            window.location.href = 'character.html';
+    if (beginBtn) {
+        beginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            beginBtn.style.transform = 'translateY(8px)';
+            createPixelBurst(beginBtn);
+            setTimeout(() => {
+                beginBtn.style.transform = '';
+                // Navigate to character creation first
+                window.location.href = 'character.html';
+            }, 300);
         });
-    });
+    }
 }
 
 function createPixelBurst(button) {

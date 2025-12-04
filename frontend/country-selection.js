@@ -218,10 +218,12 @@ function checkDoorInteraction() {
 }
 
 function selectCountry(country) {
-    // Directly enter the country (no confirmation needed)
+    // Save language and country (scene selection will happen on lingua.html)
     localStorage.setItem('selectedLanguage', country.lang);
     localStorage.setItem('selectedCountry', country.name);
-    window.location.href = 'character.html';
+    
+    // Go to scene selection
+    window.location.href = 'lingua.html';
 }
 
 // ==================== GAME LOOP ====================

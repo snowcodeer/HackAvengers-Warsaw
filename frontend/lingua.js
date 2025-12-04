@@ -253,7 +253,6 @@ let state = {
 
 // ==================== DOM ELEMENTS ====================
 const elements = {
-    languageGrid: document.getElementById('languageGrid'),
     scenarioGrid: document.getElementById('scenarioGrid'),
     characterPreview: document.getElementById('characterPreview'),
     startBtn: document.getElementById('startBtn'),
@@ -263,20 +262,6 @@ const elements = {
 };
 
 // ==================== EVENT HANDLERS ====================
-function initLanguageSelection() {
-    const cards = elements.languageGrid.querySelectorAll('.language-card');
-    cards.forEach(card => {
-        card.addEventListener('click', () => {
-            // Remove previous selection
-            cards.forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            
-            state.selectedLanguage = card.dataset.lang;
-            showScenarios(state.selectedLanguage);
-        });
-    });
-}
-
 function showScenarios(language) {
     const scenarios = SCENARIOS[language] || [];
     
@@ -441,7 +426,19 @@ async function startGame() {
 
 // ==================== INITIALIZATION ====================
 function init() {
-    initLanguageSelection();
+    // Load language from localStorage (set by country-selection.js)
+    const savedLanguage = localStorage.getItem('selectedLanguage');
+    
+    if (savedLanguage) {
+        state.selectedLanguage = savedLanguage;
+        // Show scenarios immediately for the selected language
+        showScenarios(savedLanguage);
+    } else {
+        // Fallback: redirect to country selection if no language selected
+        window.location.href = 'country-selection.html';
+        return;
+    }
+    
     elements.startBtn.addEventListener('click', startGame);
 }
 

@@ -321,6 +321,8 @@ body {
     display: flex;
     justify-content: center;
     margin-top: 20px;
+    position: relative;
+    z-index: 100;
 }
 
 .begin-btn {
@@ -329,6 +331,9 @@ body {
     padding: 24px 60px;
     background: var(--wood-main);
     border: none;
+    position: relative;
+    z-index: 9999;
+    pointer-events: auto !important;
     color: var(--cream);
     cursor: pointer;
     position: relative;
