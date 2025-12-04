@@ -577,10 +577,11 @@
 
         .loading-bar-container {
             margin-top: 20px;
-            width: 200px;
-            height: 16px;
+            width: 100%;
+            height: 20px;
             background: var(--wood-dark);
-            border: 3px solid var(--wood-shadow);
+            border: 4px solid var(--wood-shadow);
+            box-sizing: border-box;
         }
 
         .loading-bar {
@@ -588,6 +589,7 @@
             background: var(--cozy-yellow);
             width: 0%;
             animation: loading-fill 2s ease-in-out forwards;
+            box-shadow: inset 0 -4px 0 0 var(--cozy-orange);
         }
 
         @keyframes loading-fill {
