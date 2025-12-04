@@ -97,6 +97,35 @@ let player = {
     animFrame: 0
 };
 
+// Load saved character customization
+let characterData = {
+    skinColor: '#F8D8B8',
+    hairColor: '#684010',
+    hairStyle: 0,
+    eyeColor: '#402808',
+    outfitColor: '#4A90D9',
+    pantsColor: '#8B6914',
+    outfit: 0,
+    hat: 0,
+    accessory: 0
+};
+
+// Hair style names for reference
+const hairStyles = ['Spiky', 'Mohawk', 'Flat Top', 'Long', 'Short', 'Ponytail', 'Bald', 'Curly', 'Afro', 'Pigtails', 'Buzz Cut', 'Side Part', 'Wavy', 'Slick Back'];
+const hats = ['None', 'Cap', 'Beanie', 'Top Hat', 'Cowboy', 'Hard Hat', 'Crown', 'Headphones', 'Police Cap', 'Beret', 'Bandana', 'Wizard Hat', 'Viking Helmet'];
+const accessories = ['None', 'Glasses', 'Sunglasses', 'Round Glasses', 'Eye Patch', 'Monocle', 'Bandana', 'Scarf', 'Necklace', 'Bow Tie', 'Tie'];
+
+// Try to load saved character
+try {
+    const savedCharacter = localStorage.getItem('playerCharacter');
+    if (savedCharacter) {
+        const parsed = JSON.parse(savedCharacter);
+        characterData = { ...characterData, ...parsed };
+    }
+} catch (e) {
+    console.log('Using default character');
+}
+
 let keys = {};
 let worldObjects = [];
 
@@ -1522,40 +1551,87 @@ function drawFlower(x, y, color) {
 }
 
 function drawPlayer(x, y) {
+    const skinColor = characterData.skinColor || '#F8D8B8';
+    const hairColor = characterData.hairColor || '#684010';
+    const outfitColor = characterData.outfitColor || '#4A90D9';
+    const pantsColor = characterData.pantsColor || '#8B6914';
+    const eyeColor = characterData.eyeColor || '#402808';
+    const hairStyleName = hairStyles[characterData.hairStyle] || 'Spiky';
+    const hatName = hats[characterData.hat] || 'None';
+    const accessoryName = accessories[characterData.accessory] || 'None';
+    
+    // Darken helper
+    const darken = (color, amt) => {
+        const num = parseInt(color.replace('#', ''), 16);
+        const r = Math.max(0, (num >> 16) - amt);
+        const g = Math.max(0, ((num >> 8) & 0xFF) - amt);
+        const b = Math.max(0, (num & 0xFF) - amt);
+        return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
+    };
+    
     // Shadow
     ctx.fillStyle = 'rgba(0,0,0,0.2)';
     ctx.beginPath();
     ctx.ellipse(x, y + player.height/2, player.width/2, 6, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    // Body (blue shirt)
-    ctx.fillStyle = '#4A90D9';
+    // Body (custom outfit color)
+    ctx.fillStyle = outfitColor;
     ctx.fillRect(x - player.width/2 + 2, y - player.height/2 + 10, player.width - 4, player.height - 18);
     
     // Shirt detail
-    ctx.fillStyle = '#3A7BC8';
+    ctx.fillStyle = darken(outfitColor, 30);
     ctx.fillRect(x - 2, y - player.height/2 + 10, 4, player.height - 18);
     
-    // Legs (brown pants)
-    ctx.fillStyle = '#8B6914';
+    // Legs (custom pants color)
+    ctx.fillStyle = pantsColor;
     ctx.fillRect(x - player.width/2 + 4, y + player.height/2 - 12, 7, 10);
     ctx.fillRect(x + player.width/2 - 11, y + player.height/2 - 12, 7, 10);
     
-    // Head
-    ctx.fillStyle = '#F8D8B8';
+    // Head (custom skin color)
+    ctx.fillStyle = skinColor;
     ctx.beginPath();
     ctx.arc(x, y - player.height/2 + 6, 8, 0, Math.PI * 2);
     ctx.fill();
     
-    // Hair
-    ctx.fillStyle = '#684010';
-    ctx.beginPath();
-    ctx.arc(x, y - player.height/2 + 3, 8, Math.PI, Math.PI * 2);
-    ctx.fill();
-    ctx.fillRect(x - 8, y - player.height/2 + 3, 16, 4);
+    // Hair (custom color and style)
+    ctx.fillStyle = hairColor;
+    if (hairStyleName !== 'Bald') {
+        if (hairStyleName === 'Mohawk') {
+            ctx.fillRect(x - 2, y - player.height/2 - 4, 4, 10);
+        } else if (hairStyleName === 'Afro' || hairStyleName === 'Curly') {
+            ctx.beginPath();
+            ctx.arc(x, y - player.height/2 + 2, 10, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (hairStyleName === 'Long' || hairStyleName === 'Ponytail') {
+            ctx.beginPath();
+            ctx.arc(x, y - player.height/2 + 3, 8, Math.PI, Math.PI * 2);
+            ctx.fill();
+            ctx.fillRect(x - 8, y - player.height/2 + 3, 16, 12);
+        } else if (hairStyleName === 'Flat Top') {
+            ctx.fillRect(x - 8, y - player.height/2 - 2, 16, 6);
+        } else if (hairStyleName === 'Pigtails') {
+            ctx.beginPath();
+            ctx.arc(x, y - player.height/2 + 3, 8, Math.PI, Math.PI * 2);
+            ctx.fill();
+            ctx.fillRect(x - 12, y - player.height/2 + 4, 6, 8);
+            ctx.fillRect(x + 6, y - player.height/2 + 4, 6, 8);
+        } else {
+            // Default spiky/short styles
+            ctx.beginPath();
+            ctx.arc(x, y - player.height/2 + 3, 8, Math.PI, Math.PI * 2);
+            ctx.fill();
+            ctx.fillRect(x - 8, y - player.height/2 + 3, 16, 4);
+            if (hairStyleName === 'Spiky') {
+                ctx.fillRect(x - 6, y - player.height/2 - 2, 3, 5);
+                ctx.fillRect(x - 1, y - player.height/2 - 4, 3, 7);
+                ctx.fillRect(x + 4, y - player.height/2 - 2, 3, 5);
+            }
+        }
+    }
     
-    // Eyes based on direction
-    ctx.fillStyle = '#402808';
+    // Eyes based on direction (custom eye color)
+    ctx.fillStyle = eyeColor;
     if (player.facing === 'down') {
         ctx.fillRect(x - 4, y - player.height/2 + 5, 2, 2);
         ctx.fillRect(x + 2, y - player.height/2 + 5, 2, 2);
@@ -1567,8 +1643,65 @@ function drawPlayer(x, y) {
         ctx.fillRect(x + 3, y - player.height/2 + 5, 2, 2);
     }
     
-    // Arms (animate when walking)
-    ctx.fillStyle = '#F8D8B8';
+    // Hat (if any)
+    if (hatName !== 'None') {
+        ctx.fillStyle = '#2c3e50';
+        if (hatName === 'Cap') {
+            ctx.fillRect(x - 8, y - player.height/2 - 2, 16, 6);
+            ctx.fillRect(x - 10, y - player.height/2 + 2, 10, 3);
+        } else if (hatName === 'Beanie') {
+            ctx.fillStyle = '#8e44ad';
+            ctx.beginPath();
+            ctx.arc(x, y - player.height/2, 9, Math.PI, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x, y - player.height/2 - 6, 3, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (hatName === 'Crown') {
+            ctx.fillStyle = '#f1c40f';
+            ctx.fillRect(x - 8, y - player.height/2 - 2, 16, 4);
+            ctx.fillRect(x - 6, y - player.height/2 - 6, 3, 4);
+            ctx.fillRect(x - 1, y - player.height/2 - 8, 3, 6);
+            ctx.fillRect(x + 4, y - player.height/2 - 6, 3, 4);
+        } else if (hatName === 'Cowboy') {
+            ctx.fillStyle = '#8b6914';
+            ctx.fillRect(x - 12, y - player.height/2 + 1, 24, 3);
+            ctx.beginPath();
+            ctx.arc(x, y - player.height/2 - 2, 7, Math.PI, Math.PI * 2);
+            ctx.fill();
+        } else if (hatName === 'Top Hat') {
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(x - 10, y - player.height/2, 20, 3);
+            ctx.fillRect(x - 6, y - player.height/2 - 12, 12, 12);
+        } else if (hatName === 'Wizard Hat') {
+            ctx.fillStyle = '#4a148c';
+            ctx.beginPath();
+            ctx.moveTo(x, y - player.height/2 - 16);
+            ctx.lineTo(x - 10, y - player.height/2 + 2);
+            ctx.lineTo(x + 10, y - player.height/2 + 2);
+            ctx.closePath();
+            ctx.fill();
+        }
+    }
+    
+    // Accessory (glasses, etc)
+    if (accessoryName === 'Glasses' || accessoryName === 'Round Glasses') {
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x - 6, y - player.height/2 + 4, 4, 3);
+        ctx.strokeRect(x + 2, y - player.height/2 + 4, 4, 3);
+        ctx.beginPath();
+        ctx.moveTo(x - 2, y - player.height/2 + 5);
+        ctx.lineTo(x + 2, y - player.height/2 + 5);
+        ctx.stroke();
+    } else if (accessoryName === 'Sunglasses') {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(x - 6, y - player.height/2 + 4, 5, 3);
+        ctx.fillRect(x + 1, y - player.height/2 + 4, 5, 3);
+    }
+    
+    // Arms (animate when walking, custom skin color)
+    ctx.fillStyle = skinColor;
     const armOffset = Math.floor(player.animFrame) % 2 === 0 ? 0 : 2;
     ctx.fillRect(x - player.width/2 - 2, y - player.height/2 + 12 + armOffset, 4, 10);
     ctx.fillRect(x + player.width/2 - 2, y - player.height/2 + 12 - armOffset, 4, 10);
