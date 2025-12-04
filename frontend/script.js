@@ -72,23 +72,7 @@ function createBushes() {
             `;
         }
 
-        if (Math.random() > 0.4) {
-            bushHTML += `
-                <div style="
-                    position: absolute;
-                    top: -8px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    width: ${size * 0.7}px;
-                    height: 12px;
-                    background: #f8f8f8;
-                    box-shadow:
-                        -${size * 0.2}px 4px 0 0 #f8f8f8,
-                        ${size * 0.2}px 4px 0 0 #f8f8f8,
-                        0 4px 0 0 #d0d8e0;
-                "></div>
-            `;
-        }
+
 
         bush.innerHTML = bushHTML;
         bush.style.width = `${size * 1.5}px`;
@@ -96,6 +80,16 @@ function createBushes() {
         bush.style.animationDelay = `${0.3 + i * 0.08}s`;
 
         container.appendChild(bush);
+    }
+}
+
+// Initialize pixel snowfall
+function initPixelSnowfall() {
+    const container = document.getElementById('snowContainer');
+    const snowflakeCount = 50;
+
+    for (let i = 0; i < snowflakeCount; i++) {
+        createSnowflake(container);
     }
 }
 
@@ -835,35 +829,7 @@ function darkenColor(color, percent) {
     return `#${(1 << 24 | R << 16 | G << 8 | B).toString(16).slice(1)}`;
 }
 
-function initPixelSnowfall() {
-    const snowContainer = document.getElementById('snowContainer');
 
-    function createSnowflake() {
-        const snowflake = document.createElement('div');
-        snowflake.className = 'snowflake';
-        snowflake.style.left = Math.random() * 100 + 'vw';
-
-        const sizes = [4, 6, 8, 10];
-        const size = sizes[Math.floor(Math.random() * sizes.length)];
-        snowflake.style.width = size + 'px';
-        snowflake.style.height = size + 'px';
-
-        const duration = 8 + Math.random() * 6;
-        snowflake.style.animationDuration = duration + 's';
-        snowflake.style.animationDelay = Math.random() * 2 + 's';
-
-        const drift = Math.round((Math.random() - 0.5) * 80 / 4) * 4;
-        snowflake.style.setProperty('--drift', drift + 'px');
-
-        snowContainer.appendChild(snowflake);
-        setTimeout(() => snowflake.remove(), (duration + 2) * 1000);
-    }
-
-    for (let i = 0; i < 50; i++) {
-        setTimeout(() => createSnowflake(), i * 80);
-    }
-    setInterval(createSnowflake, 150);
-}
 
 function initButtonEffects() {
     const beginBtn = document.getElementById('beginBtn');
