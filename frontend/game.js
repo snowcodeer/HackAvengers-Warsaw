@@ -1,6 +1,7 @@
 // 3D Game World using Three.js
 import { initHandTracker, getControlData, getHandshakeStatus, updateHandshakeUI } from './camera/handinput.js';
 import { startMirageStream, stopMirageStream } from './mirage.js';
+import { audioManager } from './core/AudioManager.js';
 
 let scene, camera, renderer;
 let player, playerVelocity;
@@ -512,10 +513,15 @@ function playSound(sound) {
 }
 
 // Start ambient sounds (call after user interaction)
-function startAmbientSounds() {
+async function startAmbientSounds() {
     if (ambientWind && ambientWind.paused) {
         ambientWind.play().catch(() => { });
     }
+    
+    // 🎵 Start Polish background music using AudioManager
+    await audioManager.initialize();
+    await audioManager.playMusic('polish');
+    console.log('🎵 Polish background music started');
 }
 
 // Play cat meow (call when finding the cat)

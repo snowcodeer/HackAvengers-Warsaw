@@ -1,5 +1,7 @@
 // LinguaVerse - Immersive Language Learning
-// Main orchestration module
+// Main orchestration module - Now using extensive LANGUAGE_CONFIG
+
+import { LANGUAGE_CONFIG, getAvailableLanguages, getLanguageConfig } from './config/languages.js';
 
 // ==================== CONFIGURATION ====================
 const CONFIG = {
@@ -278,7 +280,43 @@ function initLanguageSelection() {
 }
 
 function showScenarios(language) {
-    const scenarios = SCENARIOS[language] || [];
+    // Use extensive LANGUAGE_CONFIG for main scenario, fallback to SCENARIOS for extras
+    const langConfig = getLanguageConfig(language);
+    const extraScenarios = SCENARIOS[language] || [];
+    
+    // Build scenarios list - primary from config, extras from SCENARIOS
+    let scenarios = [];
+    
+    if (langConfig) {
+        // Add the main scenario from extensive config
+        const mainScenario = {
+            id: language,
+            name: langConfig.scene.name,
+            emoji: langConfig.character.emoji,
+            country: langConfig.scene.location?.split(',').pop()?.trim() || langConfig.name,
+            flag: langConfig.flag,
+            description: langConfig.scene.description?.substring(0, 200) + '...',
+            vocab: langConfig.startingPhrases?.slice(0, 4).map(p => p.phrase) || [],
+            character: langConfig.character,
+            scene: langConfig.scene,
+            falseFriends: langConfig.falseFriends,
+            lessonPlan: langConfig.lessonPlan,
+            difficultyScaling: langConfig.difficultyScaling,
+            world: {
+                type: langConfig.scene.name.toLowerCase().replace(/\s/g, '_'),
+                ambiance: langConfig.scene.timeOfDay,
+                style: langConfig.scene.weather
+            }
+        };
+        scenarios.push(mainScenario);
+    }
+    
+    // Add any extra scenarios from the old SCENARIOS object (for variety)
+    extraScenarios.forEach(s => {
+        if (!scenarios.find(sc => sc.id === s.id)) {
+            scenarios.push(s);
+        }
+    });
     
     elements.scenarioGrid.innerHTML = scenarios.map(s => `
         <div class="scenario-card" data-scenario="${s.id}">
@@ -317,13 +355,31 @@ function showScenarios(language) {
 
 function showCharacter(scenario) {
     const char = scenario.character;
+    const personality = char.personality || {};
+    const appearance = char.appearance || {};
+    
+    // Build a richer bio from extensive config
+    const traits = personality.traits?.join(', ') || '';
+    const backstory = personality.backstory || char.bio || '';
+    const quirks = personality.quirks?.slice(0, 2).join(', ') || '';
+    
+    // Build appearance description
+    const outfit = appearance.outfit || {};
+    const appearanceDesc = [
+        appearance.hair?.style,
+        outfit.top,
+        appearance.signature
+    ].filter(Boolean).join(' • ');
     
     elements.characterPreview.innerHTML = `
         <div class="character-avatar">${char.emoji}</div>
         <div class="character-info">
             <h3 class="character-name">${char.name}</h3>
-            <p class="character-role">${char.role}</p>
-            <p class="character-bio">${char.bio}</p>
+            <p class="character-role">${char.role}${char.age ? `, ${char.age}` : ''}</p>
+            <p class="character-bio">${backstory}</p>
+            ${traits ? `<p style="color: var(--accent-teal); font-size: 0.9rem; margin-top: 10px;">✨ ${traits}</p>` : ''}
+            ${quirks ? `<p style="color: var(--accent-violet); font-size: 0.85rem; margin-top: 5px;">💫 ${quirks}</p>` : ''}
+            ${appearanceDesc ? `<p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 8px;">👗 ${appearanceDesc}</p>` : ''}
         </div>
     `;
     

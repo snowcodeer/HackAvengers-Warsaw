@@ -1,17 +1,14 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // VoiceManager - ElevenLabs TTS/STT Integration
-// Handles all voice synthesis and recognition
+// Unified voice handling using the standardized API client
 // ═══════════════════════════════════════════════════════════════════════════════
+
+import { apiClient } from './APIClient.js';
 
 export class VoiceManager {
   constructor() {
-    // ElevenLabs configuration
-    this.elevenLabsConfig = {
-      model: 'eleven_multilingual_v2',
-      defaultVoice: 'EXAVITQu4vr4xnSDxMaL', // Sarah
-      stability: 0.6,
-      similarityBoost: 0.8,
-    };
+    // API client reference
+    this.api = apiClient;
     
     // Audio state
     this.audioContext = null;
@@ -27,12 +24,19 @@ export class VoiceManager {
     
     // Voice cache for performance
     this.voiceCache = new Map();
+    this.maxCacheSize = 50;
+    
+    // Current language/character config
+    this.currentLanguage = 'french';
+    this.currentCharacter = 'amelie';
     
     // Event callbacks
     this.onRecordingStart = null;
     this.onRecordingStop = null;
     this.onPlaybackStart = null;
     this.onPlaybackEnd = null;
+    this.onTranscription = null;
+    this.onError = null;
   }
 
   // ═══════════════════════════════════════════════════════════════════════════════
@@ -46,77 +50,151 @@ export class VoiceManager {
       return true;
     } catch (e) {
       console.error('Failed to initialize audio context:', e);
+      this._emitError('Audio context initialization failed', e);
       return false;
     }
   }
 
+  setLanguage(language, characterId = null) {
+    this.currentLanguage = language;
+    if (characterId) {
+      this.currentCharacter = characterId;
+    }
+  }
+
   // ═══════════════════════════════════════════════════════════════════════════════
-  // TEXT-TO-SPEECH (ElevenLabs)
+  // TEXT-TO-SPEECH
   // ═══════════════════════════════════════════════════════════════════════════════
   
-  async speak(text, languageCode, voiceConfig = null) {
+  /**
+   * Speak text with the current character's voice
+   * @param {string} text - Text to speak
+   * @param {object} options - Voice options
+   */
+  async speak(text, options = {}) {
     if (this.isMuted || !text) return;
     
     // Stop any currently playing audio
     this.stop();
     
-    try {
-      // Get audio from backend (which calls ElevenLabs)
-      const audioUrl = await this.generateSpeech(text, languageCode, voiceConfig);
-      
-      if (audioUrl) {
-        await this.playAudio(audioUrl);
-      }
-    } catch (e) {
-      console.error('TTS error:', e);
-    }
-  }
-
-  async generateSpeech(text, languageCode, voiceConfig) {
-    // Check cache first
-    const cacheKey = `${text}_${languageCode}`;
-    if (this.voiceCache.has(cacheKey)) {
-      return this.voiceCache.get(cacheKey);
-    }
+    const {
+      language = this.currentLanguage,
+      characterId = this.currentCharacter,
+      expression = null,
+      useCache = true
+    } = options;
     
     try {
-      const response = await fetch('http://localhost:8000/api/speak', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text,
-          language: languageCode,
-          voice_id: voiceConfig?.voiceId || this.elevenLabsConfig.defaultVoice,
-          model: voiceConfig?.model || this.elevenLabsConfig.model,
-          stability: voiceConfig?.stability || this.elevenLabsConfig.stability,
-          similarity_boost: voiceConfig?.similarityBoost || this.elevenLabsConfig.similarityBoost,
-        }),
-      });
+      // Check cache first
+      const cacheKey = `${text}_${language}_${characterId}_${expression}`;
+      let audioBlob;
       
-      if (response.ok) {
-        const blob = await response.blob();
-        const audioUrl = URL.createObjectURL(blob);
+      if (useCache && this.voiceCache.has(cacheKey)) {
+        audioBlob = this.voiceCache.get(cacheKey);
+      } else {
+        // Generate audio via API
+        audioBlob = await this.api.speak(text, {
+          characterId,
+          expression,
+          language
+        });
         
         // Cache the result
-        this.voiceCache.set(cacheKey, audioUrl);
-        
-        // Limit cache size
-        if (this.voiceCache.size > 50) {
-          const firstKey = this.voiceCache.keys().next().value;
-          URL.revokeObjectURL(this.voiceCache.get(firstKey));
-          this.voiceCache.delete(firstKey);
+        if (useCache && audioBlob) {
+          this._cacheAudio(cacheKey, audioBlob);
         }
-        
-        return audioUrl;
       }
+      
+      if (audioBlob) {
+        await this.playBlob(audioBlob);
+      }
+      
     } catch (e) {
-      console.error('Speech generation failed:', e);
+      console.error('TTS error:', e);
+      this._emitError('Speech generation failed', e);
     }
-    
-    return null;
   }
 
-  async playAudio(audioUrl) {
+  /**
+   * Stream text to speech for real-time playback
+   * @param {string} text - Text to speak
+   * @param {object} options - Voice options
+   */
+  async speakStream(text, options = {}) {
+    if (this.isMuted || !text) return;
+    
+    this.stop();
+    
+    const {
+      characterId = this.currentCharacter,
+      expression = null
+    } = options;
+    
+    try {
+      const response = await this.api.speakStream(text, { characterId, expression });
+      
+      if (!response.body) {
+        throw new Error('Streaming not supported');
+      }
+      
+      // Play the stream
+      const reader = response.body.getReader();
+      const chunks = [];
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+      
+      const audioBlob = new Blob(chunks, { type: 'audio/mpeg' });
+      await this.playBlob(audioBlob);
+      
+    } catch (e) {
+      console.error('TTS stream error:', e);
+      // Fallback to regular TTS
+      await this.speak(text, options);
+    }
+  }
+
+  /**
+   * Play audio from a blob
+   * @param {Blob} audioBlob - Audio blob to play
+   */
+  async playBlob(audioBlob) {
+    return new Promise((resolve, reject) => {
+      const audioUrl = URL.createObjectURL(audioBlob);
+      this.currentAudio = new Audio(audioUrl);
+      this.isPlaying = true;
+      
+      if (this.onPlaybackStart) {
+        this.onPlaybackStart();
+      }
+      
+      this.currentAudio.onended = () => {
+        this.isPlaying = false;
+        URL.revokeObjectURL(audioUrl);
+        if (this.onPlaybackEnd) {
+          this.onPlaybackEnd();
+        }
+        resolve();
+      };
+      
+      this.currentAudio.onerror = (e) => {
+        this.isPlaying = false;
+        URL.revokeObjectURL(audioUrl);
+        reject(e);
+      };
+      
+      this.currentAudio.play().catch(reject);
+    });
+  }
+
+  /**
+   * Play audio from URL
+   * @param {string} audioUrl - URL of audio to play
+   */
+  async playUrl(audioUrl) {
     return new Promise((resolve, reject) => {
       this.currentAudio = new Audio(audioUrl);
       this.isPlaying = true;
@@ -154,8 +232,11 @@ export class VoiceManager {
   // SPEECH-TO-TEXT (Recording)
   // ═══════════════════════════════════════════════════════════════════════════════
   
+  /**
+   * Start recording user's voice
+   */
   async startRecording() {
-    if (this.isRecording) return;
+    if (this.isRecording) return false;
     
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -186,12 +267,18 @@ export class VoiceManager {
       }
       
       return true;
+      
     } catch (e) {
       console.error('Failed to start recording:', e);
+      this._emitError('Microphone access denied', e);
       return false;
     }
   }
 
+  /**
+   * Stop recording and return audio blob
+   * @returns {Promise<Blob|null>}
+   */
   async stopRecording() {
     if (!this.isRecording || !this.mediaRecorder) {
       return null;
@@ -201,7 +288,7 @@ export class VoiceManager {
       this.mediaRecorder.onstop = () => {
         const duration = Date.now() - this.recordingStartTime;
         
-        // Ignore very short recordings
+        // Ignore very short recordings (< 500ms)
         if (duration < 500 || this.audioChunks.length === 0) {
           resolve(null);
           return;
@@ -227,6 +314,9 @@ export class VoiceManager {
     });
   }
 
+  /**
+   * Cancel recording without returning audio
+   */
   cancelRecording() {
     if (this.mediaRecorder && this.isRecording) {
       this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
@@ -236,30 +326,143 @@ export class VoiceManager {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════════
-  // TRANSCRIPTION (ElevenLabs STT)
+  // TRANSCRIPTION
   // ═══════════════════════════════════════════════════════════════════════════════
   
-  async transcribe(audioBlob) {
+  /**
+   * Transcribe audio blob to text
+   * @param {Blob} audioBlob - Audio to transcribe
+   * @param {string} languageHint - Expected language
+   * @returns {Promise<string|null>}
+   */
+  async transcribe(audioBlob, languageHint = null) {
     if (!audioBlob) return null;
     
     try {
-      const formData = new FormData();
-      formData.append('audio', audioBlob, 'recording.webm');
+      const result = await this.api.transcribe(audioBlob, languageHint || this.currentLanguage);
       
-      const response = await fetch('http://localhost:8000/api/transcribe', {
-        method: 'POST',
-        body: formData,
-      });
+      const text = result.text || result.transcription;
       
-      if (response.ok) {
-        const data = await response.json();
-        return data.text || data.transcription;
+      if (this.onTranscription && text) {
+        this.onTranscription(text);
       }
+      
+      return text;
+      
     } catch (e) {
       console.error('Transcription failed:', e);
+      this._emitError('Transcription failed', e);
+      return null;
+    }
+  }
+
+  /**
+   * Record and transcribe in one step
+   * @param {number} maxDuration - Maximum recording duration in ms
+   * @returns {Promise<string|null>}
+   */
+  async recordAndTranscribe(maxDuration = 10000) {
+    const started = await this.startRecording();
+    if (!started) return null;
+    
+    return new Promise((resolve) => {
+      // Auto-stop after max duration
+      const timeout = setTimeout(async () => {
+        const blob = await this.stopRecording();
+        if (blob) {
+          const text = await this.transcribe(blob);
+          resolve(text);
+        } else {
+          resolve(null);
+        }
+      }, maxDuration);
+      
+      // Allow manual stop
+      this._recordingTimeout = timeout;
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // PRONUNCIATION ASSESSMENT
+  // ═══════════════════════════════════════════════════════════════════════════════
+  
+  /**
+   * Assess user's pronunciation
+   * @param {Blob} audioBlob - User's recorded audio
+   * @param {string} targetText - What they should have said
+   * @param {string} language - Language code
+   */
+  async assessPronunciation(audioBlob, targetText, language = null) {
+    if (!audioBlob || !targetText) return null;
+    
+    try {
+      return await this.api.assessPronunciation(
+        audioBlob,
+        targetText,
+        language || this.currentLanguage
+      );
+    } catch (e) {
+      console.error('Pronunciation assessment failed:', e);
+      return null;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // FULL CONVERSATION FLOW
+  // ═══════════════════════════════════════════════════════════════════════════════
+  
+  /**
+   * Full voice conversation turn:
+   * 1. Record user
+   * 2. Transcribe
+   * 3. Get AI response
+   * 4. Play response
+   * 
+   * @param {object} options - Conversation options
+   * @returns {Promise<{transcription: string, response: string}>}
+   */
+  async voiceConversationTurn(options = {}) {
+    const {
+      language = this.currentLanguage,
+      characterId = this.currentCharacter,
+      difficultyLevel = 1,
+      maxRecordingTime = 10000
+    } = options;
+    
+    // Record user
+    const started = await this.startRecording();
+    if (!started) {
+      throw new Error('Could not start recording');
     }
     
-    return null;
+    // Wait for user to finish (they should call stopRecording externally)
+    // Or auto-stop after maxRecordingTime
+    await new Promise(resolve => setTimeout(resolve, maxRecordingTime));
+    
+    const audioBlob = await this.stopRecording();
+    if (!audioBlob) {
+      throw new Error('No audio recorded');
+    }
+    
+    // Get full response with audio
+    const result = await this.api.voiceConversationFull(audioBlob, {
+      language,
+      characterId,
+      difficultyLevel
+    });
+    
+    // Play response audio if available
+    if (result.audio_url) {
+      await this.playUrl(`http://localhost:8000${result.audio_url}`);
+    }
+    
+    return {
+      transcription: result.transcription,
+      response: result.response,
+      translation: result.translation,
+      correction: result.correction,
+      newVocabulary: result.new_vocabulary
+    };
   }
 
   // ═══════════════════════════════════════════════════════════════════════════════
@@ -283,7 +486,28 @@ export class VoiceManager {
       isPlaying: this.isPlaying,
       isRecording: this.isRecording,
       isMuted: this.isMuted,
+      currentLanguage: this.currentLanguage,
+      currentCharacter: this.currentCharacter
     };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // INTERNAL HELPERS
+  // ═══════════════════════════════════════════════════════════════════════════════
+  
+  _cacheAudio(key, blob) {
+    // Limit cache size
+    if (this.voiceCache.size >= this.maxCacheSize) {
+      const firstKey = this.voiceCache.keys().next().value;
+      this.voiceCache.delete(firstKey);
+    }
+    this.voiceCache.set(key, blob);
+  }
+
+  _emitError(message, error) {
+    if (this.onError) {
+      this.onError({ message, error });
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════════════════════
@@ -294,8 +518,12 @@ export class VoiceManager {
     this.stop();
     this.cancelRecording();
     
-    // Clean up cached audio URLs
-    this.voiceCache.forEach(url => URL.revokeObjectURL(url));
+    // Clear timeout if any
+    if (this._recordingTimeout) {
+      clearTimeout(this._recordingTimeout);
+    }
+    
+    // Clear cache
     this.voiceCache.clear();
     
     if (this.audioContext) {
@@ -305,4 +533,3 @@ export class VoiceManager {
 }
 
 export default VoiceManager;
-

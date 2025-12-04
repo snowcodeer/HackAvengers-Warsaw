@@ -7,6 +7,8 @@ export { GlossaryManager } from './GlossaryManager.js';
 export { ProgressionSystem } from './ProgressionSystem.js';
 export { ConversationEngine } from './ConversationEngine.js';
 export { VoiceManager } from './VoiceManager.js';
+export { APIClient, apiClient } from './APIClient.js';
+export { AudioManager, audioManager } from './AudioManager.js';
 
 // Language configurations
 export { LANGUAGE_CONFIG, getLanguageConfig, getAllLanguages } from '../config/languages.js';
