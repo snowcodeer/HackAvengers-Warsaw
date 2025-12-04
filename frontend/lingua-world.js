@@ -63,6 +63,196 @@ let currentSpeechText = '';
 let speechHighlightIndex = 0;
 let speechHighlightInterval = null;
 
+// ==================== OBJECTIVES SYSTEM ====================
+// Progressive objectives per level - each level has objectives that get progressively harder
+// Level 1: Simple greetings, Level 5: Complex questions and conversation
+const SCENE_OBJECTIVES = {
+    french: {
+        1: [ // Level 1 - First Contact (simple greetings)
+            { target: "Bonjour!", english: "Hello!", hint: '"Bonjour!" or "Salut!"', keywords: ['bonjour', 'salut', 'hello', 'hi', 'bon'] },
+            { target: "Ça va?", english: "How are you?", hint: '"Ça va?" or "Comment ça va?"', keywords: ['ça va', 'ca va', 'comment', 'how', 'are you'] }
+        ],
+        2: [ // Level 2 - Getting Comfortable (ordering basics)
+            { target: "Un croissant, s'il vous plaît.", english: "A croissant, please.", hint: '"Un croissant, s\'il vous plaît"', keywords: ['croissant', 'pain', 'please', 'plaît', 'plait', 'sil', 'vous'] },
+            { target: "C'est combien?", english: "How much is it?", hint: '"C\'est combien?" or "Quel est le prix?"', keywords: ['combien', 'prix', 'price', 'cost', 'how much', 'euro'] }
+        ],
+        3: [ // Level 3 - Conversational (preferences)
+            { target: "Je voudrais deux croissants.", english: "I would like two croissants.", hint: '"Je voudrais..." + item', keywords: ['voudrais', 'would', 'like', 'want', 'deux', 'three', 'un', 'une'] },
+            { target: "Qu'est-ce que vous recommandez?", english: "What do you recommend?", hint: '"Qu\'est-ce que vous recommandez?"', keywords: ['recommand', 'suggest', 'what', 'best', 'prefer'] }
+        ],
+        4: [ // Level 4 - Advanced (complex ordering)
+            { target: "Je suis allergique aux noix.", english: "I am allergic to nuts.", hint: '"Je suis allergique à..."', keywords: ['allergique', 'allergy', 'noix', 'nuts', 'gluten', 'lactose'] },
+            { target: "Est-ce que c'est fait maison?", english: "Is it homemade?", hint: '"Est-ce que c\'est fait maison?"', keywords: ['maison', 'home', 'made', 'fresh', 'today', 'fait'] }
+        ],
+        5: [ // Level 5 - Fluent (natural conversation)
+            { target: "Depuis quand faites-vous ce métier?", english: "How long have you been doing this job?", hint: 'Ask about their career/story', keywords: ['depuis', 'how long', 'years', 'work', 'job', 'métier', 'boulang'] },
+            { target: "Merci beaucoup, c'était délicieux!", english: "Thank you, it was delicious!", hint: '"Merci beaucoup! C\'était délicieux!"', keywords: ['merci', 'thank', 'delici', 'bon', 'good', 'excellent', 'parfait'] }
+        ]
+    },
+    japanese: {
+        1: [
+            { target: "こんにちは！", english: "Hello!", hint: '"こんにちは" (Konnichiwa)', keywords: ['konnichiwa', 'konichiwa', 'hello', 'hi', 'こんにちは', 'ohayo'] },
+            { target: "お元気ですか？", english: "How are you?", hint: '"お元気ですか？" (Ogenki desu ka?)', keywords: ['genki', 'ogenki', 'how', 'are', '元気'] }
+        ],
+        2: [
+            { target: "お茶をください。", english: "Tea, please.", hint: '"お茶をください" (Ocha wo kudasai)', keywords: ['ocha', 'tea', 'kudasai', 'please', 'お茶', 'ください'] },
+            { target: "いくらですか？", english: "How much is it?", hint: '"いくらですか？" (Ikura desu ka?)', keywords: ['ikura', 'how much', 'price', 'cost', 'いくら', 'yen'] }
+        ],
+        3: [
+            { target: "これは何ですか？", english: "What is this?", hint: '"これは何ですか？" (Kore wa nan desu ka?)', keywords: ['nan', 'what', 'kore', 'this', '何', 'これ'] },
+            { target: "おすすめは何ですか？", english: "What do you recommend?", hint: '"おすすめは何ですか？"', keywords: ['osusume', 'recommend', 'suggest', 'best', 'popular'] }
+        ],
+        4: [
+            { target: "抹茶と煎茶の違いは何ですか？", english: "What's the difference between matcha and sencha?", hint: 'Ask about tea differences', keywords: ['matcha', 'sencha', 'difference', 'chigai', 'which', 'better'] },
+            { target: "おいしいですか？", english: "Is it delicious?", hint: '"おいしいですか？" (Oishii desu ka?)', keywords: ['oishii', 'delicious', 'tasty', 'good', 'おいしい'] }
+        ],
+        5: [
+            { target: "お茶の作り方を教えてください。", english: "Please teach me how to make tea.", hint: 'Ask about the tea ceremony', keywords: ['teach', 'how', 'make', 'ceremony', 'tradition', 'oshiete'] },
+            { target: "ありがとうございました！", english: "Thank you very much!", hint: '"ありがとうございました！"', keywords: ['arigatou', 'arigatō', 'thank', 'ありがとう', 'domo'] }
+        ]
+    },
+    spanish: {
+        1: [
+            { target: "¡Hola!", english: "Hello!", hint: '"¡Hola!" or "Buenos días"', keywords: ['hola', 'hello', 'hi', 'buenos', 'buenas'] },
+            { target: "¿Cómo estás?", english: "How are you?", hint: '"¿Cómo estás?" or "¿Qué tal?"', keywords: ['como', 'estas', 'tal', 'how', 'are'] }
+        ],
+        2: [
+            { target: "Un café, por favor.", english: "A coffee, please.", hint: '"Un café, por favor"', keywords: ['cafe', 'café', 'coffee', 'por favor', 'please', 'favor'] },
+            { target: "¿Cuánto cuesta?", english: "How much does it cost?", hint: '"¿Cuánto cuesta?"', keywords: ['cuanto', 'cuánto', 'cuesta', 'cost', 'price', 'euro'] }
+        ],
+        3: [
+            { target: "¿Qué me recomiendas?", english: "What do you recommend?", hint: '"¿Qué recomiendas?"', keywords: ['recomiend', 'recommend', 'suggest', 'best'] },
+            { target: "Me gustaría probar algo típico.", english: "I would like to try something typical.", hint: '"Me gustaría probar..."', keywords: ['gustaría', 'probar', 'try', 'típico', 'typical', 'local'] }
+        ],
+        4: [
+            { target: "¿Tienen opciones vegetarianas?", english: "Do you have vegetarian options?", hint: '"¿Tienen opciones vegetarianas?"', keywords: ['vegetarian', 'vegan', 'opciones', 'tienen', 'sin carne', 'meat'] },
+            { target: "¿Está hecho con ingredientes frescos?", english: "Is it made with fresh ingredients?", hint: 'Ask about freshness', keywords: ['fresco', 'fresh', 'hecho', 'made', 'today', 'ingredientes'] }
+        ],
+        5: [
+            { target: "¿Cuál es la historia de este plato?", english: "What is the history of this dish?", hint: 'Ask about the dish\'s origin', keywords: ['historia', 'history', 'origen', 'tradition', 'receta', 'recipe'] },
+            { target: "¡Estuvo delicioso! ¡Gracias!", english: "It was delicious! Thanks!", hint: '"¡Estuvo delicioso! ¡Gracias!"', keywords: ['delicioso', 'gracias', 'thank', 'delicious', 'excellent', 'bueno'] }
+        ]
+    },
+    german: {
+        1: [
+            { target: "Guten Tag!", english: "Good day!", hint: '"Guten Tag!" or "Hallo!"', keywords: ['guten', 'tag', 'hallo', 'hello', 'hi', 'morgen'] },
+            { target: "Wie geht es Ihnen?", english: "How are you?", hint: '"Wie geht es Ihnen?"', keywords: ['wie', 'geht', 'how', 'are', 'gut'] }
+        ],
+        2: [
+            { target: "Ein Bier, bitte.", english: "A beer, please.", hint: '"Ein Bier, bitte"', keywords: ['bier', 'beer', 'bitte', 'please'] },
+            { target: "Was kostet das?", english: "How much does this cost?", hint: '"Was kostet das?"', keywords: ['kostet', 'cost', 'preis', 'price', 'euro', 'was'] }
+        ],
+        3: [
+            { target: "Die Speisekarte, bitte.", english: "The menu, please.", hint: '"Die Speisekarte, bitte"', keywords: ['speisekarte', 'menu', 'karte', 'bitte'] },
+            { target: "Was empfehlen Sie?", english: "What do you recommend?", hint: '"Was empfehlen Sie?"', keywords: ['empfehl', 'recommend', 'suggest', 'best', 'gut'] }
+        ],
+        4: [
+            { target: "Haben Sie etwas Vegetarisches?", english: "Do you have something vegetarian?", hint: '"Haben Sie vegetarische Optionen?"', keywords: ['vegetarisch', 'vegetarian', 'haben', 'have', 'vegan'] },
+            { target: "Ist das hausgemacht?", english: "Is that homemade?", hint: '"Ist das hausgemacht?"', keywords: ['hausgemacht', 'homemade', 'haus', 'frisch', 'fresh'] }
+        ],
+        5: [
+            { target: "Können Sie mir mehr über dieses Gericht erzählen?", english: "Can you tell me more about this dish?", hint: 'Ask about the dish\'s story', keywords: ['erzähl', 'tell', 'mehr', 'more', 'gericht', 'dish', 'tradition'] },
+            { target: "Vielen Dank, das war ausgezeichnet!", english: "Thank you, that was excellent!", hint: '"Vielen Dank! Das war ausgezeichnet!"', keywords: ['dank', 'thank', 'ausgezeichnet', 'excellent', 'gut', 'lecker'] }
+        ]
+    },
+    italian: {
+        1: [
+            { target: "Ciao!", english: "Hello!", hint: '"Ciao!" or "Buongiorno!"', keywords: ['ciao', 'hello', 'hi', 'buongiorno', 'buon'] },
+            { target: "Come stai?", english: "How are you?", hint: '"Come stai?" or "Come sta?"', keywords: ['come', 'stai', 'sta', 'how', 'are', 'bene'] }
+        ],
+        2: [
+            { target: "Un espresso, per favore.", english: "An espresso, please.", hint: '"Un espresso, per favore"', keywords: ['espresso', 'caffe', 'caffè', 'per favore', 'please', 'favore'] },
+            { target: "Quanto costa?", english: "How much does it cost?", hint: '"Quanto costa?"', keywords: ['quanto', 'costa', 'cost', 'price', 'euro'] }
+        ],
+        3: [
+            { target: "Cosa mi consiglia?", english: "What do you recommend?", hint: '"Cosa mi consiglia?"', keywords: ['consiglia', 'recommend', 'cosa', 'what', 'best'] },
+            { target: "Vorrei provare qualcosa di tipico.", english: "I would like to try something typical.", hint: '"Vorrei provare..."', keywords: ['vorrei', 'would', 'provare', 'try', 'tipico', 'typical'] }
+        ],
+        4: [
+            { target: "Avete opzioni senza glutine?", english: "Do you have gluten-free options?", hint: '"Avete opzioni senza glutine?"', keywords: ['glutine', 'gluten', 'avete', 'have', 'senza', 'without', 'vegano'] },
+            { target: "È fatto in casa?", english: "Is it homemade?", hint: '"È fatto in casa?"', keywords: ['casa', 'home', 'fatto', 'made', 'fresco', 'fresh'] }
+        ],
+        5: [
+            { target: "Qual è la storia di questo piatto?", english: "What is the history of this dish?", hint: 'Ask about origins and traditions', keywords: ['storia', 'history', 'tradizione', 'tradition', 'origine', 'origin', 'ricetta'] },
+            { target: "Grazie mille, era squisito!", english: "Thank you, it was exquisite!", hint: '"Grazie mille! Era squisito!"', keywords: ['grazie', 'thank', 'squisito', 'delizioso', 'buono', 'excellent'] }
+        ]
+    },
+    polish: {
+        1: [
+            { target: "Dzień dobry!", english: "Good day!", hint: '"Dzień dobry!" or "Cześć!"', keywords: ['dzień', 'dzien', 'dobry', 'cześć', 'czesc', 'hello', 'hi'] },
+            { target: "Jak się masz?", english: "How are you?", hint: '"Jak się masz?"', keywords: ['jak', 'masz', 'how', 'are', 'dobrze'] }
+        ],
+        2: [
+            { target: "Poproszę pierogi.", english: "Pierogi, please.", hint: '"Poproszę pierogi"', keywords: ['poproszę', 'poprosze', 'proszę', 'pierogi', 'please'] },
+            { target: "Ile to kosztuje?", english: "How much does it cost?", hint: '"Ile to kosztuje?"', keywords: ['ile', 'kosztuje', 'cost', 'price', 'złoty', 'zloty'] }
+        ],
+        3: [
+            { target: "Co poleca pan/pani?", english: "What do you recommend?", hint: '"Co poleca pan/pani?"', keywords: ['poleca', 'recommend', 'suggest', 'co', 'what', 'najlepsze'] },
+            { target: "Chciałbym spróbować czegoś tradycyjnego.", english: "I would like to try something traditional.", hint: '"Chciałbym spróbować..."', keywords: ['chciałbym', 'chcialbym', 'spróbować', 'try', 'tradycyjn', 'traditional'] }
+        ],
+        4: [
+            { target: "Czy macie opcje wegetariańskie?", english: "Do you have vegetarian options?", hint: '"Czy macie opcje wegetariańskie?"', keywords: ['wegetariańsk', 'wegetariansk', 'vegetarian', 'macie', 'have', 'bez mięsa'] },
+            { target: "Czy to jest domowej roboty?", english: "Is this homemade?", hint: '"Czy to jest domowej roboty?"', keywords: ['domow', 'home', 'roboty', 'made', 'świeże', 'swieze', 'fresh'] }
+        ],
+        5: [
+            { target: "Jaka jest historia tego dania?", english: "What is the history of this dish?", hint: 'Ask about Polish culinary traditions', keywords: ['historia', 'history', 'tradycja', 'tradition', 'danie', 'dish', 'przepis'] },
+            { target: "Dziękuję, było pyszne!", english: "Thank you, it was delicious!", hint: '"Dziękuję! Było pyszne!"', keywords: ['dziękuję', 'dziekuje', 'thank', 'pyszne', 'delicious', 'dobre', 'smaczne'] }
+        ]
+    },
+    mandarin: {
+        1: [
+            { target: "你好！", english: "Hello!", hint: '"你好！" (Nǐ hǎo!)', keywords: ['你好', 'nihao', 'ni hao', 'hello', 'hi'] },
+            { target: "你好吗？", english: "How are you?", hint: '"你好吗？" (Nǐ hǎo ma?)', keywords: ['好吗', 'hao ma', 'how', 'are', 'fine'] }
+        ],
+        2: [
+            { target: "我要一杯茶。", english: "I want a cup of tea.", hint: '"我要一杯茶" (Wǒ yào yī bēi chá)', keywords: ['茶', 'cha', 'tea', '要', 'yao', 'want', '杯', 'bei'] },
+            { target: "多少钱？", english: "How much?", hint: '"多少钱？" (Duōshao qián?)', keywords: ['多少', 'duoshao', 'how much', '钱', 'qian', 'money', 'yuan'] }
+        ],
+        3: [
+            { target: "这是什么？", english: "What is this?", hint: '"这是什么？" (Zhè shì shénme?)', keywords: ['什么', 'shenme', 'what', '这', 'zhe', 'this'] },
+            { target: "你推荐什么？", english: "What do you recommend?", hint: '"你推荐什么？" (Nǐ tuījiàn shénme?)', keywords: ['推荐', 'tuijian', 'recommend', 'suggest', 'best'] }
+        ],
+        4: [
+            { target: "有素食的选择吗？", english: "Are there vegetarian options?", hint: '"有素食的选择吗？"', keywords: ['素食', 'sushi', 'vegetarian', '选择', 'xuanze', 'option', '有', 'you'] },
+            { target: "这是自己做的吗？", english: "Is this homemade?", hint: '"这是自己做的吗？"', keywords: ['自己', 'ziji', 'home', '做', 'zuo', 'made', 'fresh', '新鲜'] }
+        ],
+        5: [
+            { target: "这道菜的故事是什么？", english: "What is the story of this dish?", hint: 'Ask about traditions and origins', keywords: ['故事', 'gushi', 'story', 'history', '传统', 'chuantong', 'tradition'] },
+            { target: "谢谢，非常好吃！", english: "Thank you, very delicious!", hint: '"谢谢！非常好吃！" (Xièxiè! Fēicháng hǎo chī!)', keywords: ['谢谢', 'xiexie', 'thank', '好吃', 'haochi', 'delicious', '非常', 'feichang'] }
+        ]
+    },
+    english: {
+        1: [
+            { target: "Hello!", english: "Hello!", hint: '"Hello!" or "Hi there!"', keywords: ['hello', 'hi', 'hey', 'good morning', 'good day'] },
+            { target: "How are you?", english: "How are you?", hint: '"How are you?" or "How\'s it going?"', keywords: ['how', 'are', 'you', 'doing', 'going'] }
+        ],
+        2: [
+            { target: "I would like a coffee, please.", english: "I would like a coffee, please.", hint: '"I would like... please"', keywords: ['would', 'like', 'please', 'want', 'coffee', 'tea'] },
+            { target: "How much is this?", english: "How much is this?", hint: '"How much is this?"', keywords: ['how much', 'price', 'cost', 'dollar', 'pay'] }
+        ],
+        3: [
+            { target: "What do you recommend?", english: "What do you recommend?", hint: '"What do you recommend?"', keywords: ['recommend', 'suggest', 'best', 'popular', 'favorite'] },
+            { target: "I'd like to try something new.", english: "I'd like to try something new.", hint: '"I\'d like to try..."', keywords: ['try', 'new', 'something', 'different', 'special'] }
+        ],
+        4: [
+            { target: "Do you have any vegetarian options?", english: "Do you have any vegetarian options?", hint: '"Do you have vegetarian options?"', keywords: ['vegetarian', 'vegan', 'options', 'have', 'without meat'] },
+            { target: "Is this made fresh daily?", english: "Is this made fresh daily?", hint: '"Is this fresh?"', keywords: ['fresh', 'made', 'today', 'daily', 'homemade'] }
+        ],
+        5: [
+            { target: "What's the story behind this dish?", english: "What's the story behind this dish?", hint: 'Ask about the history or origin', keywords: ['story', 'history', 'behind', 'origin', 'tradition', 'where'] },
+            { target: "Thank you, that was wonderful!", english: "Thank you, that was wonderful!", hint: '"Thank you! That was wonderful!"', keywords: ['thank', 'wonderful', 'great', 'delicious', 'amazing', 'excellent'] }
+        ]
+    }
+};
+
+// Objective state
+let objectiveState = {
+    currentIndex: 0,
+    completedCount: 0,
+    totalObjectives: 2, // Per level
+    successfulResponses: 0
+};
+
 // Player character from customization
 let playerCharacter = {
     name: 'Player',
@@ -138,8 +328,401 @@ const elements = {
     scoreValue: document.getElementById('scoreValue'),
     ptStartBtn: document.getElementById('ptStartBtn'),
     ptPlaybackBtn: document.getElementById('ptPlaybackBtn'),
-    ptRetryBtn: document.getElementById('ptRetryBtn')
+    ptRetryBtn: document.getElementById('ptRetryBtn'),
+    // Objective bar elements
+    objectiveBar: document.getElementById('objectiveBar'),
+    objectiveProgress: document.getElementById('objectiveProgress'),
+    objectiveText: document.getElementById('objectiveText'),
+    objectiveTranslation: document.getElementById('objectiveTranslation'),
+    objectiveHint: document.getElementById('objectiveHint'),
+    hintText: document.getElementById('hintText')
 };
+
+// ==================== OBJECTIVES FUNCTIONS ====================
+function getObjectivesForCurrentLevel() {
+    const language = gameState.language || 'french';
+    const langObjectives = SCENE_OBJECTIVES[language] || SCENE_OBJECTIVES.french;
+    return langObjectives[currentDifficulty] || langObjectives[1];
+}
+
+function initObjectives() {
+    const objectives = getObjectivesForCurrentLevel();
+    
+    objectiveState = {
+        currentIndex: 0,
+        completedCount: 0,
+        totalObjectives: objectives.length,
+        successfulResponses: 0
+    };
+    
+    updateObjectiveUI();
+}
+
+function updateObjectiveUI() {
+    const objectives = getObjectivesForCurrentLevel();
+    const current = objectives[objectiveState.currentIndex];
+    
+    if (!current || !elements.objectiveText) return;
+    
+    // Update progress indicator - show level and objective
+    if (elements.objectiveProgress) {
+        elements.objectiveProgress.textContent = `L${currentDifficulty} • ${objectiveState.currentIndex + 1}/${objectiveState.totalObjectives}`;
+    }
+    
+    // Update objective text (target language)
+    if (elements.objectiveText) {
+        elements.objectiveText.textContent = current.target;
+    }
+    
+    // Update translation
+    if (elements.objectiveTranslation) {
+        elements.objectiveTranslation.textContent = current.english;
+    }
+    
+    // Update hint
+    if (elements.hintText) {
+        elements.hintText.textContent = current.hint;
+    }
+    
+    // Show hint section
+    if (elements.objectiveHint) {
+        elements.objectiveHint.style.display = 'flex';
+    }
+    
+    // Remove completed class if present
+    if (elements.objectiveBar) {
+        elements.objectiveBar.classList.remove('completed', 'level-up');
+    }
+}
+
+function checkObjectiveCompletion(userMessage) {
+    const objectives = getObjectivesForCurrentLevel();
+    const current = objectives[objectiveState.currentIndex];
+    
+    if (!current) return false;
+    
+    // Normalize message for voice transcription (remove punctuation, lowercase)
+    const messageLower = userMessage.toLowerCase()
+        .replace(/[.,!?¿¡'"]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    
+    // Check if user message contains any of the objective keywords
+    // More forgiving matching for voice transcription
+    const keywordMatched = current.keywords.some(keyword => {
+        const keyLower = keyword.toLowerCase();
+        // Exact match or fuzzy match (allowing for speech-to-text errors)
+        return messageLower.includes(keyLower) || 
+               fuzzyMatch(messageLower, keyLower);
+    });
+    
+    if (keywordMatched) {
+        objectiveState.successfulResponses++;
+        
+        // Need at least 1 successful response to complete objective
+        if (objectiveState.successfulResponses >= 1) {
+            completeCurrentObjective();
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+// Fuzzy matching for voice transcription errors
+function fuzzyMatch(text, keyword) {
+    // Check if keyword is at least 70% similar to any word in text
+    const words = text.split(' ');
+    return words.some(word => {
+        if (word.length < 3 || keyword.length < 3) return word === keyword;
+        const distance = levenshteinDistance(word, keyword);
+        const maxLen = Math.max(word.length, keyword.length);
+        const similarity = 1 - (distance / maxLen);
+        return similarity >= 0.7;
+    });
+}
+
+function levenshteinDistance(str1, str2) {
+    const m = str1.length, n = str2.length;
+    const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+    
+    for (let i = 0; i <= m; i++) dp[i][0] = i;
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+    
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            if (str1[i-1] === str2[j-1]) {
+                dp[i][j] = dp[i-1][j-1];
+            } else {
+                dp[i][j] = 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+            }
+        }
+    }
+    return dp[m][n];
+}
+
+function completeCurrentObjective() {
+    objectiveState.completedCount++;
+    
+    // Show completion animation
+    if (elements.objectiveBar) {
+        elements.objectiveBar.classList.add('completed');
+        
+        setTimeout(() => {
+            elements.objectiveBar.classList.add('level-up');
+        }, 300);
+    }
+    
+    // Play success sound
+    if (audioManager && audioManager.playQuestComplete) {
+        audioManager.playQuestComplete();
+    }
+    
+    // Move to next objective after delay
+    setTimeout(() => {
+        if (objectiveState.currentIndex < objectiveState.totalObjectives - 1) {
+            // More objectives in current level
+            objectiveState.currentIndex++;
+            objectiveState.successfulResponses = 0;
+            updateObjectiveUI();
+        } else {
+            // Completed all objectives for this level - LEVEL UP!
+            if (currentDifficulty < 5) {
+                levelUpDifficulty();
+            } else {
+                // At max level - show mastery
+                showAllObjectivesComplete();
+            }
+        }
+    }, 1500);
+}
+
+function levelUpDifficulty() {
+    currentDifficulty = Math.min(5, currentDifficulty + 1);
+    updateDifficultyUI();
+    
+    // Reset objectives for new level
+    objectiveState.currentIndex = 0;
+    objectiveState.successfulResponses = 0;
+    objectiveState.totalObjectives = getObjectivesForCurrentLevel().length;
+    
+    // Show level up notification
+    const levelNames = ['First Contact', 'Getting Comfortable', 'Conversational', 'Advanced', 'Fluent'];
+    showNotification(`🎉 Level ${currentDifficulty}: ${levelNames[currentDifficulty - 1]}!`);
+    
+    // Update objectives UI for new level
+    setTimeout(() => {
+        updateObjectiveUI();
+    }, 500);
+}
+
+function showAllObjectivesComplete() {
+    if (elements.objectiveText) {
+        elements.objectiveText.textContent = '🏆 Level 5 Complete!';
+    }
+    if (elements.objectiveTranslation) {
+        elements.objectiveTranslation.textContent = 'You\'ve mastered this conversation! You\'re now fluent.';
+    }
+    if (elements.objectiveHint) {
+        elements.objectiveHint.style.display = 'none';
+    }
+    if (elements.objectiveBar) {
+        elements.objectiveBar.classList.add('completed');
+    }
+    
+    showNotification('🏆 Fluent! Conversation Mastered!');
+}
+
+// Get current objective text for the AI prompt
+function getCurrentObjectiveText() {
+    const objectives = getObjectivesForCurrentLevel();
+    const current = objectives[objectiveState.currentIndex];
+    return current ? `${current.target} (${current.english})` : 'Continue the conversation naturally';
+}
+
+// Store for dynamic objectives from AI
+let dynamicObjective = null;
+let pendingObjective = null; // Stores next objective to show after current one is completed
+let isFirstExchange = true; // Track if this is the first player response
+
+// Update objective from NPC response
+function updateObjectiveFromResponse(response) {
+    if (response.nextObjective && response.nextObjective.target) {
+        // Store as pending - will be shown after current objective is completed
+        pendingObjective = {
+            target: response.nextObjective.target,
+            english: response.nextObjective.english || response.nextObjective.target,
+            hint: response.nextObjective.hint || '',
+            keywords: response.nextObjective.keywords || []
+        };
+        
+        // If no current dynamic objective, show this one now
+        // (This happens after the first exchange is complete)
+        if (!dynamicObjective && !isFirstExchange) {
+            showPendingObjective();
+        }
+    }
+}
+
+// Show the pending objective
+function showPendingObjective() {
+    if (pendingObjective) {
+        dynamicObjective = pendingObjective;
+        pendingObjective = null;
+        updateDynamicObjectiveUI();
+    }
+}
+
+function updateDynamicObjectiveUI() {
+    if (!dynamicObjective) return;
+    
+    // Update progress indicator
+    if (elements.objectiveProgress) {
+        elements.objectiveProgress.textContent = `L${currentDifficulty}`;
+    }
+    
+    // Update objective text (target language)
+    if (elements.objectiveText) {
+        elements.objectiveText.textContent = dynamicObjective.target;
+    }
+    
+    // Update translation
+    if (elements.objectiveTranslation) {
+        elements.objectiveTranslation.textContent = dynamicObjective.english;
+    }
+    
+    // Update hint
+    if (elements.hintText && dynamicObjective.hint) {
+        elements.hintText.textContent = `"${dynamicObjective.hint}"`;
+    }
+    
+    // Show hint section
+    if (elements.objectiveHint) {
+        elements.objectiveHint.style.display = dynamicObjective.hint ? 'flex' : 'none';
+    }
+    
+    // Remove completed class
+    if (elements.objectiveBar) {
+        elements.objectiveBar.classList.remove('completed', 'level-up');
+    }
+}
+
+// Check dynamic objective completion (for AI-generated objectives)
+function checkDynamicObjectiveCompletion(userMessage) {
+    // Mark that we've had at least one exchange
+    const wasFirstExchange = isFirstExchange;
+    isFirstExchange = false;
+    
+    // If this was the first exchange and we have a pending objective, show it after animation
+    if (wasFirstExchange && pendingObjective) {
+        // Complete the static greeting objective
+        objectiveState.completedCount++;
+        
+        // Show completion animation
+        if (elements.objectiveBar) {
+            elements.objectiveBar.classList.add('completed');
+            setTimeout(() => {
+                elements.objectiveBar.classList.add('level-up');
+            }, 300);
+        }
+        
+        // Play success sound
+        if (audioManager && audioManager.playQuestComplete) {
+            audioManager.playQuestComplete();
+        }
+        
+        // Show pending objective after animation
+        setTimeout(() => {
+            showPendingObjective();
+        }, 1500);
+        
+        return true;
+    }
+    
+    if (!dynamicObjective || !dynamicObjective.keywords || dynamicObjective.keywords.length === 0) {
+        return false;
+    }
+    
+    // Normalize message for voice transcription
+    const messageLower = userMessage.toLowerCase()
+        .replace(/[.,!?¿¡'"]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    
+    // Check if user message contains any of the objective keywords
+    const keywordMatched = dynamicObjective.keywords.some(keyword => {
+        const keyLower = keyword.toLowerCase();
+        return messageLower.includes(keyLower) || fuzzyMatch(messageLower, keyLower);
+    });
+    
+    if (keywordMatched) {
+        // Objective completed!
+        objectiveState.completedCount++;
+        
+        // Show completion animation
+        if (elements.objectiveBar) {
+            elements.objectiveBar.classList.add('completed');
+            setTimeout(() => {
+                elements.objectiveBar.classList.add('level-up');
+            }, 300);
+        }
+        
+        // Play success sound
+        if (audioManager && audioManager.playQuestComplete) {
+            audioManager.playQuestComplete();
+        }
+        
+        // Check for level up (every 3 completions)
+        if (objectiveState.completedCount % 3 === 0 && currentDifficulty < 5) {
+            setTimeout(() => {
+                levelUpDifficulty();
+            }, 1500);
+        }
+        
+        // Clear dynamic objective - pending one will be shown from next NPC response
+        dynamicObjective = null;
+        
+        // If we have a pending objective, show it after animation
+        if (pendingObjective) {
+            setTimeout(() => {
+                showPendingObjective();
+            }, 1500);
+        }
+        
+        return true;
+    }
+    
+    return false;
+}
+
+function showNotification(message) {
+    // Create floating notification
+    const notification = document.createElement('div');
+    notification.className = 'objective-notification';
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(40, 30, 20, 0.98);
+        border: 6px solid var(--cozy-yellow);
+        box-shadow: 8px 8px 0 0 var(--wood-shadow);
+        padding: 24px 40px;
+        font-family: 'Press Start 2P', cursive;
+        font-size: 0.9rem;
+        color: var(--cozy-yellow);
+        z-index: 9999;
+        animation: notificationPop 0.5s ease;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'notificationFade 0.5s ease forwards';
+        setTimeout(() => notification.remove(), 500);
+    }, 2000);
+}
 
 // ==================== INITIALIZATION ====================
 async function init() {
@@ -200,6 +783,9 @@ async function init() {
     
     // Setup glossary
     setupGlossary();
+    
+    // Initialize objectives system
+    initObjectives();
     
     // Hide loading screen and start Mirage when world is ready
     setTimeout(async () => {
@@ -1204,6 +1790,15 @@ async function startConversation() {
     const greeting = await generateNPCResponse(null, true);
     displayNPCMessage(greeting.text, greeting.translation);
     
+    // Store the next objective from greeting but DON'T show it yet
+    // The first objective should always be to greet back
+    if (greeting.nextObjective) {
+        pendingObjective = greeting.nextObjective;
+    }
+    
+    // Keep showing the static "greet them" objective for the first response
+    // Dynamic objectives will kick in after the first exchange
+    
     // Speak the greeting with text highlighting
     await speakTextWithHighlight(greeting.text, greeting.expression || 'greeting');
 }
@@ -1256,6 +1851,14 @@ function endConversation() {
     elements.controlsHint.style.display = 'block';
     conversationHistory = [];
     
+    // Reset objective state for next conversation
+    isFirstExchange = true;
+    dynamicObjective = null;
+    pendingObjective = null;
+    
+    // Reset to static objectives for next conversation
+    initObjectives();
+    
     // 🎥 Zoom camera back out
     zoomOutFromNPC();
     
@@ -1283,9 +1886,16 @@ async function sendTextMessage() {
     archiveCurrentNPCMessage();
     displayUserMessage(text);
     
+    // Check if user completed current objective (static or dynamic)
+    const completedStatic = checkObjectiveCompletion(text);
+    const completedDynamic = checkDynamicObjectiveCompletion(text);
+    
     // Get NPC response
     const response = await generateNPCResponse(text);
     displayNPCMessage(response.text, response.translation, response.correction);
+    
+    // Update objective from NPC response (dynamic objectives)
+    updateObjectiveFromResponse(response);
     
     // ═══════════════════════════════════════════════════════════════════════════
     // SPEAK WITH TEXT HIGHLIGHTING
@@ -1372,18 +1982,36 @@ ${startingPhrases.map(p => `- "${p.phrase}" (${p.translation}) - pronounced: ${p
 FALSE FRIENDS TO MENTION WHEN RELEVANT:
 ${falseFriends.map(f => `- "${f.word}" looks like "${f.looksLike || f.trap}" but means: ${f.actualMeaning || f.meaning}`).join('\n')}
 
+CURRENT OBJECTIVE FOR PLAYER:
+"${getCurrentObjectiveText()}"
+
 RESPONSE FORMAT (JSON):
 {
     "text": "Your response in the target language (with English mixed in based on difficulty). Use 'word (translation)' format for new vocabulary.",
     "translation": "English translation if primarily in target language",
     "newWords": [{"word": "new word", "meaning": "meaning"}],
     "shouldIncreaseDifficulty": true/false (if player is doing well),
-    "expression": "greeting|teaching|praising"
+    "expression": "greeting|teaching|praising",
+    "nextObjective": {
+        "target": "Next objective in target language - what should the player do/say next based on your response",
+        "english": "English translation of the objective",
+        "hint": "Example phrase they could use",
+        "keywords": ["key", "words", "to", "match"]
+    }
 }
+
+OBJECTIVE GUIDELINES BY LEVEL:
+- Level 1: Simple responses (greetings, yes/no, single words)
+- Level 2: Basic ordering (items + please, numbers, prices)
+- Level 3: Preferences and questions (what do you recommend, I would like...)
+- Level 4: Complex requests (dietary restrictions, asking about ingredients)
+- Level 5: Natural conversation (opinions, stories, cultural questions)
+
+The nextObjective should naturally follow from your response. If you ask them what they'd like, the objective should be "Order a drink/food". If you describe something, the objective could be "Ask a follow-up question".
 
 IMPORTANT: Include words in the "word (translation)" format in your text response. These will be automatically added to the player's glossary.
 
-NOTE: Do NOT provide pronunciation feedback or grammar corrections. Keep responses encouraging and conversational.`;
+NOTE: Keep responses encouraging and conversational.`;
 
     const messages = isGreeting 
         ? [{ role: 'user', content: 'The player has just approached you. Greet them warmly and introduce yourself.' }]
@@ -1915,12 +2543,19 @@ async function processRealtimeTranscript(transcript, words) {
     archiveCurrentNPCMessage();
     displayUserMessageWithScores(transcript, words);
     
+    // Check if user completed current objective (static or dynamic)
+    const completedStatic = checkObjectiveCompletion(transcript);
+    const completedDynamic = checkDynamicObjectiveCompletion(transcript);
+    
     // Get NPC response
     elements.textInput.disabled = true;
     elements.sendBtn.disabled = true;
     
     const response = await generateNPCResponse(transcript);
     displayNPCMessage(response.text, response.translation);
+    
+    // Update objective from NPC response (dynamic objectives)
+    updateObjectiveFromResponse(response);
     
     // Speak with highlighting
     await speakTextWithHighlight(response.text, response.expression || 'teaching');
@@ -2675,11 +3310,18 @@ async function processAudioInput(audioBlob) {
         archiveCurrentNPCMessage();
         displayUserMessageWithScores(transcription, wordsWithScores);
         
+        // Check if user completed current objective (static or dynamic)
+        const completedStatic = checkObjectiveCompletion(transcription);
+        const completedDynamic = checkDynamicObjectiveCompletion(transcription);
+        
         // ═══════════════════════════════════════════════════════════════════════
         // GET NPC RESPONSE
         // ═══════════════════════════════════════════════════════════════════════
         const response = await generateNPCResponse(transcription);
         displayNPCMessage(response.text, response.translation);
+        
+        // Update objective from NPC response (dynamic objectives)
+        updateObjectiveFromResponse(response);
         
         // Speak with highlighting
         await speakTextWithHighlight(response.text, response.expression || 'teaching');
