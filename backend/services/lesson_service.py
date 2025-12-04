@@ -429,6 +429,27 @@ class LessonService:
         """Get the full lesson plan for a language"""
         return self.lesson_plans.get(language, [])
     
+    def generate_lesson(self, language: str, difficulty: str) -> Dict:
+        """Generate/get a lesson for a language at a specific difficulty level"""
+        lessons = self.lesson_plans.get(language, [])
+        
+        if not lessons:
+            return {"error": f"No lessons available for language: {language}"}
+        
+        # Map difficulty string to numeric level
+        difficulty_map = {"beginner": 1, "intermediate": 2, "advanced": 3}
+        target_difficulty = difficulty_map.get(difficulty.lower(), 1)
+        
+        # Find lessons matching the difficulty
+        matching_lessons = [l for l in lessons if l.get("difficulty", 1) == target_difficulty]
+        
+        # If no exact match, return first available lesson
+        if not matching_lessons:
+            matching_lessons = lessons
+        
+        # Return the first matching lesson
+        return matching_lessons[0] if matching_lessons else {"error": "No lessons found"}
+    
     def get_lesson(self, lesson_id: str) -> Optional[Dict]:
         """Get a specific lesson by ID"""
         for language_lessons in self.lesson_plans.values():
