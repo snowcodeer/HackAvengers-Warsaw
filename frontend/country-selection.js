@@ -548,14 +548,175 @@ function drawHouse(house, x, y) {
         ctx.fillText('PRESS E', doorX, doorY - door.height/2 - 12);
     }
     
-    // Country label
+    // Draw flagpole with country flag
+    drawFlagpole(x + w/2 - 10, y - h/2 - 25, country);
+    
+    // Country label (below the flag)
     ctx.fillStyle = '#F8F0D8';
-    ctx.font = '8px "Press Start 2P"';
+    ctx.font = '10px "Press Start 2P"';
     ctx.textAlign = 'center';
     ctx.strokeStyle = '#402808';
     ctx.lineWidth = 3;
-    ctx.strokeText(country.flag + ' ' + country.name, x, y - h/2 - 40);
-    ctx.fillText(country.flag + ' ' + country.name, x, y - h/2 - 40);
+    ctx.strokeText(country.name, x, y - h/2 - 70);
+    ctx.fillText(country.name, x, y - h/2 - 70);
+}
+
+// ==================== FLAGPOLE ====================
+function drawFlagpole(x, y, country) {
+    const poleHeight = 50;
+    const flagWidth = 36;
+    const flagHeight = 24;
+    
+    // Pole shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillRect(x + 2, y - poleHeight + 2, 4, poleHeight);
+    
+    // Wooden pole
+    ctx.fillStyle = '#8B6914';
+    ctx.fillRect(x, y - poleHeight, 4, poleHeight);
+    
+    // Pole highlight
+    ctx.fillStyle = '#A8841C';
+    ctx.fillRect(x, y - poleHeight, 2, poleHeight);
+    
+    // Pole top ornament (gold ball)
+    ctx.fillStyle = '#C9A227';
+    ctx.beginPath();
+    ctx.arc(x + 2, y - poleHeight - 4, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#E8C84A';
+    ctx.beginPath();
+    ctx.arc(x + 1, y - poleHeight - 5, 2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Flag position (waving to the left)
+    const flagX = x - flagWidth;
+    const flagY = y - poleHeight + 2;
+    
+    // Flag shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.fillRect(flagX + 2, flagY + 2, flagWidth, flagHeight);
+    
+    // Draw country-specific flag
+    drawCountryFlag(flagX, flagY, flagWidth, flagHeight, country.id);
+    
+    // Flag border
+    ctx.strokeStyle = '#402808';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(flagX, flagY, flagWidth, flagHeight);
+}
+
+function drawCountryFlag(x, y, w, h, countryId) {
+    switch(countryId) {
+        case 'france':
+            // Blue, White, Red vertical stripes
+            ctx.fillStyle = '#002395';
+            ctx.fillRect(x, y, w/3, h);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + w/3, y, w/3, h);
+            ctx.fillStyle = '#ED2939';
+            ctx.fillRect(x + 2*w/3, y, w/3, h);
+            break;
+        case 'germany':
+            // Black, Red, Gold horizontal stripes
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(x, y, w, h/3);
+            ctx.fillStyle = '#DD0000';
+            ctx.fillRect(x, y + h/3, w, h/3);
+            ctx.fillStyle = '#FFCC00';
+            ctx.fillRect(x, y + 2*h/3, w, h/3);
+            break;
+        case 'uk':
+            // Union Jack (simplified)
+            ctx.fillStyle = '#012169';
+            ctx.fillRect(x, y, w, h);
+            // White diagonals
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(x, y); ctx.lineTo(x + w, y + h);
+            ctx.moveTo(x + w, y); ctx.lineTo(x, y + h);
+            ctx.stroke();
+            // Red diagonals
+            ctx.strokeStyle = '#C8102E';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x, y); ctx.lineTo(x + w, y + h);
+            ctx.moveTo(x + w, y); ctx.lineTo(x, y + h);
+            ctx.stroke();
+            // White cross
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + w/2 - 4, y, 8, h);
+            ctx.fillRect(x, y + h/2 - 3, w, 6);
+            // Red cross
+            ctx.fillStyle = '#C8102E';
+            ctx.fillRect(x + w/2 - 2, y, 4, h);
+            ctx.fillRect(x, y + h/2 - 2, w, 4);
+            break;
+        case 'spain':
+            // Red, Yellow, Red horizontal
+            ctx.fillStyle = '#AA151B';
+            ctx.fillRect(x, y, w, h/4);
+            ctx.fillStyle = '#F1BF00';
+            ctx.fillRect(x, y + h/4, w, h/2);
+            ctx.fillStyle = '#AA151B';
+            ctx.fillRect(x, y + 3*h/4, w, h/4);
+            break;
+        case 'italy':
+            // Green, White, Red vertical stripes
+            ctx.fillStyle = '#009246';
+            ctx.fillRect(x, y, w/3, h);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + w/3, y, w/3, h);
+            ctx.fillStyle = '#CE2B37';
+            ctx.fillRect(x + 2*w/3, y, w/3, h);
+            break;
+        case 'japan':
+            // White with red circle
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x, y, w, h);
+            ctx.fillStyle = '#BC002D';
+            ctx.beginPath();
+            ctx.arc(x + w/2, y + h/2, h/3, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+        case 'china':
+            // Red with yellow stars
+            ctx.fillStyle = '#DE2910';
+            ctx.fillRect(x, y, w, h);
+            ctx.fillStyle = '#FFDE00';
+            // Big star
+            drawStar(x + w*0.2, y + h*0.35, 5);
+            // Small stars
+            drawStar(x + w*0.4, y + h*0.2, 3);
+            drawStar(x + w*0.5, y + h*0.35, 3);
+            drawStar(x + w*0.5, y + h*0.55, 3);
+            drawStar(x + w*0.4, y + h*0.7, 3);
+            break;
+        case 'poland':
+            // White and Red horizontal
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x, y, w, h/2);
+            ctx.fillStyle = '#DC143C';
+            ctx.fillRect(x, y + h/2, w, h/2);
+            break;
+        default:
+            ctx.fillStyle = '#888888';
+            ctx.fillRect(x, y, w, h);
+    }
+}
+
+function drawStar(cx, cy, size) {
+    ctx.beginPath();
+    for (let i = 0; i < 5; i++) {
+        const angle = (i * 4 * Math.PI / 5) - Math.PI / 2;
+        const x = cx + size * Math.cos(angle);
+        const y = cy + size * Math.sin(angle);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fill();
 }
 
 // ==================== FRENCH HOUSE ====================
