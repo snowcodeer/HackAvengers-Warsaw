@@ -929,11 +929,11 @@ function drawSpanishHouse(x, y, w, h, doorX, doorY, door) {
     ctx.closePath();
     ctx.fill();
     
-    // Barrel tile texture
+    // Barrel tile texture (scalloped edge)
     ctx.fillStyle = '#A83C05';
     for (let i = 0; i < w + 20; i += 8) {
         ctx.beginPath();
-        ctx.arc(x - w/2 - 10 + i + 4, y - h/2 - 8, 3, 0, Math.PI);
+        ctx.arc(x - w/2 - 10 + i + 4, y - h/2 + 2, 3, 0, Math.PI);
         ctx.fill();
     }
     
