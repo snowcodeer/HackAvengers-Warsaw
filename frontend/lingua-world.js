@@ -1352,11 +1352,17 @@ ATMOSPHERE: ${scene.description?.substring(0, 200) || 'A welcoming place for lea
 LANGUAGE LEVEL (${currentDifficulty}/5):
 ${difficultyInstruction}
 
+CRITICAL VOCABULARY FORMAT:
+- When introducing new words in the target language, ALWAYS use the format: "word (translation)"
+- Example: "bonjour (hello)", "croissant (croissant)", "merci (thank you)"
+- This format helps the player learn vocabulary and allows automatic glossary tracking
+- Use this format frequently (3-5 times per response) to build vocabulary naturally
+
 TEACHING RULES:
 1. Stay deeply in character - you ARE this person
 2. Be ${traits}
 3. If the player makes a grammar mistake, gently correct them using your character's style
-4. Naturally introduce vocabulary relevant to ${scene.name}
+4. Naturally introduce vocabulary relevant to ${scene.name} using the "word (translation)" format
 5. Keep responses conversational (2-4 sentences)
 6. Use your expression style: greeting=${character.voice?.expressionTags?.greeting || '[warmly]'}, teaching=${character.voice?.expressionTags?.teaching || '[patiently]'}
 
@@ -1368,12 +1374,14 @@ ${falseFriends.map(f => `- "${f.word}" looks like "${f.looksLike || f.trap}" but
 
 RESPONSE FORMAT (JSON):
 {
-    "text": "Your response in the target language (with English mixed in based on difficulty)",
+    "text": "Your response in the target language (with English mixed in based on difficulty). Use 'word (translation)' format for new vocabulary.",
     "translation": "English translation if primarily in target language",
     "newWords": [{"word": "new word", "meaning": "meaning"}],
     "shouldIncreaseDifficulty": true/false (if player is doing well),
     "expression": "greeting|teaching|praising"
 }
+
+IMPORTANT: Include words in the "word (translation)" format in your text response. These will be automatically added to the player's glossary.
 
 NOTE: Do NOT provide pronunciation feedback or grammar corrections. Keep responses encouraging and conversational.`;
 
@@ -1431,7 +1439,46 @@ NOTE: Do NOT provide pronunciation feedback or grammar corrections. Keep respons
     }
 }
 
+// Extract words from "word (translation)" pattern and add to glossary
+function extractWordsFromText(text) {
+    if (!text) return [];
+    
+    // Pattern: word(s) followed by (translation)
+    // Matches: "bonjour (hello)", "un croissant (a croissant)", "merci (thank you)"
+    const wordPattern = /([^\s(]+(?:\s+[^\s(]+)*)\s*\(([^)]+)\)/g;
+    const extractedWords = [];
+    let match;
+    
+    while ((match = wordPattern.exec(text)) !== null) {
+        const word = match[1].trim();
+        const translation = match[2].trim();
+        
+        // Skip if already in glossary
+        if (!glossary.find(w => w.word.toLowerCase() === word.toLowerCase() && !w.isFalseFriend)) {
+            extractedWords.push({
+                word: word,
+                meaning: translation,
+                pronunciation: '',
+                isFalseFriend: false,
+                isNew: true
+            });
+        }
+    }
+    
+    return extractedWords;
+}
+
 function displayNPCMessage(text, translation, correction = null) {
+    // Extract words from "word (translation)" pattern and add to glossary
+    const extractedWords = extractWordsFromText(text);
+    if (extractedWords.length > 0) {
+        extractedWords.forEach(wordData => {
+            glossary.push(wordData);
+        });
+        updateGlossaryUI();
+        console.log(`📚 Added ${extractedWords.length} word(s) to glossary from text:`, extractedWords.map(w => w.word));
+    }
+    
     elements.speechText.textContent = text;
     elements.speechTranslation.textContent = translation || '';
     
