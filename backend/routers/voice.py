@@ -1,17 +1,20 @@
 """
 ═══════════════════════════════════════════════════════════════════════════════
 VOICE ROUTER - Unified Voice API Endpoints
-Handles TTS, STT, and Pronunciation Assessment
+Handles TTS, STT, Real-time Transcription, and Pronunciation Assessment
 ═══════════════════════════════════════════════════════════════════════════════
 """
 
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form, WebSocket, WebSocketDisconnect
 from fastapi.responses import StreamingResponse, Response
 from pydantic import BaseModel
 from typing import Optional, List
 import io
+import json
+import asyncio
+import base64
 
-from services.elevenlabs_service import elevenlabs_service
+from services.elevenlabs_service import elevenlabs_service, RealtimeTranscriptionSession
 
 router = APIRouter(prefix="/api", tags=["Voice"])
 
@@ -246,4 +249,211 @@ async def get_character(character_id: str):
     if not info:
         raise HTTPException(status_code=404, detail="Character not found")
     return info
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REAL-TIME TRANSCRIPTION (WebSocket)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@router.websocket("/transcribe/realtime")
+async def realtime_transcription(websocket: WebSocket):
+    """
+    WebSocket endpoint for real-time speech-to-text transcription.
+    
+    Protocol:
+    1. Client connects and optionally sends config: {"type": "config", "language": "fr", "sample_rate": 16000}
+    2. Client sends audio chunks: {"type": "audio", "data": "<base64_encoded_pcm_audio>"}
+    3. Server responds with transcription updates:
+       - Partial: {"type": "partial", "text": "hello wor", "words": [...]}
+       - Final: {"type": "final", "text": "hello world", "words": [...], "is_final": true}
+    4. Client sends end of stream: {"type": "eos"}
+    5. Connection closes gracefully
+    
+    Audio Format:
+    - PCM 16-bit signed little-endian (pcm_s16le)
+    - Default sample rate: 16000 Hz
+    - Mono channel
+    """
+    await websocket.accept()
+    
+    session = None
+    receive_task = None
+    
+    try:
+        # Default config
+        language = None
+        sample_rate = 16000
+        
+        # Create transcription session
+        session = await elevenlabs_service.create_realtime_transcription_session(
+            language_hint=language,
+            sample_rate=sample_rate
+        )
+        
+        connected = await session.connect()
+        if not connected:
+            await websocket.send_json({
+                "type": "error",
+                "message": "Failed to connect to transcription service"
+            })
+            await websocket.close()
+            return
+        
+        # Notify client of successful connection
+        await websocket.send_json({
+            "type": "connected",
+            "message": "Real-time transcription ready"
+        })
+        
+        # Task to receive transcripts from ElevenLabs and forward to client
+        async def forward_transcripts():
+            try:
+                while session.is_connected:
+                    transcript = await session.receive_transcript()
+                    if transcript is None:
+                        break
+                    
+                    # Parse and forward transcript
+                    msg_type = transcript.get("type", "unknown")
+                    
+                    if msg_type == "transcript":
+                        # Word-level transcription update
+                        await websocket.send_json({
+                            "type": "partial" if not transcript.get("is_final") else "final",
+                            "text": transcript.get("text", ""),
+                            "words": transcript.get("words", []),
+                            "language": transcript.get("language"),
+                            "is_final": transcript.get("is_final", False)
+                        })
+                    elif msg_type == "utterance_end":
+                        # End of an utterance
+                        await websocket.send_json({
+                            "type": "utterance_end"
+                        })
+                    elif msg_type == "error":
+                        await websocket.send_json({
+                            "type": "error",
+                            "message": transcript.get("message", "Unknown error")
+                        })
+                        break
+            except Exception as e:
+                print(f"Forward transcripts error: {e}")
+        
+        # Start forwarding task
+        receive_task = asyncio.create_task(forward_transcripts())
+        
+        # Main loop: receive audio from client and send to ElevenLabs
+        while True:
+            try:
+                message = await websocket.receive_text()
+                data = json.loads(message)
+                msg_type = data.get("type", "")
+                
+                if msg_type == "config":
+                    # Reconfigure (only at start, before audio)
+                    new_language = data.get("language")
+                    new_sample_rate = data.get("sample_rate", 16000)
+                    
+                    # If config changed, reconnect
+                    if new_language != language or new_sample_rate != sample_rate:
+                        language = new_language
+                        sample_rate = new_sample_rate
+                        
+                        # Close old session and create new one
+                        await session.close()
+                        if receive_task:
+                            receive_task.cancel()
+                        
+                        session = await elevenlabs_service.create_realtime_transcription_session(
+                            language_hint=language,
+                            sample_rate=sample_rate
+                        )
+                        await session.connect()
+                        receive_task = asyncio.create_task(forward_transcripts())
+                        
+                        await websocket.send_json({
+                            "type": "config_updated",
+                            "language": language,
+                            "sample_rate": sample_rate
+                        })
+                
+                elif msg_type == "audio":
+                    # Decode and forward audio
+                    audio_data = data.get("data", "")
+                    if audio_data:
+                        audio_bytes = base64.b64decode(audio_data)
+                        await session.send_audio(audio_bytes)
+                
+                elif msg_type == "eos":
+                    # End of stream
+                    await session.end_stream()
+                    await websocket.send_json({
+                        "type": "eos_received"
+                    })
+                    # Wait briefly for final transcripts
+                    await asyncio.sleep(0.5)
+                    break
+                    
+            except WebSocketDisconnect:
+                break
+            except json.JSONDecodeError:
+                await websocket.send_json({
+                    "type": "error",
+                    "message": "Invalid JSON format"
+                })
+            except Exception as e:
+                await websocket.send_json({
+                    "type": "error", 
+                    "message": str(e)
+                })
+                break
+    
+    except WebSocketDisconnect:
+        print("Client disconnected from realtime transcription")
+    except Exception as e:
+        print(f"Realtime transcription error: {e}")
+        try:
+            await websocket.send_json({
+                "type": "error",
+                "message": str(e)
+            })
+        except:
+            pass
+    finally:
+        # Cleanup
+        if receive_task:
+            receive_task.cancel()
+            try:
+                await receive_task
+            except asyncio.CancelledError:
+                pass
+        if session:
+            await session.close()
+        try:
+            await websocket.close()
+        except:
+            pass
+
+
+# Active connections for broadcast (optional feature)
+class ConnectionManager:
+    """Manages active WebSocket connections for transcription."""
+    
+    def __init__(self):
+        self.active_connections: dict[str, WebSocket] = {}
+    
+    async def connect(self, session_id: str, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections[session_id] = websocket
+    
+    def disconnect(self, session_id: str):
+        if session_id in self.active_connections:
+            del self.active_connections[session_id]
+    
+    async def send_transcript(self, session_id: str, data: dict):
+        if session_id in self.active_connections:
+            await self.active_connections[session_id].send_json(data)
+
+
+transcription_manager = ConnectionManager()
 

@@ -9,9 +9,11 @@ import os
 import io
 import json
 import asyncio
-from typing import Optional, List, Dict, Any, Generator
+import base64
+from typing import Optional, List, Dict, Any, Generator, Callable, Awaitable
 from dataclasses import dataclass
 from enum import Enum
+import websockets
 from elevenlabs.client import ElevenLabs
 from elevenlabs import Voice, VoiceSettings, play, stream, save
 from dotenv import load_dotenv
@@ -254,14 +256,20 @@ class ElevenLabsService:
         
         try:
             # Generate audio with ElevenLabs
+            # Note: eleven_v3 model requires stability (TTD stability) to be 0.0, 0.5, or 1.0
+            # Map both stability and style to nearest valid values
+            valid_ttd_values = [0.0, 0.5, 1.0]
+            stability_value = min(valid_ttd_values, key=lambda x: abs(x - character.stability))
+            style_value = min(valid_ttd_values, key=lambda x: abs(x - character.style_intensity))
+            
             audio = self.client.text_to_speech.convert(
                 text=text,
                 voice_id=character.voice_id,
                 model_id="eleven_v3",
                 voice_settings=VoiceSettings(
-                    stability=character.stability,
+                    stability=stability_value,
                     similarity_boost=character.similarity_boost,
-                    style=character.style_intensity,
+                    style=style_value,
                     use_speaker_boost=True
                 )
             )
@@ -294,14 +302,19 @@ class ElevenLabsService:
             text = f"{self.expression_tags[expression]} {text}"
         
         try:
+            # Map stability and style to valid TTD values for eleven_v3
+            valid_ttd_values = [0.0, 0.5, 1.0]
+            stability_value = min(valid_ttd_values, key=lambda x: abs(x - character.stability))
+            style_value = min(valid_ttd_values, key=lambda x: abs(x - character.style_intensity))
+            
             audio_stream = self.client.text_to_speech.convert_as_stream(
                 text=text,
                 voice_id=character.voice_id,
                 model_id="eleven_v3",
                 voice_settings=VoiceSettings(
-                    stability=character.stability,
+                    stability=stability_value,
                     similarity_boost=character.similarity_boost,
-                    style=character.style_intensity,
+                    style=style_value,
                     use_speaker_boost=True
                 )
             )
@@ -350,6 +363,105 @@ class ElevenLabsService:
                 "text": "",
                 "error": str(e)
             }
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # REAL-TIME SPEECH-TO-TEXT (WebSocket Streaming)
+    # ═══════════════════════════════════════════════════════════════════════════
+    
+    async def speech_to_text_realtime(
+        self,
+        audio_callback: Callable[[bytes], Awaitable[bytes | None]],
+        transcript_callback: Callable[[Dict[str, Any]], Awaitable[None]],
+        language_hint: Optional[str] = None,
+        sample_rate: int = 16000
+    ):
+        """
+        Real-time speech-to-text streaming via WebSocket.
+        
+        Connects to ElevenLabs Scribe v2 Realtime and streams audio for
+        live word-by-word transcription.
+        
+        Args:
+            audio_callback: Async function that returns audio chunks (bytes) or None to stop
+            transcript_callback: Async function called with transcription updates
+            language_hint: Expected language code (e.g., "fr", "de", "ja")
+            sample_rate: Audio sample rate (default 16000 Hz)
+        """
+        # WebSocket URL with query params
+        ws_url = f"wss://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v1_experimental"
+        
+        headers = {
+            "xi-api-key": self.api_key
+        }
+        
+        try:
+            async with websockets.connect(ws_url, extra_headers=headers) as ws:
+                # Send initial configuration
+                config = {
+                    "type": "config",
+                    "transcription_config": {
+                        "language": language_hint,
+                        "sample_rate": sample_rate,
+                        "encoding": "pcm_s16le"
+                    }
+                }
+                await ws.send(json.dumps(config))
+                
+                # Create tasks for sending audio and receiving transcripts
+                async def send_audio():
+                    try:
+                        while True:
+                            audio_chunk = await audio_callback()
+                            if audio_chunk is None:
+                                # Send end of stream
+                                await ws.send(json.dumps({"type": "eos"}))
+                                break
+                            
+                            # Send audio as base64 encoded
+                            message = {
+                                "type": "audio",
+                                "audio": base64.b64encode(audio_chunk).decode('utf-8')
+                            }
+                            await ws.send(json.dumps(message))
+                    except Exception as e:
+                        print(f"Send audio error: {e}")
+                
+                async def receive_transcripts():
+                    try:
+                        async for message in ws:
+                            data = json.loads(message)
+                            await transcript_callback(data)
+                            
+                            # Check for final transcript or error
+                            if data.get("type") == "final" or data.get("type") == "error":
+                                break
+                    except websockets.exceptions.ConnectionClosed:
+                        pass
+                    except Exception as e:
+                        print(f"Receive transcript error: {e}")
+                
+                # Run both tasks concurrently
+                await asyncio.gather(send_audio(), receive_transcripts())
+                
+        except Exception as e:
+            print(f"Realtime STT Error: {e}")
+            raise
+
+    async def create_realtime_transcription_session(
+        self,
+        language_hint: Optional[str] = None,
+        sample_rate: int = 16000
+    ):
+        """
+        Create a real-time transcription session that can be managed externally.
+        
+        Returns a RealtimeTranscriptionSession object for manual control.
+        """
+        return RealtimeTranscriptionSession(
+            api_key=self.api_key,
+            language_hint=language_hint,
+            sample_rate=sample_rate
+        )
 
     # ═══════════════════════════════════════════════════════════════════════════
     # PRONUNCIATION ASSESSMENT
@@ -662,6 +774,100 @@ class ElevenLabsService:
             None,
             lambda: self.text_to_speech(text, character_id, expression)
         )
+
+
+class RealtimeTranscriptionSession:
+    """
+    Manages a real-time transcription WebSocket session.
+    
+    Provides fine-grained control over the streaming session lifecycle.
+    """
+    
+    def __init__(
+        self,
+        api_key: str,
+        language_hint: Optional[str] = None,
+        sample_rate: int = 16000
+    ):
+        self.api_key = api_key
+        self.language_hint = language_hint
+        self.sample_rate = sample_rate
+        self.ws = None
+        self.is_connected = False
+        self._receive_task = None
+        
+    async def connect(self) -> bool:
+        """Establish WebSocket connection to ElevenLabs."""
+        try:
+            ws_url = "wss://api.elevenlabs.io/v1/speech-to-text/realtime?model_id=scribe_v1_experimental"
+            headers = {"xi-api-key": self.api_key}
+            
+            self.ws = await websockets.connect(ws_url, extra_headers=headers)
+            self.is_connected = True
+            
+            # Send configuration
+            config = {
+                "type": "config",
+                "transcription_config": {
+                    "language": self.language_hint,
+                    "sample_rate": self.sample_rate,
+                    "encoding": "pcm_s16le"
+                }
+            }
+            await self.ws.send(json.dumps(config))
+            
+            return True
+        except Exception as e:
+            print(f"Connect error: {e}")
+            self.is_connected = False
+            return False
+    
+    async def send_audio(self, audio_chunk: bytes):
+        """Send an audio chunk to the transcription service."""
+        if not self.is_connected or not self.ws:
+            return
+        
+        try:
+            message = {
+                "type": "audio",
+                "audio": base64.b64encode(audio_chunk).decode('utf-8')
+            }
+            await self.ws.send(json.dumps(message))
+        except Exception as e:
+            print(f"Send audio error: {e}")
+    
+    async def receive_transcript(self) -> Optional[Dict[str, Any]]:
+        """Receive the next transcript message."""
+        if not self.is_connected or not self.ws:
+            return None
+        
+        try:
+            message = await self.ws.recv()
+            return json.loads(message)
+        except websockets.exceptions.ConnectionClosed:
+            self.is_connected = False
+            return None
+        except Exception as e:
+            print(f"Receive error: {e}")
+            return None
+    
+    async def end_stream(self):
+        """Signal end of audio stream."""
+        if self.ws and self.is_connected:
+            try:
+                await self.ws.send(json.dumps({"type": "eos"}))
+            except Exception as e:
+                print(f"End stream error: {e}")
+    
+    async def close(self):
+        """Close the WebSocket connection."""
+        if self.ws:
+            try:
+                await self.ws.close()
+            except:
+                pass
+        self.is_connected = False
+        self.ws = None
 
 
 # Singleton instance

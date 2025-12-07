@@ -22,7 +22,7 @@ async def generate_scenario(request: ScenarioRequest):
 
     client = anthropic.Anthropic(api_key=api_key)
 
-    You are an expert 3D environment designer and character stylist for a high-end language learning game.
+    system_prompt = f"""You are an expert 3D environment designer and character stylist for a high-end language learning game.
     Your task is to generate a JSON blueprint for a 3D scene based on the user's description and desired "vibe".
     
     CONTEXT:
@@ -122,6 +122,7 @@ async def generate_scenario(request: ScenarioRequest):
        - Place decorative props around it to frame the scene.
        - Use 'rotation' (in radians) to orient props naturally.
     
+    RESPOND WITH ONLY THE JSON OBJECT, NO EXTRA TEXT."""
 
     try:
         print(f"🎨 Generating scenario for: {request.prompt} (Vibe: {request.vibe})")

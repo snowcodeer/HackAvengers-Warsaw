@@ -6,3 +6,4 @@ elevenlabs
 anthropic
 pytest
 python-multipart==0.0.20
+websockets

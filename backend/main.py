@@ -74,6 +74,7 @@ async def root():
         "status": "running",
         "endpoints": {
             "voice": "/api/speak, /api/transcribe, /api/pronunciation/assess",
+            "realtime_transcription": "ws://host/api/transcribe/realtime",
             "conversation": "/api/conversation/start, /api/conversation/respond",
             "lessons": "/api/lessons/{language}",
             "progress": "/api/progress/{language}",
@@ -82,7 +83,8 @@ async def root():
         },
         "features": [
             "ElevenLabs TTS with character voices",
-            "ElevenLabs STT for speech recognition", 
+            "ElevenLabs STT for speech recognition",
+            "Real-time word-by-word transcription via WebSocket",
             "Pronunciation assessment",
             "Multi-turn AI conversations (Claude)",
             "Structured lesson plans",
@@ -282,6 +284,7 @@ if __name__ == "__main__":
     print("═" * 60)
     print("📚 Endpoints:")
     print("   Voice:        /api/speak, /api/transcribe")
+    print("   Realtime STT: ws://localhost:8000/api/transcribe/realtime")
     print("   Conversation: /api/conversation/*")
     print("   Lessons:      /api/lessons/{language}")
     print("   Progress:     /api/progress/{language}")
