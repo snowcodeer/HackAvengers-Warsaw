@@ -1,15 +1,14 @@
 """
 ═══════════════════════════════════════════════════════════════════════════════
-VOICE ROUTER - Unified Voice API Endpoints
-Handles TTS, STT, Real-time Transcription, and Pronunciation Assessment
+VOICE ROUTER - Voice API Endpoints
+Handles TTS, STT, and Real-time Transcription
 ═══════════════════════════════════════════════════════════════════════════════
 """
 
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, WebSocket, WebSocketDisconnect
-from fastapi.responses import StreamingResponse, Response
+from fastapi.responses import Response
 from pydantic import BaseModel
-from typing import Optional, List
-import io
+from typing import Optional
 import json
 import asyncio
 import base64
@@ -33,12 +32,6 @@ class SpeakRequest(BaseModel):
     model: Optional[str] = "eleven_v3"
     stability: Optional[float] = 0.65
     similarity_boost: Optional[float] = 0.8
-
-
-class PronunciationRequest(BaseModel):
-    """Request model for pronunciation assessment"""
-    target_text: str
-    language: str
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -69,35 +62,6 @@ async def text_to_speech(request: SpeakRequest):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"TTS Error: {str(e)}")
-
-
-@router.post("/speak/stream")
-async def text_to_speech_stream(request: SpeakRequest):
-    """
-    Stream text to speech for real-time playback.
-    
-    Returns chunked audio stream for low-latency playback.
-    """
-    try:
-        def generate():
-            for chunk in elevenlabs_service.text_to_speech_stream(
-                text=request.text,
-                character_id=request.character_id,
-                expression=request.expression
-            ):
-                yield chunk
-        
-        return StreamingResponse(
-            generate(),
-            media_type="audio/mpeg",
-            headers={
-                "Cache-Control": "no-cache",
-                "Transfer-Encoding": "chunked"
-            }
-        )
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"TTS Stream Error: {str(e)}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -138,117 +102,6 @@ async def speech_to_text(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"STT Error: {str(e)}")
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# PRONUNCIATION ASSESSMENT
-# ═══════════════════════════════════════════════════════════════════════════════
-
-@router.post("/pronunciation/assess")
-async def assess_pronunciation(
-    audio: UploadFile = File(...),
-    target_text: str = Form(...),
-    language: str = Form("french")
-):
-    """
-    Assess user's pronunciation against target text.
-    
-    Returns detailed feedback with accuracy score and suggestions.
-    """
-    try:
-        audio_content = await audio.read()
-        
-        feedback = elevenlabs_service.assess_pronunciation(
-            audio_content=audio_content,
-            target_text=target_text,
-            language=language
-        )
-        
-        return {
-            "word": feedback.word,
-            "target": feedback.target_pronunciation,
-            "heard": feedback.user_pronunciation,
-            "accuracy": feedback.accuracy_score,
-            "issues": feedback.issues,
-            "suggestions": feedback.suggestions,
-            "passed": feedback.accuracy_score >= 70
-        }
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Pronunciation Error: {str(e)}")
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# SOUND EFFECTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-@router.post("/sound-effect")
-async def generate_sound_effect(
-    description: str,
-    duration: float = 2.0
-):
-    """
-    Generate a sound effect from description.
-    """
-    try:
-        audio_bytes = elevenlabs_service.generate_sound_effect(
-            description=description,
-            duration_seconds=duration
-        )
-        
-        if not audio_bytes:
-            raise HTTPException(status_code=500, detail="Failed to generate sound effect")
-        
-        return Response(
-            content=audio_bytes,
-            media_type="audio/mpeg"
-        )
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Sound Effect Error: {str(e)}")
-
-
-@router.get("/ambient/{scene_type}")
-async def get_ambient_config(scene_type: str):
-    """
-    Get ambient sound configuration for a scene type.
-    """
-    config = elevenlabs_service.get_ambient_sounds(scene_type)
-    return {
-        "scene": scene_type,
-        "sounds": config
-    }
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# VOICE MANAGEMENT
-# ═══════════════════════════════════════════════════════════════════════════════
-
-@router.get("/voices")
-async def list_voices():
-    """List all available ElevenLabs voices."""
-    try:
-        voices = elevenlabs_service.list_available_voices()
-        return {"voices": voices}
-    except Exception as e:
-        return {"voices": [], "error": str(e)}
-
-
-@router.get("/characters")
-async def list_characters():
-    """List all language learning characters with voice configs."""
-    return {"characters": elevenlabs_service.list_characters()}
-
-
-@router.get("/characters/{character_id}")
-async def get_character(character_id: str):
-    """Get detailed info about a specific character."""
-    info = elevenlabs_service.get_character_info(character_id)
-    if not info:
-        raise HTTPException(status_code=404, detail="Character not found")
-    return info
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -433,27 +286,4 @@ async def realtime_transcription(websocket: WebSocket):
             await websocket.close()
         except:
             pass
-
-
-# Active connections for broadcast (optional feature)
-class ConnectionManager:
-    """Manages active WebSocket connections for transcription."""
-    
-    def __init__(self):
-        self.active_connections: dict[str, WebSocket] = {}
-    
-    async def connect(self, session_id: str, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections[session_id] = websocket
-    
-    def disconnect(self, session_id: str):
-        if session_id in self.active_connections:
-            del self.active_connections[session_id]
-    
-    async def send_transcript(self, session_id: str, data: dict):
-        if session_id in self.active_connections:
-            await self.active_connections[session_id].send_json(data)
-
-
-transcription_manager = ConnectionManager()
 
