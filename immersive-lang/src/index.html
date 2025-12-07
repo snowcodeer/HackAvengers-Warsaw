@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinguaWorlds - Learn Languages in Immersive Worlds</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=JetBrains+Mono:wght@400;600&family=Crimson+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loading-content">
+      <h1 class="loading-title">LinguaWorlds</h1>
+      <p class="loading-subtitle">Preparing your journey...</p>
+      <div class="loading-bar-container">
+        <div id="loadingBar" class="loading-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Language Selection Screen -->
+  <div id="languageSelect" class="screen language-select">
+    <div class="language-header">
+      <h1>Choose Your Language</h1>
+      <p>Step into a world where language comes alive</p>
+    </div>
+    
+    <div class="language-grid">
+      <div class="language-card" data-lang="french">
+        <div class="card-visual french-visual">
+          <div class="card-icon">🥐</div>
+        </div>
+        <div class="card-info">
+          <h3>Français</h3>
+          <p>Paris Boulangerie</p>
+          <span class="card-character">Meet: Amélie</span>
+        </div>
+      </div>
+
+      <div class="language-card" data-lang="german">
+        <div class="card-visual german-visual">
+          <div class="card-icon">🎧</div>
+        </div>
+        <div class="card-info">
+          <h3>Deutsch</h3>
+          <p>Berlin Berghain</p>
+          <span class="card-character">Meet: Wolfgang</span>
+        </div>
+      </div>
+
+      <div class="language-card" data-lang="english">
+        <div class="card-visual english-visual">
+          <div class="card-icon">🍺</div>
+        </div>
+        <div class="card-info">
+          <h3>English</h3>
+          <p>London Pub</p>
+          <span class="card-character">Meet: Victoria</span>
+        </div>
+      </div>
+
+      <div class="language-card" data-lang="mandarin">
+        <div class="card-visual mandarin-visual">
+          <div class="card-icon">🍵</div>
+        </div>
+        <div class="card-info">
+          <h3>中文</h3>
+          <p>Beijing Tea House</p>
+          <span class="card-character">Meet: Mei Lin</span>
+        </div>
+      </div>
+
+      <div class="language-card" data-lang="spanish">
+        <div class="card-visual spanish-visual">
+          <div class="card-icon">💃</div>
+        </div>
+        <div class="card-info">
+          <h3>Español</h3>
+          <p>Madrid Tapas Bar</p>
+          <span class="card-character">Meet: Carmen</span>
+        </div>
+      </div>
+
+      <div class="language-card" data-lang="japanese">
+        <div class="card-visual japanese-visual">
+          <div class="card-icon">🏯</div>
+        </div>
+        <div class="card-info">
+          <h3>日本語</h3>
+          <p>Kyoto Tea Garden</p>
+          <span class="card-character">Meet: Yuki</span>
+        </div>
+      </div>
+
+      <div class="language-card" data-lang="italian">
+        <div class="card-visual italian-visual">
+          <div class="card-icon">☕</div>
+        </div>
+        <div class="card-info">
+          <h3>Italiano</h3>
+          <p>Rome Café</p>
+          <span class="card-character">Meet: Marco</span>
+        </div>
+      </div>
+
+      <div class="language-card" data-lang="polish">
+        <div class="card-visual polish-visual">
+          <div class="card-icon">🥟</div>
+        </div>
+        <div class="card-info">
+          <h3>Polski</h3>
+          <p>Warsaw Old Town</p>
+          <span class="card-character">Meet: Kasia</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game World Screen -->
+  <div id="gameScreen" class="screen game-screen hidden">
+    <canvas id="gameCanvas"></canvas>
+    
+    <!-- Decart Visual Overlay -->
+    <div id="decartOverlay" class="decart-overlay">
+      <canvas id="decartCanvas"></canvas>
+    </div>
+
+    <!-- UI Overlay -->
+    <div class="game-ui">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <div class="location-info">
+          <span id="locationName" class="location-name">Paris Boulangerie</span>
+          <span id="levelBadge" class="level-badge">Level 1</span>
+        </div>
+        <div class="progress-container">
+          <div class="xp-bar">
+            <div id="xpFill" class="xp-fill" style="width: 0%"></div>
+          </div>
+          <span id="xpText" class="xp-text">0 / 100 XP</span>
+        </div>
+        <button id="glossaryBtn" class="icon-btn glossary-btn">
+          <span>📖</span>
+          <span class="btn-label">Glossary</span>
+        </button>
+      </div>
+
+      <!-- Character Panel -->
+      <div id="characterPanel" class="character-panel hidden">
+        <div class="character-header">
+          <div id="characterAvatar" class="character-avatar"></div>
+          <div class="character-info">
+            <h3 id="characterName">Amélie</h3>
+            <p id="characterRole">Boulangère</p>
+          </div>
+        </div>
+        <div id="difficultyIndicator" class="difficulty-indicator">
+          <span class="difficulty-label">Difficulty:</span>
+          <div class="difficulty-stars">
+            <span class="star filled">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conversation UI -->
+      <div id="conversationUI" class="conversation-ui hidden">
+        <div id="transcriptContainer" class="transcript-container">
+          <div id="transcript" class="transcript"></div>
+        </div>
+        <div class="input-area">
+          <button id="micBtn" class="mic-btn">
+            <span class="mic-icon">🎤</span>
+            <span class="mic-text">Hold to speak</span>
+          </button>
+          <div id="waveform" class="waveform hidden">
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+          </div>
+        </div>
+        <div id="grammarFeedback" class="grammar-feedback hidden">
+          <span class="feedback-icon">✏️</span>
+          <p id="feedbackText"></p>
+        </div>
+      </div>
+
+      <!-- Interaction Prompt -->
+      <div id="interactPrompt" class="interact-prompt hidden">
+        <div class="prompt-content">
+          <span class="prompt-key">E</span>
+          <span class="prompt-text">to start conversation</span>
+        </div>
+      </div>
+
+      <!-- Controls Hint -->
+      <div class="controls-hint">
+        <span>WASD - Move</span>
+        <span>Mouse - Look</span>
+        <span>E - Talk</span>
+        <span>G - Glossary</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Glossary Modal -->
+  <div id="glossaryModal" class="modal glossary-modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📖 Vocabulary Journal</h2>
+        <button id="closeGlossary" class="close-btn">×</button>
+      </div>
+      <div class="glossary-tabs">
+        <button class="tab-btn active" data-tab="learned">Learned Words</button>
+        <button class="tab-btn" data-tab="false-friends">False Friends ⚠️</button>
+        <button class="tab-btn" data-tab="phrases">Phrases</button>
+      </div>
+      <div id="glossaryContent" class="glossary-content">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Level Up Modal -->
+  <div id="levelUpModal" class="modal level-up-modal hidden">
+    <div class="modal-content level-up-content">
+      <div class="level-up-animation">
+        <span class="level-up-icon">🎉</span>
+        <h2>Level Up!</h2>
+        <p id="newLevelText">You've reached Level 2</p>
+      </div>
+      <div class="level-up-rewards">
+        <p>New challenges unlocked:</p>
+        <ul id="rewardsList"></ul>
+      </div>
+      <button id="continueLevelUp" class="primary-btn">Continue</button>
+    </div>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
+

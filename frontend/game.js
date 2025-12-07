@@ -1783,6 +1783,131 @@ function setupControls() {
             mouseY = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, mouseY));
         }
     });
+    
+    // Mobile Virtual Joystick
+    const joystick = document.getElementById('mobile-joystick');
+    const joystickThumb = document.getElementById('joystickThumb');
+    
+    if (joystick && joystickThumb) {
+        let joystickActive = false;
+        let joystickStartX = 0;
+        let joystickStartY = 0;
+        const maxDistance = 40;
+        
+        function handleJoystickStart(e) {
+            e.preventDefault();
+            joystickActive = true;
+            joystickThumb.classList.add('active');
+            const touch = e.touches ? e.touches[0] : e;
+            const rect = joystick.getBoundingClientRect();
+            joystickStartX = rect.left + rect.width / 2;
+            joystickStartY = rect.top + rect.height / 2;
+        }
+        
+        function handleJoystickMove(e) {
+            if (!joystickActive) return;
+            e.preventDefault();
+            
+            const touch = e.touches ? e.touches[0] : e;
+            let deltaX = touch.clientX - joystickStartX;
+            let deltaY = touch.clientY - joystickStartY;
+            
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            if (distance > maxDistance) {
+                deltaX = (deltaX / distance) * maxDistance;
+                deltaY = (deltaY / distance) * maxDistance;
+            }
+            
+            joystickThumb.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+            
+            const deadzone = 10;
+            keys['w'] = deltaY < -deadzone;
+            keys['s'] = deltaY > deadzone;
+            keys['a'] = deltaX < -deadzone;
+            keys['d'] = deltaX > deadzone;
+        }
+        
+        function handleJoystickEnd(e) {
+            e.preventDefault();
+            joystickActive = false;
+            joystickThumb.classList.remove('active');
+            joystickThumb.style.transform = 'translate(-50%, -50%)';
+            keys['w'] = false;
+            keys['s'] = false;
+            keys['a'] = false;
+            keys['d'] = false;
+        }
+        
+        joystick.addEventListener('touchstart', handleJoystickStart, { passive: false });
+        document.addEventListener('touchmove', handleJoystickMove, { passive: false });
+        document.addEventListener('touchend', handleJoystickEnd, { passive: false });
+        
+        joystick.addEventListener('mousedown', handleJoystickStart);
+        document.addEventListener('mousemove', handleJoystickMove);
+        document.addEventListener('mouseup', handleJoystickEnd);
+    }
+    
+    // Mobile tap-to-talk on interact prompt
+    const interactPrompt = document.getElementById('interactPrompt');
+    if (interactPrompt) {
+        interactPrompt.addEventListener('click', () => {
+            if (nearestNPC && !currentDialogue) {
+                startDialogue(nearestNPC);
+            }
+        });
+        
+        interactPrompt.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (nearestNPC && !currentDialogue) {
+                startDialogue(nearestNPC);
+            }
+        });
+    }
+    
+    // Mobile Mic Action Button
+    const mobileMicBtn = document.getElementById('mobile-mic-btn');
+    if (mobileMicBtn) {
+        // Touch start - begin recording or start dialogue
+        mobileMicBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (currentDialogue) {
+                // In dialogue - start recording
+                if (!isRecording) {
+                    startRecording();
+                    mobileMicBtn.classList.add('recording');
+                }
+            } else if (nearestNPC) {
+                // Near NPC but not in dialogue - start it
+                startDialogue(nearestNPC);
+            }
+        }, { passive: false });
+        
+        // Touch end - stop recording
+        mobileMicBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (currentDialogue && isRecording) {
+                stopRecording();
+                mobileMicBtn.classList.remove('recording');
+            }
+        }, { passive: false });
+        
+        // Mouse events for desktop testing
+        mobileMicBtn.addEventListener('mousedown', () => {
+            if (currentDialogue && !isRecording) {
+                startRecording();
+                mobileMicBtn.classList.add('recording');
+            } else if (nearestNPC && !currentDialogue) {
+                startDialogue(nearestNPC);
+            }
+        });
+        
+        mobileMicBtn.addEventListener('mouseup', () => {
+            if (currentDialogue && isRecording) {
+                stopRecording();
+                mobileMicBtn.classList.remove('recording');
+            }
+        });
+    }
 }
 
 function startDialogue(npc) {

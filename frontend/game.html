@@ -691,6 +691,217 @@
             height: 100%;
             object-fit: cover;
         }
+
+        /* Mobile device adjustments */
+        @media (max-width: 768px), (pointer: coarse) {
+            /* Hide WASD keyboard hints (useless on mobile) */
+            #controlsHint,
+            .controls-hint {
+                display: none !important;
+            }
+            
+            /* Hide stats panel on mobile */
+            #stats-container {
+                display: none !important;
+            }
+            
+            /* Hide hand-tracking joystick on mobile */
+            #joystick-container {
+                display: none !important;
+            }
+            
+            /* Show mobile virtual joystick */
+            #mobile-joystick {
+                display: block !important;
+            }
+        }
+        
+        /* Mobile Virtual Joystick */
+        #mobile-joystick {
+            position: fixed;
+            bottom: 100px;
+            left: 30px;
+            width: 120px;
+            height: 120px;
+            z-index: 500;
+            display: none;
+            pointer-events: auto;
+            touch-action: none;
+        }
+        
+        .joystick-base {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: rgba(40, 30, 20, 0.7);
+            border: 4px solid rgba(104, 64, 16, 0.8);
+            border-radius: 50%;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        
+        .joystick-thumb {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle at 30% 30%, #c88838, #684010);
+            border: 3px solid #402808;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+        
+        .joystick-thumb.active {
+            background: radial-gradient(circle at 30% 30%, #f8e038, #a86020);
+        }
+        
+        /* Mobile Action Mic Button - 3D Microphone Style */
+        #mobile-mic-btn {
+            position: fixed;
+            bottom: 25px;
+            left: 165px;
+            width: 70px;
+            height: 90px;
+            background: transparent;
+            border: none;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 500;
+            transform: rotate(-20deg);
+            transition: transform 0.15s;
+            pointer-events: auto;
+            touch-action: none;
+        }
+        
+        /* Microphone head */
+        #mobile-mic-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 45px;
+            height: 55px;
+            background: linear-gradient(135deg, #5a5a6e 0%, #3a3a4a 50%, #2a2a3a 100%);
+            border-radius: 25px 25px 20px 20px;
+            box-shadow: 
+                inset 3px 3px 8px rgba(255,255,255,0.2),
+                inset -3px -3px 8px rgba(0,0,0,0.3),
+                0 4px 15px rgba(0,0,0,0.4);
+        }
+        
+        /* Mic grille pattern */
+        #mobile-mic-btn::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 35px;
+            height: 40px;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0,0,0,0.3) 2px,
+                    rgba(0,0,0,0.3) 4px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0,0,0,0.3) 2px,
+                    rgba(0,0,0,0.3) 4px
+                );
+            border-radius: 18px 18px 15px 15px;
+        }
+        
+        /* Mic handle */
+        .mic-handle {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px;
+            height: 35px;
+            background: linear-gradient(90deg, #4a4a5a 0%, #6a6a7a 50%, #4a4a5a 100%);
+            border-radius: 4px 4px 8px 8px;
+            box-shadow: 
+                inset 2px 0 4px rgba(255,255,255,0.1),
+                0 3px 8px rgba(0,0,0,0.3);
+        }
+        
+        /* Recording indicator light */
+        .mic-indicator {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 8px;
+            background: #333;
+            border-radius: 50%;
+            z-index: 10;
+            transition: all 0.2s;
+        }
+        
+        #mobile-mic-btn:active,
+        #mobile-mic-btn.recording {
+            transform: rotate(-20deg) scale(1.05);
+        }
+        
+        #mobile-mic-btn.recording .mic-indicator {
+            background: #ff4444;
+            box-shadow: 0 0 10px #ff4444, 0 0 20px #ff4444;
+            animation: rec-blink 0.8s ease-in-out infinite;
+        }
+        
+        #mobile-mic-btn.recording::before {
+            box-shadow: 
+                inset 3px 3px 8px rgba(255,255,255,0.2),
+                inset -3px -3px 8px rgba(0,0,0,0.3),
+                0 0 20px rgba(255, 68, 68, 0.4);
+        }
+        
+        @keyframes rec-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        
+        @media (max-width: 768px), (pointer: coarse) {
+            #mobile-mic-btn {
+                display: flex;
+            }
+        }
+        
+        /* Desktop/Mobile prompt toggle */
+        .mobile-prompt {
+            display: none;
+        }
+        
+        .desktop-prompt {
+            display: inline;
+        }
+        
+        @media (max-width: 768px), (pointer: coarse) {
+            .desktop-prompt {
+                display: none !important;
+            }
+            
+            .mobile-prompt {
+                display: inline !important;
+            }
+            
+            .interact-prompt {
+                pointer-events: auto !important;
+                cursor: pointer;
+                padding: 16px 24px !important;
+            }
+        }
     </style>
 </head>
 
@@ -716,7 +927,8 @@
             </div>
 
             <div class="interact-prompt" id="interactPrompt">
-                Press <kbd>E</kbd> to talk
+                <span class="desktop-prompt">Press <kbd>E</kbd> to talk</span>
+                <span class="mobile-prompt">👆 Tap to talk</span>
             </div>
 
             <!-- Chat wrapper -->
@@ -773,6 +985,18 @@
             <div id="joystick-center"></div>
             <div id="joystick-dot"></div>
         </div>
+        
+        <!-- Mobile Virtual Joystick -->
+        <div id="mobile-joystick">
+            <div class="joystick-base"></div>
+            <div class="joystick-thumb" id="joystickThumb"></div>
+        </div>
+        
+        <!-- Mobile Mic Action Button (3D Style) -->
+        <button id="mobile-mic-btn" title="Hold to speak">
+            <div class="mic-indicator"></div>
+            <div class="mic-handle"></div>
+        </button>
 
         <div id="stats-container">
             <div>Speed: <span id="stat-speed">0.00</span></div>

@@ -248,6 +248,82 @@ function setupControls() {
     window.addEventListener('keyup', (e) => {
         keys[e.code] = false;
     });
+    
+    // Mobile Virtual Joystick
+    const joystick = document.getElementById('mobile-joystick');
+    const joystickThumb = document.getElementById('joystickThumb');
+    
+    if (joystick && joystickThumb) {
+        let joystickActive = false;
+        let joystickStartX = 0;
+        let joystickStartY = 0;
+        const maxDistance = 40;
+        
+        function handleJoystickStart(e) {
+            e.preventDefault();
+            joystickActive = true;
+            joystickThumb.classList.add('active');
+            const touch = e.touches ? e.touches[0] : e;
+            const rect = joystick.getBoundingClientRect();
+            joystickStartX = rect.left + rect.width / 2;
+            joystickStartY = rect.top + rect.height / 2;
+        }
+        
+        function handleJoystickMove(e) {
+            if (!joystickActive) return;
+            e.preventDefault();
+            
+            const touch = e.touches ? e.touches[0] : e;
+            let deltaX = touch.clientX - joystickStartX;
+            let deltaY = touch.clientY - joystickStartY;
+            
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            if (distance > maxDistance) {
+                deltaX = (deltaX / distance) * maxDistance;
+                deltaY = (deltaY / distance) * maxDistance;
+            }
+            
+            joystickThumb.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+            
+            const deadzone = 10;
+            keys['KeyW'] = deltaY < -deadzone;
+            keys['KeyS'] = deltaY > deadzone;
+            keys['KeyA'] = deltaX < -deadzone;
+            keys['KeyD'] = deltaX > deadzone;
+        }
+        
+        function handleJoystickEnd(e) {
+            e.preventDefault();
+            joystickActive = false;
+            joystickThumb.classList.remove('active');
+            joystickThumb.style.transform = 'translate(-50%, -50%)';
+            keys['KeyW'] = false;
+            keys['KeyS'] = false;
+            keys['KeyA'] = false;
+            keys['KeyD'] = false;
+        }
+        
+        joystick.addEventListener('touchstart', handleJoystickStart, { passive: false });
+        document.addEventListener('touchmove', handleJoystickMove, { passive: false });
+        document.addEventListener('touchend', handleJoystickEnd, { passive: false });
+        
+        joystick.addEventListener('mousedown', handleJoystickStart);
+        document.addEventListener('mousemove', handleJoystickMove);
+        document.addEventListener('mouseup', handleJoystickEnd);
+    }
+    
+    // Mobile tap-to-enter on door prompt
+    const doorPrompt = document.getElementById('doorPrompt');
+    if (doorPrompt) {
+        doorPrompt.addEventListener('click', () => {
+            checkDoorInteraction();
+        });
+        
+        doorPrompt.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            checkDoorInteraction();
+        });
+    }
 }
 
 function checkDoorInteraction() {
@@ -363,6 +439,23 @@ function update() {
     const targetCameraY = player.worldY - canvas.height / 2;
     cameraX += (targetCameraX - cameraX) * 0.1;
     cameraY += (targetCameraY - cameraY) * 0.1;
+    
+    // Mobile door prompt - check if near any door
+    const doorPrompt = document.getElementById('doorPrompt');
+    if (doorPrompt) {
+        let nearDoor = false;
+        const houses = worldObjects.filter(obj => obj.type === 'house');
+        for (let house of houses) {
+            const door = house.door;
+            const distX = Math.abs(player.worldX - door.x);
+            const distY = player.worldY - door.y;
+            if (distX < 25 && distY > 0 && distY < 40) {
+                nearDoor = true;
+                break;
+            }
+        }
+        doorPrompt.classList.toggle('active', nearDoor);
+    }
 }
 
 // ==================== RENDERING ====================

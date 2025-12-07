@@ -174,6 +174,48 @@
             box-shadow: none;
         }
 
+        /* Audio Indicator - Top Right */
+        .audio-indicator {
+            position: absolute;
+            top: 20px;
+            right: 100px;
+            background: rgba(40, 30, 20, 0.95);
+            border: 4px solid var(--accent-teal);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.5);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            pointer-events: auto;
+            animation: audio-pulse 2s ease-in-out infinite;
+            z-index: 150;
+        }
+        
+        .audio-indicator .audio-icon {
+            font-size: 1.2rem;
+            animation: speaker-bounce 1s ease-in-out infinite;
+        }
+        
+        .audio-indicator .audio-text {
+            font-size: 0.5rem;
+            color: var(--accent-teal);
+            font-family: 'Press Start 2P', cursive;
+        }
+        
+        @keyframes audio-pulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(78, 205, 196, 0.4); }
+            50% { box-shadow: 0 0 20px rgba(78, 205, 196, 0.8); }
+        }
+        
+        @keyframes speaker-bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .audio-indicator.hidden {
+            display: none;
+        }
+
         /* Glossary button - Top Right */
         .glossary-btn {
             position: absolute;
@@ -418,7 +460,7 @@
         }
 
         .practice-btn {
-            display: inline-flex;
+            display: none; /* Hidden */
             align-items: center;
             gap: 8px;
             margin-top: 12px;
@@ -800,430 +842,116 @@
            PRONUNCIATION FEEDBACK UI - Full training interface
            ═══════════════════════════════════════════════════════════════════════════ */
 
-        .pronunciation-trainer {
+        /* Recording Panel - Right Side (matching original design) */
+        .recording-panel {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(to top, rgba(15, 15, 25, 0.98), rgba(15, 15, 25, 0.95));
-            border-top: 2px solid rgba(78, 205, 196, 0.3);
-            padding: 20px;
-            transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1000;
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-
-        .pronunciation-trainer.active {
-            transform: translateY(0);
-        }
-
-        .pt-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-
-        .pt-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--accent-gold);
-        }
-
-        .pt-close {
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 4px 8px;
-        }
-
-        .pt-close:hover {
-            color: #fff;
-        }
-
-        /* Amplitude Visualizer */
-        .amplitude-visualizer {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 20px;
+            bottom: 120px;
+            right: 20px;
+            width: 320px;
+            max-width: calc(100vw - 40px);
+            background: rgba(15, 15, 25, 0.95);
+            border-radius: 16px;
+            border: 2px solid rgba(78, 205, 196, 0.5);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             padding: 16px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1001;
         }
 
-        .mic-status {
+        .recording-panel.active {
+            transform: translateX(0);
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .recording-header {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            margin-bottom: 12px;
         }
-
-        .mic-icon {
-            width: 50px;
-            height: 50px;
+        
+        .recording-dot {
+            width: 12px;
+            height: 12px;
+            background: #ff6b6b;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            transition: all 0.3s ease;
+            animation: pulse 1s ease-in-out infinite;
         }
-
-        .mic-icon.connected {
-            background: rgba(78, 205, 196, 0.2);
-            box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
         }
-
-        .mic-icon.speaking {
-            background: rgba(78, 205, 196, 0.4);
-            animation: micPulse 0.5s ease-in-out infinite;
-        }
-
-        @keyframes micPulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.1);
-            }
-        }
-
-        .mic-label {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .amplitude-bars {
+        
+        .recording-label {
             flex: 1;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        
+        .recording-level {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #4ecdc4;
+            min-width: 50px;
+            text-align: right;
+        }
+        
+        .recording-bars {
             display: flex;
             align-items: flex-end;
-            height: 60px;
+            height: 40px;
             gap: 2px;
         }
-
-        .amplitude-bar {
+        
+        .recording-bars .amp-bar {
             flex: 1;
-            max-width: 8px;
-            background: linear-gradient(to top, var(--accent-teal), var(--accent-gold));
+            background: linear-gradient(to top, #4ecdc4, #f4b942);
             border-radius: 2px;
-            min-height: 4px;
+            min-height: 2px;
             transition: height 0.05s ease;
         }
-
-        .amplitude-level {
-            text-align: right;
-            min-width: 60px;
+        
+        .recording-waveform {
+            margin-top: 8px;
         }
-
-        .amplitude-level .level-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--accent-teal);
-        }
-
-        .amplitude-level .level-label {
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        /* Expected Text */
-        .expected-text-section {
-            margin-bottom: 20px;
-        }
-
-        .section-label {
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .expected-text {
-            font-size: 1.3rem;
-            color: rgba(255, 255, 255, 0.8);
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            border-left: 4px solid var(--accent-gold);
-        }
-
-        .expected-text .word {
-            display: inline-block;
-            padding: 4px 8px;
-            margin: 2px;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-
-        .expected-text .word.matched {
-            background: rgba(78, 205, 196, 0.3);
-            color: var(--accent-teal);
-        }
-
-        .expected-text .word.error {
-            background: rgba(255, 107, 107, 0.3);
-            color: var(--accent-coral);
-            text-decoration: underline wavy var(--accent-coral);
-        }
-
-        .expected-text .word.current {
-            background: rgba(244, 185, 66, 0.3);
-            color: var(--accent-gold);
-            animation: currentWordPulse 1s ease-in-out infinite;
-        }
-
-        @keyframes currentWordPulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
-        }
-
-        /* Transcription Section */
-        .transcription-section {
-            margin-bottom: 20px;
-        }
-
-        .transcribed-words {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            min-height: 60px;
-            padding: 16px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-        }
-
-        .transcribed-word {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.1);
+        
+        .recording-waveform canvas {
+            width: 100%;
+            height: 50px;
             border-radius: 8px;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-            animation: wordSlideIn 0.3s ease forwards;
+            background: rgba(0, 0, 0, 0.3);
         }
-
-        @keyframes wordSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px) scale(0.8);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+        
+        .recording-transcription {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--cream);
+            line-height: 1.5;
+            min-height: 24px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
         }
-
-        .transcribed-word.correct {
-            background: rgba(78, 205, 196, 0.2);
-            border-color: rgba(78, 205, 196, 0.5);
-        }
-
-        .transcribed-word.incorrect {
-            background: rgba(255, 107, 107, 0.2);
-            border-color: rgba(255, 107, 107, 0.5);
-        }
-
-        .transcribed-word .tw-text {
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
-
-        .transcribed-word.correct .tw-text {
-            color: var(--accent-teal);
-        }
-
-        .transcribed-word.incorrect .tw-text {
-            color: var(--accent-coral);
-        }
-
-        .transcribed-word .tw-score {
-            font-size: 0.7rem;
-            opacity: 0.7;
-            margin-top: 4px;
-        }
-
-        .transcribed-word .tw-expected {
-            font-size: 0.65rem;
-            color: rgba(255, 255, 255, 0.5);
-            margin-top: 2px;
-        }
-
-        /* Error Feedback */
-        .error-feedback {
-            background: rgba(255, 107, 107, 0.1);
-            border: 1px solid rgba(255, 107, 107, 0.3);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-
-        .error-feedback.hidden {
+        
+        .recording-transcription:empty {
             display: none;
         }
-
-        .error-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 12px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            margin-bottom: 8px;
+        
+        .recording-transcription .word {
+            display: inline-block;
+            animation: word-appear 0.2s ease-out;
         }
-
-        .error-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .error-icon {
-            font-size: 1.5rem;
-        }
-
-        .error-details {
-            flex: 1;
-        }
-
-        .error-comparison {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 8px;
-        }
-
-        .error-spoken {
-            color: var(--accent-coral);
-        }
-
-        .error-expected {
-            color: var(--accent-teal);
-        }
-
-        .error-suggestion {
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.7);
-            font-style: italic;
-        }
-
-        .play-correct-btn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            background: linear-gradient(135deg, var(--accent-teal), var(--accent-violet));
-            border: none;
-            border-radius: 20px;
-            color: white;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .play-correct-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
-        }
-
-        /* Control Buttons */
-        .pt-controls {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            padding-top: 16px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .pt-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            border-radius: 30px;
-            border: none;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .pt-btn.primary {
-            background: linear-gradient(135deg, var(--accent-coral), var(--accent-violet));
-            color: white;
-        }
-
-        .pt-btn.secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .pt-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .pt-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* Overall Score */
-        .overall-score-display {
-            text-align: center;
-            padding: 20px;
-            margin-top: 16px;
-        }
-
-        .score-circle {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            margin: 0 auto 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            font-weight: bold;
-            background: conic-gradient(var(--accent-teal) var(--score-percent, 0%),
-                    rgba(255, 255, 255, 0.1) var(--score-percent, 0%));
-            position: relative;
-        }
-
-        .score-circle::before {
-            content: '';
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: rgba(15, 15, 25, 0.95);
-        }
-
-        .score-circle .score-value {
-            position: relative;
-            z-index: 1;
-        }
-
-        .score-label {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.6);
+        
+        @keyframes word-appear {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Grammar correction highlight */
@@ -1668,6 +1396,289 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--wood-light);
         }
+
+        /* Mobile device adjustments */
+        @media (max-width: 768px), (pointer: coarse) {
+            /* Hide WASD keyboard hints (useless on mobile) */
+            #controlsHint,
+            .controls-hint {
+                display: none !important;
+            }
+            
+            /* Hide scenario info panel (redundant with objective bar on mobile) */
+            .scenario-info {
+                display: none !important;
+            }
+            
+            /* Hide glossary button on mobile */
+            .glossary-btn {
+                display: none !important;
+            }
+            
+            /* Mobile audio indicator */
+            .audio-indicator {
+                top: 10px !important;
+                right: 10px !important;
+                padding: 8px 12px !important;
+            }
+            
+            .audio-indicator .audio-text {
+                font-size: 0.4rem !important;
+            }
+            
+            .audio-indicator .audio-icon {
+                font-size: 1rem !important;
+            }
+            
+            /* Center and optimize objective bar for mobile */
+            .objective-bar {
+                top: 10px;
+                min-width: 280px;
+                max-width: 90vw;
+                padding: 12px 16px;
+            }
+            
+            /* Make conversation panel fully opaque for readability */
+            .conversation-panel {
+                background: rgba(24, 24, 24, 0.98) !important;
+                padding: 15px 12px 12px !important;
+            }
+            
+            .speech-bubble {
+                background: rgba(40, 30, 20, 1) !important;
+                padding: 12px !important;
+            }
+            
+            /* Mobile conversation layout - compact with small avatar */
+            .character-speaking {
+                position: relative !important;
+                flex-direction: row !important;
+                gap: 10px !important;
+                align-items: flex-start !important;
+            }
+            
+            .character-avatar-small {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 1.2rem !important;
+                border-width: 2px !important;
+                box-shadow: 2px 2px 0 0 var(--wood-shadow) !important;
+                flex-shrink: 0 !important;
+            }
+            
+            .speech-bubble {
+                padding: 10px 12px !important;
+                border-width: 3px !important;
+            }
+            
+            /* Smaller text for mobile */
+            .speech-text {
+                font-size: 0.6rem !important;
+                line-height: 1.9 !important;
+                margin-bottom: 6px !important;
+            }
+            
+            .speech-translation {
+                font-size: 0.5rem !important;
+                line-height: 1.7 !important;
+            }
+            
+            .speech-actions {
+                gap: 6px !important;
+                flex-wrap: wrap !important;
+            }
+            
+            .practice-btn,
+            .play-speech-btn {
+                padding: 8px 12px !important;
+                font-size: 0.45rem !important;
+            }
+            
+            /* Mobile interact prompt */
+            .desktop-prompt {
+                display: none !important;
+            }
+            
+            .mobile-prompt {
+                display: inline !important;
+            }
+            
+            .interact-prompt {
+                pointer-events: auto !important;
+                cursor: pointer;
+                padding: 16px 24px !important;
+            }
+            
+            /* Smaller voice input area */
+            .voice-input-area {
+                gap: 8px !important;
+            }
+            
+            .voice-btn {
+                width: 45px !important;
+                height: 45px !important;
+                font-size: 1.2rem !important;
+            }
+            
+            .text-input {
+                font-size: 0.5rem !important;
+                padding: 10px !important;
+            }
+        }
+        
+        /* Desktop/Mobile prompt toggle */
+        .mobile-prompt {
+            display: none;
+        }
+        
+        .desktop-prompt {
+            display: inline;
+        }
+        
+        /* Mobile Virtual Joystick */
+        #mobile-joystick {
+            position: fixed;
+            bottom: 100px;
+            left: 30px;
+            width: 120px;
+            height: 120px;
+            z-index: 500;
+            display: none;
+            pointer-events: auto;
+            touch-action: none;
+        }
+        
+        @media (max-width: 768px), (pointer: coarse) {
+            #mobile-joystick {
+                display: block;
+            }
+        }
+        
+        .joystick-base {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: rgba(40, 30, 20, 0.7);
+            border: 4px solid rgba(104, 64, 16, 0.8);
+            border-radius: 50%;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        
+        .joystick-thumb {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle at 30% 30%, #c88838, #684010);
+            border: 3px solid #402808;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            transition: none;
+        }
+        
+        .joystick-thumb.active {
+            background: radial-gradient(circle at 30% 30%, #f8e038, #a86020);
+        }
+        
+        /* Mobile Action Mic Button - REMOVED */
+        #mobile-mic-btn {
+            display: none;
+            position: fixed;
+            bottom: 30px;
+            left: 165px;
+            width: 65px;
+            height: 65px;
+            background: rgba(40, 30, 20, 0.95);
+            border: 4px solid var(--wood-dark);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            cursor: pointer;
+            z-index: 500;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            transition: transform 0.15s, background 0.15s, opacity 0.2s;
+            pointer-events: auto;
+            touch-action: none;
+        }
+        
+        #mobile-mic-btn:active {
+            transform: scale(0.95);
+        }
+        
+        #mobile-mic-btn.recording {
+            background: #c0392b;
+            border-color: #e74c3c;
+            animation: mic-pulse 0.8s ease-in-out infinite;
+        }
+        
+        #mobile-mic-btn.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        
+        @keyframes mic-pulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(231, 76, 60, 0.4); }
+            50% { box-shadow: 0 0 25px rgba(231, 76, 60, 0.8); }
+        }
+        
+        @media (max-width: 768px), (pointer: coarse) {
+            #mobile-mic-btn {
+                display: flex;
+            }
+        }
+        
+        /* Hide joystick during active conversation (but keep mic visible!) */
+        body.in-conversation #mobile-joystick {
+            display: none !important;
+        }
+        
+        /* Keep mic button visible and move it to better position during chat */
+        body.in-conversation #mobile-mic-btn {
+            display: flex !important;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-20deg);
+        }
+        
+        /* Exit Conversation Button */
+        #exit-chat-btn {
+            position: fixed;
+            bottom: 25px;
+            left: 30px;
+            width: 60px;
+            height: 60px;
+            background: rgba(40, 30, 20, 0.9);
+            border: 4px solid #c0392b;
+            border-radius: 12px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            transition: transform 0.15s, background 0.15s;
+            pointer-events: auto;
+        }
+        
+        #exit-chat-btn:active {
+            transform: scale(0.95);
+            background: #c0392b;
+        }
+        
+        body.in-conversation #exit-chat-btn {
+            display: flex;
+        }
+        
+        @media (min-width: 769px) {
+            #exit-chat-btn {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 
@@ -1698,6 +1709,12 @@
                 <button id="customScenarioBtn" class="custom-scenario-btn">✨ Custom Scenario</button>
             </div>
 
+            <!-- Audio Indicator - Top Right -->
+            <div class="audio-indicator" id="audioIndicator">
+                <span class="audio-icon">🔊</span>
+                <span class="audio-text">Sound On</span>
+            </div>
+            
             <!-- Glossary Button - Top Right -->
             <button class="glossary-btn" id="glossaryBtn" title="Glossary">📖</button>
             <!-- Objective Bar - Top Center -->
@@ -1717,7 +1734,8 @@
 
             <!-- Interaction Prompt -->
             <div class="interact-prompt" id="interactPrompt">
-                Press <kbd>E</kbd> to talk
+                <span class="desktop-prompt">Press <kbd>E</kbd> to talk</span>
+                <span class="mobile-prompt">👆 Tap to talk</span>
             </div>
 
             <!-- Controls Hint - Bottom Left -->
@@ -1737,14 +1755,7 @@
                         <div class="speech-bubble">
                             <div class="speech-text" id="speechText">waiting awkwardly...</div>
                             <div class="speech-translation" id="speechTranslation"></div>
-                            <div class="speech-actions">
-                                <button class="play-speech-btn" id="replaySpeechBtn" title="Hear this phrase again">
-                                    🔊 Replay
-                                </button>
-                                <button class="practice-btn" id="practiceBtn" title="Practice saying this phrase">
-                                    🎯 Practice Speaking
-                                </button>
-                            </div>
+                            <!-- Speech actions removed -->
                             <div class="grammar-correction hidden" id="grammarCorrection">
                                 <div class="grammar-correction-title">💡 Correction</div>
                                 <div id="grammarText"></div>
@@ -1785,75 +1796,20 @@
                 </div>
             </div>
         </div>
-        <!-- Pronunciation Trainer Panel -->
-        <div class="pronunciation-trainer" id="pronunciationTrainer">
-            <div class="pt-header">
-                <div class="pt-title">🎯 Pronunciation Practice</div>
-                <button class="pt-close" id="ptClose">×</button>
+        <!-- Recording Panel (Right Side) - Same design as original -->
+        <div class="recording-panel" id="recordingPanel">
+            <div class="recording-header">
+                <span class="recording-dot"></span>
+                <span class="recording-label" id="recordingLabel">🎤 Recording...</span>
+                <span class="recording-level" id="levelValue">0%</span>
             </div>
-
-            <!-- Amplitude Visualizer (Mic Check) -->
-            <div class="amplitude-visualizer">
-                <div class="mic-status">
-                    <div class="mic-icon" id="micIcon">🎤</div>
-                    <div class="mic-label" id="micLabel">Ready</div>
-                </div>
-                <div class="amplitude-bars" id="amplitudeBars">
-                    <!-- 32 bars will be generated by JS -->
-                </div>
-                <div class="amplitude-level">
-                    <div class="level-value" id="levelValue">0%</div>
-                    <div class="level-label">Volume</div>
-                </div>
+            <div class="recording-bars" id="amplitudeBars">
+                <!-- Bars generated by JS -->
             </div>
-
-            <!-- Expected Text -->
-            <div class="expected-text-section">
-                <div class="section-label">📝 Say this phrase:</div>
-                <div class="expected-text" id="expectedText">
-                    <!-- Words will be highlighted as matched -->
-                </div>
-                <button class="play-correct-btn" id="playExpectedBtn" style="margin-top: 12px;">
-                    🔊 Hear correct pronunciation
-                </button>
+            <div class="recording-waveform">
+                <canvas id="waveformCanvas" width="280" height="50"></canvas>
             </div>
-
-            <!-- Real-time Transcription -->
-            <div class="transcription-section">
-                <div class="section-label">🎙️ What you're saying:</div>
-                <div class="transcribed-words" id="transcribedWords">
-                    <!-- Words appear here with scores -->
-                </div>
-            </div>
-
-            <!-- Error Feedback -->
-            <div class="error-feedback hidden" id="errorFeedback">
-                <div class="section-label">⚠️ Pronunciation Tips:</div>
-                <div id="errorList">
-                    <!-- Error items populated by JS -->
-                </div>
-            </div>
-
-            <!-- Overall Score -->
-            <div class="overall-score-display hidden" id="overallScore">
-                <div class="score-circle" id="scoreCircle">
-                    <span class="score-value" id="scoreValue">0%</span>
-                </div>
-                <div class="score-label">Pronunciation Accuracy</div>
-            </div>
-
-            <!-- Controls -->
-            <div class="pt-controls">
-                <button class="pt-btn primary" id="ptStartBtn">
-                    <span>🎤</span> Start Recording
-                </button>
-                <button class="pt-btn secondary" id="ptPlaybackBtn" disabled>
-                    <span>🔁</span> Hear My Recording
-                </button>
-                <button class="pt-btn secondary" id="ptRetryBtn" disabled>
-                    <span>↻</span> Try Again
-                </button>
-            </div>
+            <div class="recording-transcription" id="liveTranscript"></div>
         </div>
 
         <!-- Loading Screen -->
@@ -1867,6 +1823,15 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Mobile Virtual Joystick -->
+        <div id="mobile-joystick">
+            <div class="joystick-base"></div>
+            <div class="joystick-thumb" id="joystickThumb"></div>
+        </div>
+        
+        <!-- Exit Conversation Button (Mobile) -->
+        <button id="exit-chat-btn" title="Exit conversation">✕</button>
     </div>
 
     <script type="module" src="lingua-world.js"></script>

@@ -48,7 +48,12 @@ let gameState = {
 let currentAudio = null;
 let mediaRecorder = null;
 let audioChunks = [];
+
+// Preloaded greeting for instant playback
+let preloadedGreeting = null;
+let preloadedGreetingAudio = null;
 let isRecording = false;
+let isNPCSpeaking = false; // Prevent recording while NPC speaks
 
 // Mirage state
 let mirageActive = false;
@@ -340,6 +345,7 @@ const elements = {
     customScenarioBtn: document.getElementById('customScenarioBtn'), // New button
     practiceBtn: document.getElementById('practiceBtn'),
     replaySpeechBtn: document.getElementById('replaySpeechBtn'),
+    audioIndicator: document.getElementById('audioIndicator'),
     // Pronunciation Trainer elements
     pronunciationTrainer: document.getElementById('pronunciationTrainer'),
     ptClose: document.getElementById('ptClose'),
@@ -788,6 +794,10 @@ async function init() {
 
     // Update UI with scenario info
     updateScenarioUI();
+
+    // 🎙️ Start preloading NPC greeting IMMEDIATELY (don't await - run in background)
+    // This gives maximum time for text + audio generation before player reaches NPC
+    preloadGreeting();
 
     // Initialize Three.js
     initThreeJS();
@@ -1982,56 +1992,356 @@ function setupControls() {
             mouseY = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, mouseY));
         }
     });
+    
+    // Mobile Virtual Joystick
+    const joystick = document.getElementById('mobile-joystick');
+    const joystickThumb = document.getElementById('joystickThumb');
+    
+    if (joystick && joystickThumb) {
+        let joystickActive = false;
+        let joystickStartX = 0;
+        let joystickStartY = 0;
+        const maxDistance = 40; // Max thumb movement radius
+        
+        function handleJoystickStart(e) {
+            e.preventDefault();
+            joystickActive = true;
+            joystickThumb.classList.add('active');
+            const touch = e.touches ? e.touches[0] : e;
+            const rect = joystick.getBoundingClientRect();
+            joystickStartX = rect.left + rect.width / 2;
+            joystickStartY = rect.top + rect.height / 2;
+        }
+        
+        function handleJoystickMove(e) {
+            if (!joystickActive) return;
+            e.preventDefault();
+            
+            const touch = e.touches ? e.touches[0] : e;
+            let deltaX = touch.clientX - joystickStartX;
+            let deltaY = touch.clientY - joystickStartY;
+            
+            // Limit to max distance
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            if (distance > maxDistance) {
+                deltaX = (deltaX / distance) * maxDistance;
+                deltaY = (deltaY / distance) * maxDistance;
+            }
+            
+            // Move thumb visually
+            joystickThumb.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+            
+            // Convert to key presses (with deadzone)
+            const deadzone = 10;
+            const normalizedX = deltaX / maxDistance;
+            const normalizedY = deltaY / maxDistance;
+            
+            keys['KeyW'] = deltaY < -deadzone;
+            keys['KeyS'] = deltaY > deadzone;
+            keys['KeyA'] = deltaX < -deadzone;
+            keys['KeyD'] = deltaX > deadzone;
+        }
+        
+        function handleJoystickEnd(e) {
+            e.preventDefault();
+            joystickActive = false;
+            joystickThumb.classList.remove('active');
+            joystickThumb.style.transform = 'translate(-50%, -50%)';
+            
+            // Reset all movement keys
+            keys['KeyW'] = false;
+            keys['KeyS'] = false;
+            keys['KeyA'] = false;
+            keys['KeyD'] = false;
+        }
+        
+        // Touch events
+        joystick.addEventListener('touchstart', handleJoystickStart, { passive: false });
+        document.addEventListener('touchmove', handleJoystickMove, { passive: false });
+        document.addEventListener('touchend', handleJoystickEnd, { passive: false });
+        
+        // Mouse events (for desktop testing)
+        joystick.addEventListener('mousedown', handleJoystickStart);
+        document.addEventListener('mousemove', handleJoystickMove);
+        document.addEventListener('mouseup', handleJoystickEnd);
+    }
+    
+    // Mobile tap-to-talk on interact prompt
+    if (elements.interactPrompt) {
+        elements.interactPrompt.addEventListener('click', () => {
+            if (nearNPC && !isConversationActive) {
+                startConversation();
+            }
+        });
+        
+        elements.interactPrompt.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (nearNPC && !isConversationActive) {
+                startConversation();
+            }
+        });
+    }
+    
+    // Mobile Mic Action Button
+    const mobileMicBtn = document.getElementById('mobile-mic-btn');
+    if (mobileMicBtn) {
+        console.log('🎤 Mobile mic button found, attaching handlers...');
+        
+        // Touch start - begin recording or start conversation
+        mobileMicBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log(`🎤 Touch START - inConversation: ${isConversationActive}, isRecording: ${isRecording}, nearNPC: ${nearNPC}, npcSpeaking: ${isNPCSpeaking}`);
+            
+            // Don't allow recording while NPC is speaking
+            if (isNPCSpeaking) {
+                console.log('🎤 NPC is speaking - wait for them to finish');
+                return;
+            }
+            
+            if (isConversationActive) {
+                // In conversation - start recording
+                if (!isRecording) {
+                    console.log('🎤 Starting recording from mobile mic...');
+                    toggleRecording();
+                    mobileMicBtn.classList.add('recording');
+                }
+            } else if (nearNPC) {
+                // Near NPC but not in conversation - start it
+                console.log('🎤 Starting conversation from mobile mic...');
+                startConversation();
+            } else {
+                console.log('🎤 Not near NPC and not in conversation - nothing to do');
+            }
+        }, { passive: false });
+        
+        // Touch end - stop recording
+        mobileMicBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log(`🎤 Touch END - inConversation: ${isConversationActive}, isRecording: ${isRecording}`);
+            
+            if (isConversationActive && isRecording) {
+                console.log('🎤 Stopping recording from mobile mic...');
+                toggleRecording();
+                mobileMicBtn.classList.remove('recording');
+            }
+        }, { passive: false });
+        
+        // Mouse events for desktop testing
+        mobileMicBtn.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            console.log(`🎤 Mouse DOWN - inConversation: ${isConversationActive}, isRecording: ${isRecording}`);
+            
+            if (isConversationActive && !isRecording) {
+                toggleRecording();
+                mobileMicBtn.classList.add('recording');
+            } else if (nearNPC && !isConversationActive) {
+                startConversation();
+            }
+        });
+        
+        mobileMicBtn.addEventListener('mouseup', (e) => {
+            e.stopPropagation();
+            console.log(`🎤 Mouse UP - inConversation: ${isConversationActive}, isRecording: ${isRecording}`);
+            
+            if (isConversationActive && isRecording) {
+                toggleRecording();
+                mobileMicBtn.classList.remove('recording');
+            }
+        });
+    } else {
+        console.warn('⚠️ Mobile mic button not found in DOM!');
+    }
+    
+    // Exit conversation button (mobile)
+    const exitChatBtn = document.getElementById('exit-chat-btn');
+    if (exitChatBtn) {
+        exitChatBtn.addEventListener('click', () => {
+            if (isConversationActive) {
+                endConversation();
+            }
+        });
+        
+        exitChatBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (isConversationActive) {
+                endConversation();
+            }
+        });
+    }
 }
 
 // ==================== CONVERSATION SYSTEM ====================
 function setupConversationUI() {
-    // Single click: toggle recording
-    elements.voiceBtn.addEventListener('click', toggleRecording);
+    // Voice button - click to toggle recording
+    console.log('🎤 Setting up conversation UI, voiceBtn:', elements.voiceBtn);
+    
+    if (elements.voiceBtn) {
+        // Use mousedown instead of click for more reliable touch/click handling
+        elements.voiceBtn.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🎤 Voice button MOUSEDOWN! isRecording:', isRecording, 'isNPCSpeaking:', isNPCSpeaking, 'disabled:', elements.voiceBtn.disabled);
+            
+            if (isNPCSpeaking) {
+                console.log('🎤 Cannot record - NPC is speaking');
+                return;
+            }
+            
+            toggleRecording();
+        });
+        
+        // Also handle touch for mobile
+        elements.voiceBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🎤 Voice button TOUCHSTART! isRecording:', isRecording, 'isNPCSpeaking:', isNPCSpeaking);
+            
+            if (isNPCSpeaking) {
+                console.log('🎤 Cannot record - NPC is speaking');
+                return;
+            }
+            
+            toggleRecording();
+        }, { passive: false });
+        
+        console.log('✅ Voice button mousedown/touchstart listeners attached');
+    } else {
+        console.error('❌ Voice button not found!');
+    }
 
-    // Double click: open pronunciation trainer with NPC's last message
-    elements.voiceBtn.addEventListener('dblclick', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const lastNPCText = elements.speechText?.textContent || '';
-        if (lastNPCText) {
-            openPronunciationTrainer(lastNPCText);
+    // Send button and text input
+    if (elements.sendBtn) {
+        elements.sendBtn.addEventListener('click', sendTextMessage);
+    }
+    if (elements.textInput) {
+        elements.textInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendTextMessage();
+        });
+    }
+}
+
+// ==================== PRELOAD GREETING FOR INSTANT PLAYBACK ====================
+async function preloadGreeting() {
+    console.log('🎙️ Preloading NPC greeting...');
+    
+    // Update audio indicator to show loading
+    const audioIndicator = document.getElementById('audioIndicator');
+    const audioText = audioIndicator?.querySelector('.audio-text');
+    if (audioText) audioText.textContent = 'Loading...';
+    
+    try {
+        // Generate the greeting text
+        console.log('📝 Generating greeting text...');
+        preloadedGreeting = await generateNPCResponse(null, true);
+        console.log('✅ Greeting text ready:', preloadedGreeting?.text?.substring(0, 50) + '...');
+        
+        // Pre-generate the audio
+        if (preloadedGreeting?.text) {
+            if (audioText) audioText.textContent = 'Loading Audio...';
+            
+            const language = gameState.language || 'french';
+            const langConfig = getLanguageConfig(language);
+            const characterId = langConfig?.character?.name || 'default';
+            const voiceConfig = getVoiceForLanguage(language);
+            
+            let audioLoaded = false;
+            
+            // Try backend API first
+            try {
+                console.log('🔊 Generating greeting audio (backend)...');
+                const response = await fetch(`${CONFIG.BACKEND_URL}/api/speak`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: preloadedGreeting.text,
+                        character_id: characterId,
+                        expression: 'greeting'
+                    })
+                });
+                
+                if (response.ok) {
+                    const audioBlob = await response.blob();
+                    preloadedGreetingAudio = new Audio(URL.createObjectURL(audioBlob));
+                    await new Promise((resolve) => {
+                        preloadedGreetingAudio.addEventListener('canplaythrough', resolve, { once: true });
+                        preloadedGreetingAudio.addEventListener('error', resolve, { once: true });
+                        preloadedGreetingAudio.load();
+                    });
+                    audioLoaded = true;
+                    console.log('✅ Greeting audio preloaded (backend)!');
+                }
+            } catch (backendError) {
+                console.log('⚠️ Backend TTS failed, trying direct ElevenLabs...');
+            }
+            
+            // Fallback to direct ElevenLabs API
+            if (!audioLoaded && voiceConfig?.voiceId) {
+                try {
+                    console.log('🔊 Generating greeting audio (ElevenLabs direct)...');
+                    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceConfig.voiceId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'xi-api-key': CONFIG.ELEVENLABS_API_KEY
+                        },
+                        body: JSON.stringify({
+                            text: preloadedGreeting.text,
+                            model_id: 'eleven_v3',
+                            voice_settings: {
+                                stability: 0.5,
+                                similarity_boost: 0.75
+                            }
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const audioBlob = await response.blob();
+                        preloadedGreetingAudio = new Audio(URL.createObjectURL(audioBlob));
+                        await new Promise((resolve) => {
+                            preloadedGreetingAudio.addEventListener('canplaythrough', resolve, { once: true });
+                            preloadedGreetingAudio.addEventListener('error', resolve, { once: true });
+                            preloadedGreetingAudio.load();
+                        });
+                        audioLoaded = true;
+                        console.log('✅ Greeting audio preloaded (ElevenLabs direct)!');
+                    }
+                } catch (elevenLabsError) {
+                    console.log('⚠️ ElevenLabs TTS also failed:', elevenLabsError);
+                }
+            }
+            
+            if (audioLoaded) {
+                if (audioText) audioText.textContent = 'Ready!';
+                if (audioIndicator) audioIndicator.style.borderColor = '#2ecc71';
+            } else {
+                if (audioText) audioText.textContent = 'Sound On';
+            }
         }
-    });
-
-    // Practice button: open pronunciation trainer
-    if (elements.practiceBtn) {
-        elements.practiceBtn.addEventListener('click', () => {
-            const phraseToLearn = elements.speechText?.textContent || '';
-            if (phraseToLearn) {
-                openPronunciationTrainer(phraseToLearn);
-            }
-        });
+    } catch (error) {
+        console.log('⚠️ Greeting preload failed, will generate on demand:', error);
+        if (audioText) audioText.textContent = 'Sound On';
     }
-
-    // Replay button: replay the NPC's last speech
-    if (elements.replaySpeechBtn) {
-        elements.replaySpeechBtn.addEventListener('click', async () => {
-            const lastSpeech = elements.speechText?.textContent || '';
-            if (lastSpeech) {
-                elements.replaySpeechBtn.disabled = true;
-                elements.replaySpeechBtn.textContent = '🔊...';
-                await speakText(lastSpeech);
-                elements.replaySpeechBtn.disabled = false;
-                elements.replaySpeechBtn.textContent = '🔊 Replay';
-            }
-        });
-    }
-
-    elements.sendBtn.addEventListener('click', sendTextMessage);
-    elements.textInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendTextMessage();
-    });
 }
 
 async function startConversation() {
     isConversationActive = true;
     document.exitPointerLock();
+    
+    // Add body class for mobile UI state
+    document.body.classList.add('in-conversation');
+    
+    // PAUSE background music during conversation completely
+    if (audioManager) {
+        if (audioManager.backgroundMusic) {
+            audioManager.backgroundMusic.pause();
+            console.log('🔇 Background music PAUSED for conversation');
+        }
+        if (audioManager.ambientSound) {
+            audioManager.ambientSound.pause();
+        }
+    }
 
     elements.conversationPanel.classList.add('active');
     elements.interactPrompt.classList.remove('active');
@@ -2050,24 +2360,122 @@ async function startConversation() {
         console.log('🎨 Conversation started - Mirage stylization active');
     }
 
-    // Get initial greeting from character
-    const greeting = await generateNPCResponse(null, true);
+    // Use preloaded greeting if available, otherwise generate fresh
+    let greeting;
+    let usePreloadedAudio = false;
+    
+    if (preloadedGreeting) {
+        greeting = preloadedGreeting;
+        usePreloadedAudio = preloadedGreetingAudio !== null;
+        console.log('🚀 Using preloaded greeting - instant response!');
+    } else {
+        greeting = await generateNPCResponse(null, true);
+    }
+    
     displayNPCMessage(greeting.text, greeting.translation);
     
     // Feed action/mood to Decart Mirage
     updateMirageFromResponse(greeting);
 
     // Store the next objective from greeting but DON'T show it yet
-    // The first objective should always be to greet back
     if (greeting.nextObjective) {
         pendingObjective = greeting.nextObjective;
     }
 
-    // Keep showing the static "greet them" objective for the first response
-    // Dynamic objectives will kick in after the first exchange
+    // Hide audio indicator after first speech
+    const audioIndicator = document.getElementById('audioIndicator');
+    if (audioIndicator) {
+        audioIndicator.classList.add('hidden');
+    }
 
-    // Speak the greeting with text highlighting
-    await speakTextWithHighlight(greeting.text, greeting.expression || 'greeting');
+    // Play preloaded audio or generate fresh
+    if (usePreloadedAudio && preloadedGreetingAudio) {
+        console.log('🎙️ Playing preloaded greeting with highlighting...');
+        
+        // Mark NPC as speaking - disable mic
+        isNPCSpeaking = true;
+        updateMicButtonState();
+        
+        currentAudio = preloadedGreetingAudio;
+        currentSpeechText = greeting.text;
+        speechHighlightIndex = 0;
+        
+        const words = greeting.text.split(/\s+/);
+        
+        // Show words dimmed initially (same as speakTextWithHighlight)
+        if (elements.speechText) {
+            elements.speechText.innerHTML = words.map(w =>
+                `<span class="word-pending" style="opacity: 0.3;">${w}</span>`
+            ).join(' ');
+        }
+        
+        // Get actual audio duration for proper sync
+        const audioDuration = currentAudio.duration || 5;
+        const msPerWord = (audioDuration * 1000) / words.length;
+        console.log(`🔊 Preloaded audio: ${audioDuration.toFixed(2)}s, ${words.length} words, ${msPerWord.toFixed(0)}ms/word`);
+        
+        // Start highlighting synced to audio
+        let wordIndex = 0;
+        speechHighlightInterval = setInterval(() => {
+            if (wordIndex < words.length) {
+                const highlighted = words.map((word, i) => {
+                    if (i < wordIndex) return `<span class="word-spoken" style="opacity: 1;">${word}</span>`;
+                    if (i === wordIndex) return `<span class="word-highlight">${word}</span>`;
+                    return `<span class="word-pending" style="opacity: 0.3;">${word}</span>`;
+                }).join(' ');
+                elements.speechText.innerHTML = highlighted;
+                wordIndex++;
+            }
+        }, msPerWord);
+        
+        currentAudio.play().catch(e => console.error('Audio play error:', e));
+        console.log('🎵 Preloaded audio started - beginning highlight sync');
+        
+        await new Promise(resolve => {
+            currentAudio.addEventListener('ended', () => {
+                console.log('🎵 Preloaded audio ended');
+                resolve();
+            }, { once: true });
+            currentAudio.addEventListener('error', resolve, { once: true });
+        });
+        
+        // Clear interval and show all words
+        if (speechHighlightInterval) {
+            clearInterval(speechHighlightInterval);
+            speechHighlightInterval = null;
+        }
+        elements.speechText.innerHTML = greeting.text;
+        
+        // NPC finished - enable mic
+        isNPCSpeaking = false;
+        updateMicButtonState();
+        
+        // Clear preloaded audio
+        preloadedGreetingAudio = null;
+        preloadedGreeting = null;
+    } else {
+        await speakTextWithHighlight(greeting.text, greeting.expression || 'greeting');
+    }
+}
+
+// Update mic button visual state
+function updateMicButtonState() {
+    const voiceBtn = elements.voiceBtn;
+    
+    console.log('🎤 updateMicButtonState - isNPCSpeaking:', isNPCSpeaking);
+    
+    if (isNPCSpeaking) {
+        // Visual feedback only - don't disable (it blocks events)
+        if (voiceBtn) {
+            voiceBtn.style.opacity = '0.5';
+            voiceBtn.style.cursor = 'not-allowed';
+        }
+    } else {
+        if (voiceBtn) {
+            voiceBtn.style.opacity = '1';
+            voiceBtn.style.cursor = 'pointer';
+        }
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2109,6 +2517,31 @@ function zoomOutFromNPC() {
 
 function endConversation() {
     isConversationActive = false;
+    isNPCSpeaking = false;  // Reset NPC speaking state
+    isRecording = false;    // Reset recording state
+    
+    // Remove body class for mobile UI state
+    document.body.classList.remove('in-conversation');
+    
+    // Resume background music after conversation
+    if (audioManager) {
+        if (audioManager.backgroundMusic) {
+            audioManager.backgroundMusic.play().catch(() => {});
+            console.log('🔊 Background music RESUMED after conversation');
+        }
+        if (audioManager.ambientSound) {
+            audioManager.ambientSound.play().catch(() => {});
+        }
+    }
+    
+    // Reset voice button state
+    if (elements.voiceBtn) {
+        elements.voiceBtn.classList.remove('recording');
+        elements.voiceBtn.textContent = '🎤';
+        elements.voiceBtn.style.opacity = '1';
+        elements.voiceBtn.style.cursor = 'pointer';
+    }
+    
     elements.conversationPanel.classList.remove('active');
     elements.controlsHint.style.display = 'block';
     conversationHistory = [];
@@ -2329,6 +2762,10 @@ function displayNPCMessage(text, translation, correction = null) {
 
 // ==================== TEXT HIGHLIGHTING DURING SPEECH ====================
 async function speakTextWithHighlight(text, expression = null) {
+    // Mark NPC as speaking - disable mic button
+    isNPCSpeaking = true;
+    updateMicButtonState();
+    
     // Store the text for highlighting
     currentSpeechText = text;
     speechHighlightIndex = 0;
@@ -2393,6 +2830,10 @@ async function speakTextWithHighlight(text, expression = null) {
                 `<span class="word-spoken" style="opacity: 1; color: #4ecdc4;">${w}</span>`
             ).join(' ');
         }
+        
+        // NPC finished speaking - enable mic button
+        isNPCSpeaking = false;
+        updateMicButtonState();
     });
 
     // Wait for audio to finish
@@ -2534,9 +2975,12 @@ async function speakText(text, expression = null) {
 
 // ==================== VOICE RECORDING ====================
 async function toggleRecording() {
+    console.log('🎤 toggleRecording called - isRecording:', isRecording);
     if (isRecording) {
+        console.log('🎤 Stopping recording...');
         stopRecording();
     } else {
+        console.log('🎤 Starting recording...');
         startRecording();
     }
 }
@@ -2547,7 +2991,19 @@ async function toggleRecording() {
 
 async function startRecording() {
     if (isRecording) return;
+    if (isNPCSpeaking) {
+        console.log('🎤 Cannot record - NPC is speaking');
+        return;
+    }
+    
     isRecording = true;
+    window.recordingStartTime = performance.now();
+    console.log(`\n🔴 ═══════ RECORDING STARTED ═══════`);
+    console.log(`⏱️ [0ms] Recording begins...`);
+    
+    // Clear live transcript
+    const liveTranscript = document.getElementById('liveTranscript');
+    if (liveTranscript) liveTranscript.innerHTML = '';
 
     // Check if we have API key
     const hasApiKey = CONFIG.ELEVENLABS_API_KEY && CONFIG.ELEVENLABS_API_KEY.length > 10;
@@ -2570,14 +3026,25 @@ async function startRecording() {
 function stopRecording() {
     if (!isRecording) return;
     isRecording = false;
+    
+    const recordingDuration = window.recordingStartTime ? (performance.now() - window.recordingStartTime).toFixed(0) : '?';
+    console.log(`⏹️ ═══════ RECORDING STOPPED ═══════`);
+    console.log(`⏱️ Recording duration: ${recordingDuration}ms`);
+    
+    // Update recording panel to show processing
+    const recordingLabel = document.getElementById('recordingLabel');
+    if (recordingLabel) recordingLabel.textContent = 'Processing...';
 
     // Stop MediaRecorder
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        console.log(`⏱️ Stopping MediaRecorder (state: ${mediaRecorder.state})...`);
         mediaRecorder.stop();
     }
 
-    elements.voiceBtn.classList.remove('recording');
-    elements.voiceBtn.textContent = '🎤';
+    if (elements.voiceBtn) {
+        elements.voiceBtn.classList.remove('recording');
+        elements.voiceBtn.textContent = '🎤';
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2857,18 +3324,44 @@ async function startRegularRecording() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-        // Setup MediaRecorder
-        mediaRecorder = new MediaRecorder(stream);
+        // Setup MediaRecorder with supported MIME type
+        // ElevenLabs prefers mp4/m4a, but browsers support webm/ogg better
+        const mimeTypes = [
+            'audio/mp4',
+            'audio/webm;codecs=opus',
+            'audio/webm',
+            'audio/ogg;codecs=opus',
+            'audio/ogg'
+        ];
+        
+        let selectedMimeType = '';
+        for (const type of mimeTypes) {
+            if (MediaRecorder.isTypeSupported(type)) {
+                selectedMimeType = type;
+                console.log(`🎤 Using audio format: ${type}`);
+                break;
+            }
+        }
+        
+        const recorderOptions = selectedMimeType ? { mimeType: selectedMimeType } : {};
+        mediaRecorder = new MediaRecorder(stream, recorderOptions);
+        console.log(`🎤 MediaRecorder created with mimeType: ${mediaRecorder.mimeType}`);
         audioChunks = [];
 
         mediaRecorder.ondataavailable = (e) => {
+            console.log(`📦 Audio chunk received: ${(e.data.size / 1024).toFixed(1)}KB`);
             audioChunks.push(e.data);
         };
 
         mediaRecorder.onstop = async () => {
+            const totalDuration = window.recordingStartTime ? (performance.now() - window.recordingStartTime).toFixed(0) : '?';
+            console.log(`⏱️ MediaRecorder stopped, total time since start: ${totalDuration}ms`);
+            console.log(`📦 Total chunks: ${audioChunks.length}`);
+            
             stopAmplitudeVisualization();
             hideAmplitudeUI();
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            console.log(`📦 Audio blob created: ${(audioBlob.size / 1024).toFixed(1)}KB`);
             await processAudioInput(audioBlob);
             stream.getTracks().forEach(track => track.stop());
         };
@@ -2892,8 +3385,10 @@ async function startRegularRecording() {
 
         mediaRecorder.start();
 
-        elements.voiceBtn.classList.add('recording');
-        elements.voiceBtn.innerHTML = '<span class="pulse-dot"></span>';
+        if (elements.voiceBtn) {
+            elements.voiceBtn.classList.add('recording');
+            elements.voiceBtn.innerHTML = '<span class="pulse-dot"></span>';
+        }
 
         console.log('✅ Recording started with visualization');
 
@@ -2904,115 +3399,78 @@ async function startRegularRecording() {
 }
 
 function showAmplitudeUI() {
-    // Create or show the amplitude visualization UI
-    let ampUI = document.getElementById('amplitudeUI');
-    if (!ampUI) {
-        ampUI = document.createElement('div');
-        ampUI.id = 'amplitudeUI';
-        ampUI.innerHTML = `
-            <div class="amp-container">
-                <div class="amp-header">
-                    <span class="amp-pulse"></span>
-                    <span class="amp-label">🎤 Recording...</span>
-                    <span class="amp-level">0%</span>
-                </div>
-                <div class="amp-bars" id="ampBars"></div>
-                <div class="amp-waveform" id="ampWaveform">
-                    <canvas id="waveformCanvas" width="300" height="60"></canvas>
-                </div>
-            </div>
-        `;
-
-        // Add styles
-        const style = document.createElement('style');
-        style.textContent = `
-            #amplitudeUI {
-                position: fixed;
-                bottom: 120px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: rgba(15, 15, 25, 0.95);
-                border: 2px solid rgba(78, 205, 196, 0.5);
-                border-radius: 16px;
-                padding: 16px;
-                z-index: 1001;
-                min-width: 320px;
-                animation: slideUp 0.3s ease;
+    // Show the right-side recording panel only
+    const recordingPanel = document.getElementById('recordingPanel');
+    const recordingLabel = document.getElementById('recordingLabel');
+    const amplitudeBars = document.getElementById('amplitudeBars');
+    
+    if (recordingPanel) {
+        recordingPanel.classList.add('active');
+        if (recordingLabel) recordingLabel.textContent = '🎤 Recording...';
+        
+        // Create bars if they don't exist
+        if (amplitudeBars && amplitudeBars.children.length === 0) {
+            for (let i = 0; i < 32; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'amp-bar';
+                bar.style.height = '2px';
+                amplitudeBars.appendChild(bar);
             }
-            @keyframes slideUp {
-                from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-                to { opacity: 1; transform: translateX(-50%) translateY(0); }
-            }
-            .amp-container { display: flex; flex-direction: column; gap: 12px; }
-            .amp-header { display: flex; align-items: center; gap: 10px; }
-            .amp-pulse {
-                width: 12px; height: 12px;
-                background: #ff6b6b;
-                border-radius: 50%;
-                animation: pulse 1s ease-in-out infinite;
-            }
-            @keyframes pulse {
-                0%, 100% { transform: scale(1); opacity: 1; }
-                50% { transform: scale(1.3); opacity: 0.7; }
-            }
-            .amp-label { flex: 1; color: #fff; font-size: 0.9rem; }
-            .amp-level { 
-                font-size: 1.2rem; font-weight: bold; 
-                color: #4ecdc4; min-width: 50px; text-align: right;
-            }
-            .amp-bars {
-                display: flex; align-items: flex-end;
-                height: 40px; gap: 2px;
-            }
-            .amp-bar {
-                flex: 1; background: linear-gradient(to top, #4ecdc4, #f4b942);
-                border-radius: 2px; min-height: 2px;
-                transition: height 0.05s ease;
-            }
-            .amp-waveform { margin-top: 8px; }
-            #waveformCanvas {
-                width: 100%; height: 60px;
-                border-radius: 8px;
-                background: rgba(0,0,0,0.3);
-            }
-        `;
-        document.head.appendChild(style);
-        document.body.appendChild(ampUI);
-
-        // Create bars
-        const barsContainer = document.getElementById('ampBars');
-        for (let i = 0; i < 32; i++) {
-            const bar = document.createElement('div');
-            bar.className = 'amp-bar';
-            barsContainer.appendChild(bar);
         }
     }
-
-    ampUI.style.display = 'block';
+    
+    // PAUSE background music while recording - use correct property name
+    if (audioManager && audioManager.backgroundMusic) {
+        audioManager.backgroundMusic.pause();
+        console.log('🔇 Background music PAUSED for recording');
+    }
+    // Also pause ambient
+    if (audioManager && audioManager.ambientSound) {
+        audioManager.ambientSound.pause();
+    }
 }
 
 function hideAmplitudeUI() {
-    const ampUI = document.getElementById('amplitudeUI');
-    if (ampUI) {
-        ampUI.style.display = 'none';
+    // Hide the right-side recording panel
+    const recordingPanel = document.getElementById('recordingPanel');
+    if (recordingPanel) {
+        recordingPanel.classList.remove('active');
     }
+    
+    // Keep music paused during conversation - will resume when conversation ends
+    // Don't resume here since we want silence during the whole conversation
 }
 
 function startAmplitudeVisualization() {
-    if (!analyser) return;
+    if (!analyser) {
+        console.log('⚠️ Amplitude visualizer: analyser not available');
+        return;
+    }
 
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
-    const bars = document.querySelectorAll('.amp-bar');
-    const levelDisplay = document.querySelector('.amp-level');
+    
+    // Use right-side recording panel elements
+    const amplitudeBars = document.getElementById('amplitudeBars');
+    const bars = amplitudeBars ? amplitudeBars.children : [];
+    const levelDisplay = document.getElementById('levelValue');
     const canvas = document.getElementById('waveformCanvas');
     const ctx = canvas?.getContext('2d');
-
-    // Waveform history
+    
+    // Waveform history for time series display
     const waveformHistory = [];
     const maxHistory = 150;
 
     function draw() {
+        // Stop if analyser was destroyed
+        if (!analyser) {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            return;
+        }
+        
         animationFrameId = requestAnimationFrame(draw);
 
         analyser.getByteFrequencyData(dataArray);
@@ -3031,24 +3489,28 @@ function startAmplitudeVisualization() {
             levelDisplay.style.color = percent > 50 ? '#4ecdc4' : percent > 20 ? '#f4b942' : '#ff6b6b';
         }
 
-        // Update bars
-        const step = Math.floor(bufferLength / bars.length);
-        bars.forEach((bar, i) => {
-            const value = dataArray[i * step] || 0;
-            const height = Math.max(2, (value / 255) * 40);
-            bar.style.height = `${height}px`;
-        });
-
-        // Draw waveform
+        // Update bars in right panel
+        if (bars.length > 0) {
+            const step = Math.floor(bufferLength / bars.length);
+            for (let i = 0; i < bars.length; i++) {
+                const value = dataArray[i * step] || 0;
+                const height = Math.max(2, (value / 255) * 40);
+                bars[i].style.height = `${height}px`;
+            }
+        }
+        
+        // Draw time series waveform
         if (ctx && canvas) {
             waveformHistory.push(avg);
             if (waveformHistory.length > maxHistory) {
                 waveformHistory.shift();
             }
 
+            // Clear canvas
             ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+            // Draw waveform line
             ctx.beginPath();
             ctx.strokeStyle = '#4ecdc4';
             ctx.lineWidth = 2;
@@ -3068,7 +3530,7 @@ function startAmplitudeVisualization() {
 
             ctx.stroke();
 
-            // Fill under the line
+            // Fill under the line for nice effect
             ctx.lineTo(x, canvas.height);
             ctx.lineTo(0, canvas.height);
             ctx.fillStyle = 'rgba(78, 205, 196, 0.2)';
@@ -3104,14 +3566,15 @@ function initPronunciationTrainer() {
     // Initialize voice feedback with API key
     voiceFeedback.init(CONFIG.ELEVENLABS_API_KEY);
 
-    // Create amplitude bars
-    if (elements.amplitudeBars) {
-        elements.amplitudeBars.innerHTML = '';
-        for (let i = 0; i < 32; i++) {
+    // Create amplitude bars in the recording panel
+    const amplitudeBars = document.getElementById('amplitudeBars');
+    if (amplitudeBars) {
+        amplitudeBars.innerHTML = '';
+        for (let i = 0; i < 24; i++) {
             const bar = document.createElement('div');
-            bar.className = 'amplitude-bar';
-            bar.style.height = '4px';
-            elements.amplitudeBars.appendChild(bar);
+            bar.className = 'amp-bar';
+            bar.style.height = '3px';
+            amplitudeBars.appendChild(bar);
         }
     }
 
@@ -3262,20 +3725,22 @@ async function togglePronunciationRecording() {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function handleAmplitudeUpdate(data) {
-    // Update amplitude bars
-    const bars = elements.amplitudeBars?.children;
-    if (bars) {
+    // Update amplitude bars in recording panel
+    const amplitudeBars = document.getElementById('amplitudeBars');
+    const bars = amplitudeBars?.children;
+    if (bars && bars.length > 0) {
         const step = Math.floor(data.data.length / bars.length);
         for (let i = 0; i < bars.length; i++) {
             const value = data.data[i * step] || 0;
-            const height = Math.max(4, (value / 255) * 60);
+            const height = Math.max(3, (value / 255) * 35);
             bars[i].style.height = `${height}px`;
         }
     }
 
     // Update level value
-    if (elements.levelValue) {
-        elements.levelValue.textContent = `${Math.round(data.average * 100)}%`;
+    const levelValue = document.getElementById('levelValue');
+    if (levelValue) {
+        levelValue.textContent = `${Math.round(data.average * 100)}%`;
     }
 
     // Update mic icon for speaking detection
@@ -3434,6 +3899,10 @@ function retryPronunciation() {
 }
 
 async function processAudioInput(audioBlob) {
+    const startTime = performance.now();
+    console.log(`\n🎙️ ═══════ VOICE PROCESSING START ═══════`);
+    console.log(`⏱️ [${startTime.toFixed(0)}ms] Recording received, size: ${(audioBlob.size / 1024).toFixed(1)}KB`);
+    
     elements.textInput.placeholder = 'Transcribing your voice...';
     elements.textInput.disabled = true;
     elements.sendBtn.disabled = true;
@@ -3450,10 +3919,23 @@ async function processAudioInput(audioBlob) {
         let wordsWithScores = [];
 
         if (CONFIG.ELEVENLABS_API_KEY) {
-            console.log('🎤 Transcribing with ElevenLabs STT...');
+            console.log(`⏱️ [${(performance.now() - startTime).toFixed(0)}ms] 🎤 Starting ElevenLabs STT...`);
 
+            // Determine file extension from blob type
+            const mimeToExt = {
+                'audio/mp4': 'mp4',
+                'audio/webm': 'webm',
+                'audio/webm;codecs=opus': 'webm',
+                'audio/ogg': 'ogg',
+                'audio/ogg;codecs=opus': 'ogg',
+                'audio/wav': 'wav'
+            };
+            const ext = mimeToExt[audioBlob.type] || 'webm';
+            const filename = `recording.${ext}`;
+            console.log(`📁 Sending audio as: ${filename} (type: ${audioBlob.type})`);
+            
             const formData = new FormData();
-            formData.append('file', audioBlob, 'recording.webm');
+            formData.append('file', audioBlob, filename);
             formData.append('model_id', 'scribe_v1');
 
             const sttResponse = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
@@ -3467,6 +3949,7 @@ async function processAudioInput(audioBlob) {
             if (sttResponse.ok) {
                 const sttData = await sttResponse.json();
                 transcription = sttData.text || '';
+                console.log(`⏱️ [${(performance.now() - startTime).toFixed(0)}ms] ✅ STT complete`);
 
                 // Extract word-level data if available
                 if (sttData.words && Array.isArray(sttData.words)) {
@@ -3476,6 +3959,7 @@ async function processAudioInput(audioBlob) {
                         start: w.start,
                         end: w.end
                     }));
+                    console.log(`📊 Word timestamps:`, wordsWithScores.map(w => `${w.text}@${w.start?.toFixed(2)}s`).join(', '));
                 } else {
                     // Create word scores from text
                     wordsWithScores = transcription.split(/\s+/).filter(w => w).map(w => ({
@@ -3484,9 +3968,30 @@ async function processAudioInput(audioBlob) {
                     }));
                 }
 
-                console.log('📝 Transcription:', transcription);
+                console.log(`📝 Transcription: "${transcription}"`);
+                
+                // Update recording panel with transcription
+                const recordingLabel = document.getElementById('recordingLabel');
+                const liveTranscript = document.getElementById('liveTranscript');
+                if (recordingLabel) recordingLabel.textContent = 'Got it!';
+                
+                // Show transcribed words one by one
+                if (liveTranscript && transcription) {
+                    liveTranscript.innerHTML = '';
+                    const words = transcription.split(/\s+/);
+                    words.forEach((word, i) => {
+                        setTimeout(() => {
+                            const span = document.createElement('span');
+                            span.className = 'word';
+                            span.textContent = word + ' ';
+                            liveTranscript.appendChild(span);
+                        }, i * 80);
+                    });
+                }
             } else {
-                console.error('STT failed:', await sttResponse.text());
+                console.error('❌ STT failed:', await sttResponse.text());
+                const recordingLabel = document.getElementById('recordingLabel');
+                if (recordingLabel) recordingLabel.textContent = 'Error - try again';
             }
         }
 
@@ -3525,6 +4030,14 @@ async function processAudioInput(audioBlob) {
         // ═══════════════════════════════════════════════════════════════════════
         // DISPLAY USER'S TRANSCRIPTION WITH WORD SCORES
         // ═══════════════════════════════════════════════════════════════════════
+        console.log(`⏱️ [${(performance.now() - startTime).toFixed(0)}ms] 📤 Displaying user message...`);
+        
+        // Hide recording panel after short delay
+        setTimeout(() => {
+            const recordingPanel = document.getElementById('recordingPanel');
+            if (recordingPanel) recordingPanel.classList.remove('active');
+        }, 1000);
+        
         archiveCurrentNPCMessage();
         displayUserMessageWithScores(transcription, wordsWithScores);
 
@@ -3535,7 +4048,9 @@ async function processAudioInput(audioBlob) {
         // ═══════════════════════════════════════════════════════════════════════
         // GET NPC RESPONSE
         // ═══════════════════════════════════════════════════════════════════════
+        console.log(`⏱️ [${(performance.now() - startTime).toFixed(0)}ms] 🤖 Generating NPC response...`);
         const response = await generateNPCResponse(transcription);
+        console.log(`⏱️ [${(performance.now() - startTime).toFixed(0)}ms] ✅ NPC response ready: "${response.text?.substring(0, 50)}..."`);
         displayNPCMessage(response.text, response.translation);
         
         // Feed action/mood to Decart Mirage
@@ -3545,7 +4060,10 @@ async function processAudioInput(audioBlob) {
         updateObjectiveFromResponse(response);
 
         // Speak with highlighting
+        console.log(`⏱️ [${(performance.now() - startTime).toFixed(0)}ms] 🔊 Starting NPC speech...`);
         await speakTextWithHighlight(response.text, response.expression || 'teaching');
+        console.log(`⏱️ [${(performance.now() - startTime).toFixed(0)}ms] ✅ NPC speech complete`);
+        console.log(`🎙️ ═══════ VOICE PROCESSING END ═══════\n`);
 
         // Update difficulty if needed
         if (response.shouldIncreaseDifficulty) {

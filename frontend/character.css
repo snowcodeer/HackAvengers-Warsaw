@@ -655,3 +655,127 @@ body {
         max-width: 400px;
     }
 }
+
+/* Mobile-specific styles */
+@media (max-width: 500px) {
+    html, body {
+        overflow: auto;
+        height: auto;
+        min-height: 100vh;
+    }
+    
+    .scene {
+        position: relative;
+        min-height: 100vh;
+        height: auto;
+        overflow: visible;
+    }
+    
+    .sky {
+        position: fixed;
+    }
+    
+    .content {
+        position: relative;
+        bottom: auto;
+        overflow: visible;
+        padding: 10px 12px;
+        padding-bottom: 80px;
+    }
+    
+    .title {
+        font-size: 1rem;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 0 var(--cozy-orange), 4px 4px 0 var(--wood-dark);
+    }
+    
+    .customisation-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .character-preview {
+        width: 100%;
+        max-width: none;
+    }
+    
+    .preview-box {
+        min-height: 120px;
+        padding: 10px;
+        border-width: 5px;
+    }
+    
+    .pixel-character {
+        transform: scale(0.8);
+    }
+    
+    .preview-label {
+        font-size: 0.5rem;
+        margin-top: 6px;
+    }
+    
+    .options-panel {
+        width: 100%;
+        max-width: none;
+        padding: 12px;
+        border-width: 5px;
+        gap: 10px;
+    }
+    
+    .option-group {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .option-label {
+        flex: 0 0 100%;
+        font-size: 0.55rem;
+        margin-bottom: -4px;
+    }
+    
+    .option-selector {
+        width: 100%;
+    }
+    
+    .color-options {
+        width: 100%;
+    }
+    
+    .color-btn {
+        width: 30px;
+        height: 30px;
+        border-width: 3px;
+    }
+    
+    .nav-btn {
+        padding: 8px 12px;
+        font-size: 0.7rem;
+    }
+    
+    .option-value {
+        font-size: 0.55rem;
+        padding: 8px 10px;
+        border-width: 3px;
+    }
+    
+    .pixel-input {
+        font-size: 0.6rem;
+        padding: 10px;
+        border-width: 3px;
+    }
+    
+    .button-container {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .submit-btn {
+        font-size: 0.9rem;
+        padding: 14px 35px;
+    }
+    
+    .ground {
+        position: relative;
+        margin-top: 20px;
+    }
+}

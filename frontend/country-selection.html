@@ -98,6 +98,86 @@
             box-shadow: 3px 3px 0 0 var(--wood-shadow);
         }
 
+        /* Hide WASD controls on mobile devices */
+        @media (max-width: 768px), (pointer: coarse) {
+            .instructions {
+                display: none !important;
+            }
+            
+            #mobile-joystick {
+                display: block !important;
+            }
+        }
+        
+        /* Mobile Virtual Joystick */
+        #mobile-joystick {
+            position: fixed;
+            bottom: 40px;
+            left: 30px;
+            width: 120px;
+            height: 120px;
+            z-index: 500;
+            display: none;
+            pointer-events: auto;
+            touch-action: none;
+        }
+        
+        .joystick-base {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: rgba(40, 30, 20, 0.7);
+            border: 4px solid rgba(104, 64, 16, 0.8);
+            border-radius: 50%;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        
+        .joystick-thumb {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle at 30% 30%, #c88838, #684010);
+            border: 3px solid #402808;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+        
+        .joystick-thumb.active {
+            background: radial-gradient(circle at 30% 30%, #f8e038, #a86020);
+        }
+        
+        /* Mobile door prompt */
+        .door-prompt {
+            position: absolute;
+            bottom: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(40, 30, 20, 0.95);
+            border: 4px solid var(--cozy-yellow);
+            padding: 16px 24px;
+            color: var(--cream);
+            font-size: 0.8rem;
+            display: none;
+            pointer-events: auto;
+            cursor: pointer;
+            animation: pulse-glow 1.5s infinite;
+            z-index: 200;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px var(--cozy-yellow); }
+            50% { box-shadow: 0 0 20px var(--cozy-yellow), 0 0 30px var(--cozy-orange); }
+        }
+        
+        @media (max-width: 768px), (pointer: coarse) {
+            .door-prompt.active {
+                display: block;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -114,6 +194,16 @@
                 </div>
             </div>
             
+            <!-- Mobile door interaction prompt -->
+            <div class="door-prompt" id="doorPrompt">
+                👆 Tap to enter
+            </div>
+        </div>
+        
+        <!-- Mobile Virtual Joystick -->
+        <div id="mobile-joystick">
+            <div class="joystick-base"></div>
+            <div class="joystick-thumb" id="joystickThumb"></div>
         </div>
     </div>
 
