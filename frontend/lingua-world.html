@@ -437,26 +437,30 @@
         }
 
         .speech-bubble {
-            background: rgba(40, 30, 20, 0.95);
-            border: 5px solid var(--wood-dark);
+            background: rgba(40, 30, 20, 0.88);
+            border: 5px solid rgba(104, 64, 16, 0.95);
+            border-radius: 12px;
             box-shadow:
-                5px 5px 0 0 var(--wood-shadow),
+                5px 5px 0 0 rgba(64, 40, 8, 0.9),
                 inset 3px 3px 0 0 var(--wood-light);
-            padding: 20px;
+            padding: 18px;
             flex: 1;
         }
 
         .speech-text {
-            font-size: 0.85rem;
-            line-height: 2.2;
-            margin-bottom: 10px;
+            font-size: 0.75rem;
+            line-height: 2;
+            margin-bottom: 8px;
             color: var(--cream);
+            opacity: 0.9;
         }
 
         .speech-translation {
-            font-size: 0.65rem;
-            color: var(--accent-teal);
-            line-height: 2;
+            font-size: 0.6rem;
+            color: var(--cozy-yellow, #f8e038);
+            text-shadow: 1px 1px 0 var(--wood-shadow, #402808);
+            line-height: 1.8;
+            opacity: 0.75;
         }
 
         .practice-btn {
@@ -545,69 +549,153 @@
             border-radius: 3px;
         }
 
-        /* User message bubble */
-        .user-message {
-            background: linear-gradient(135deg, rgba(78, 205, 196, 0.2), rgba(78, 205, 196, 0.1));
-            border: 1px solid rgba(78, 205, 196, 0.4);
-            border-radius: 16px 16px 4px 16px;
-            padding: 12px 16px;
+        /* User message bubble - Cozy Pixel Art Style (matching NPC speech) */
+        .user-message-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 16px;
             margin-left: auto;
-            max-width: 70%;
-            text-align: right;
-            animation: slideInRight 0.3s ease-out;
+            max-width: 80%;
+            animation: pixelSlideRight 0.2s steps(4);
+        }
+
+        .user-avatar-small {
+            width: 80px;
+            height: 80px;
+            background: var(--cozy-orange, #f8a800);
+            border: 5px solid var(--wood-dark, #684010);
+            box-shadow: 5px 5px 0 0 var(--wood-shadow, #402808);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .user-avatar-small > div {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .user-message {
+            background: rgba(40, 30, 20, 0.88);
+            border: 5px solid rgba(104, 64, 16, 0.95);
+            border-radius: 12px;
+            box-shadow:
+                5px 5px 0 0 rgba(64, 40, 8, 0.9),
+                inset 3px 3px 0 0 var(--wood-light, #c88838);
+            padding: 18px;
+            flex: 1;
+            text-align: left;
+            font-family: 'Press Start 2P', cursive;
         }
 
         .user-message .user-label {
-            font-size: 0.75rem;
-            color: var(--accent-teal);
-            margin-bottom: 4px;
+            font-size: 0.45rem;
+            color: var(--cozy-yellow, #f8e038);
+            text-shadow: 2px 2px 0 var(--wood-shadow, #402808);
+            margin-bottom: 8px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            opacity: 0.85;
+        }
+
+        .user-message .clarity-score {
+            color: var(--cozy-orange, #f8a800);
+            font-size: 0.4rem;
+            opacity: 0.8;
         }
 
         .user-message .user-text {
-            font-size: 1rem;
-            color: #fff;
+            font-size: 0.75rem;
+            color: var(--cream, #f8f0d8);
+            line-height: 2;
+            opacity: 0.9;
         }
 
-        @keyframes slideInRight {
-            from {
+        .user-message .user-text.scored {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .user-message .scored-word {
+            padding: 4px 8px;
+            background: rgba(24, 24, 24, 0.5);
+            border: 2px solid var(--wood-dark, #684010);
+            box-shadow: inset 1px 1px 0 0 rgba(0,0,0,0.3);
+            color: var(--cozy-yellow, #f8e038);
+            text-shadow: 1px 1px 0 var(--wood-shadow, #402808);
+        }
+
+        .user-message .scored-word.high {
+            border-color: var(--cozy-yellow, #f8e038);
+            color: var(--cozy-yellow, #f8e038);
+        }
+
+        .user-message .scored-word.medium {
+            border-color: var(--cozy-orange, #f8a800);
+            color: var(--cozy-orange, #f8a800);
+        }
+
+        .user-message .scored-word.low {
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        @keyframes pixelSlideRight {
+            0% {
                 opacity: 0;
                 transform: translateX(20px);
             }
-
-            to {
+            50% {
+                opacity: 1;
+            }
+            100% {
                 opacity: 1;
                 transform: translateX(0);
             }
         }
 
-        @keyframes slideInLeft {
-            from {
+        @keyframes pixelSlideLeft {
+            0% {
                 opacity: 0;
                 transform: translateX(-20px);
             }
-
-            to {
+            50% {
+                opacity: 1;
+            }
+            100% {
                 opacity: 1;
                 transform: translateX(0);
             }
         }
 
         /* ═══════════════════════════════════════════════════════════════════════════
-           REAL-TIME TRANSCRIPT UI - Words appear as you speak
+           REAL-TIME TRANSCRIPT UI - Cozy Pixel Art Style
            ═══════════════════════════════════════════════════════════════════════════ */
 
         .realtime-transcript {
-            background: linear-gradient(135deg, rgba(30, 30, 45, 0.95), rgba(20, 20, 35, 0.95));
-            border: 2px solid rgba(78, 205, 196, 0.4);
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 16px;
+            background: rgba(40, 30, 20, 0.95);
+            border: 4px solid rgba(104, 64, 16, 0.95);
+            border-radius: 10px;
+            box-shadow:
+                4px 4px 0 0 rgba(64, 40, 8, 0.9),
+                inset 2px 2px 0 0 var(--wood-light, #c88838);
+            padding: 14px;
+            margin-bottom: 14px;
             display: none;
             opacity: 0;
             transform: translateY(-10px);
-            transition: all 0.3s ease;
+            transition: all 0.2s steps(4);
+            font-family: 'Press Start 2P', cursive;
         }
 
         .realtime-transcript.active {
@@ -619,24 +707,27 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid var(--wood-dark, #684010);
         }
 
         .rt-pulse {
-            width: 12px;
-            height: 12px;
-            background: #ff6b6b;
-            border-radius: 50%;
-            animation: rtPulse 1s ease-in-out infinite;
+            width: 10px;
+            height: 10px;
+            background: var(--cozy-orange, #f8a800);
+            box-shadow: 
+                2px 2px 0 0 #c87800,
+                inset 2px 2px 0 0 #ffcc44;
+            animation: rtPixelPulse 0.8s steps(4) infinite;
         }
 
-        @keyframes rtPulse {
+        @keyframes rtPixelPulse {
 
             0%,
             100% {
                 transform: scale(1);
+                background: var(--cozy-orange, #f8a800);
                 opacity: 1;
             }
 
@@ -647,57 +738,62 @@
         }
 
         .rt-label {
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.5rem;
+            color: var(--cream, #f8f0d8);
+            text-shadow: 1px 1px 0 var(--wood-shadow, #402808);
             flex: 1;
         }
 
         .rt-avg-score {
-            font-size: 0.8rem;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.1);
+            font-size: 0.45rem;
+            padding: 4px 8px;
+            background: rgba(24, 24, 24, 0.5);
+            border: 2px solid rgba(104, 64, 16, 0.9);
+            border-radius: 6px;
+            color: var(--cozy-yellow, #f8e038);
+            text-shadow: 1px 1px 0 var(--wood-shadow, #402808);
         }
 
         .rt-avg-score.score-high {
-            color: #4ecdc4;
-            background: rgba(78, 205, 196, 0.2);
+            color: var(--cozy-yellow, #f8e038);
+            border-color: var(--cozy-yellow, #f8e038);
         }
 
         .rt-avg-score.score-medium {
-            color: #f4b942;
-            background: rgba(244, 185, 66, 0.2);
+            color: var(--cozy-orange, #f8a800);
+            border-color: var(--cozy-orange, #f8a800);
         }
 
         .rt-avg-score.score-low {
             color: #ff6b6b;
-            background: rgba(255, 107, 107, 0.2);
+            border-color: #ff6b6b;
         }
 
         .rt-words {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            min-height: 40px;
-            margin-bottom: 12px;
+            gap: 6px;
+            min-height: 36px;
+            margin-bottom: 10px;
         }
 
         .rt-word {
             display: inline-flex;
             flex-direction: column;
             align-items: center;
-            padding: 6px 12px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+            background: rgba(24, 24, 24, 0.5);
+            border: 2px solid rgba(104, 64, 16, 0.9);
+            border-radius: 6px;
+            box-shadow: inset 1px 1px 0 0 rgba(0,0,0,0.3);
             opacity: 0;
-            transform: scale(0.8);
+            transform: scale(0.9);
         }
 
         @keyframes wordAppear {
             0% {
                 opacity: 0;
-                transform: scale(0.8) translateY(10px);
+                transform: scale(0.9) translateY(6px);
             }
 
             100% {
@@ -707,37 +803,35 @@
         }
 
         .rt-word .word-text {
-            font-size: 1rem;
-            font-weight: 500;
+            font-size: 0.5rem;
+            color: var(--cream, #f8f0d8);
+            text-shadow: 1px 1px 0 var(--wood-shadow, #402808);
         }
 
         .rt-word .word-score {
-            font-size: 0.65rem;
-            opacity: 0.7;
+            font-size: 0.4rem;
+            opacity: 0.8;
             margin-top: 2px;
         }
 
         .rt-word.confidence-high {
-            background: rgba(78, 205, 196, 0.2);
-            border: 1px solid rgba(78, 205, 196, 0.4);
+            border-color: var(--cozy-yellow, #f8e038);
         }
 
         .rt-word.confidence-high .word-text {
-            color: #4ecdc4;
+            color: var(--cozy-yellow, #f8e038);
         }
 
         .rt-word.confidence-medium {
-            background: rgba(244, 185, 66, 0.2);
-            border: 1px solid rgba(244, 185, 66, 0.4);
+            border-color: var(--cozy-orange, #f8a800);
         }
 
         .rt-word.confidence-medium .word-text {
-            color: #f4b942;
+            color: var(--cozy-orange, #f8a800);
         }
 
         .rt-word.confidence-low {
-            background: rgba(255, 107, 107, 0.2);
-            border: 1px solid rgba(255, 107, 107, 0.4);
+            border-color: #ff6b6b;
         }
 
         .rt-word.confidence-low .word-text {
@@ -745,74 +839,66 @@
         }
 
         .rt-full-text {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.5);
-            font-style: italic;
+            font-size: 0.5rem;
+            color: var(--cream, #f8f0d8);
+            opacity: 0.6;
             padding: 8px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            min-height: 24px;
+            background: rgba(24, 24, 24, 0.5);
+            border: 2px solid rgba(104, 64, 16, 0.9);
+            border-radius: 6px;
+            min-height: 20px;
+            line-height: 1.8;
         }
 
         .rt-full-text.final {
-            color: rgba(255, 255, 255, 0.8);
-            font-style: normal;
+            opacity: 1;
+            color: var(--cream, #f8f0d8);
         }
 
-        /* Scored words in user messages */
+        /* Scored words in user messages - Already styled above */
         .user-message.with-scores .user-text.scored {
             display: flex;
             flex-wrap: wrap;
-            gap: 4px;
+            gap: 6px;
         }
 
         .scored-word {
-            padding: 2px 6px;
-            border-radius: 4px;
+            padding: 3px 6px;
+            background: rgba(24, 24, 24, 0.4);
+            border: 2px solid rgba(104, 64, 16, 0.9);
+            border-radius: 6px;
+            box-shadow: inset 1px 1px 0 0 rgba(0,0,0,0.3);
             cursor: help;
-            transition: all 0.2s ease;
+            transition: all 0.1s steps(2);
+            font-size: 0.75rem;
+            line-height: 2;
+            opacity: 0.85;
         }
 
         .scored-word:hover {
-            transform: scale(1.1);
+            transform: translateY(-2px);
+            box-shadow: 2px 2px 0 0 var(--wood-shadow, #402808);
         }
 
         .scored-word.high {
-            background: rgba(78, 205, 196, 0.2);
-            color: #4ecdc4;
+            border-color: var(--cozy-yellow, #f8e038);
+            color: var(--cozy-yellow, #f8e038);
+            text-shadow: 1px 1px 0 var(--wood-shadow, #402808);
         }
 
         .scored-word.medium {
-            background: rgba(244, 185, 66, 0.2);
-            color: #f4b942;
+            border-color: var(--cozy-orange, #f8a800);
+            color: var(--cozy-orange, #f8a800);
+            text-shadow: 1px 1px 0 var(--wood-shadow, #402808);
         }
 
         .scored-word.low {
-            background: rgba(255, 107, 107, 0.2);
+            border-color: #ff6b6b;
             color: #ff6b6b;
+            text-shadow: 1px 1px 0 var(--wood-shadow, #402808);
         }
 
-        .overall-score {
-            font-size: 0.7rem;
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-left: 8px;
-        }
-
-        .overall-score.high {
-            background: rgba(78, 205, 196, 0.3);
-            color: #4ecdc4;
-        }
-
-        .overall-score.medium {
-            background: rgba(244, 185, 66, 0.3);
-            color: #f4b942;
-        }
-
-        .overall-score.low {
-            background: rgba(255, 107, 107, 0.3);
-            color: #ff6b6b;
-        }
+        /* Clarity score styling is now in .user-message .clarity-score */
 
         /* Pulse dot animation for recording button */
         .pulse-dot {
@@ -839,34 +925,37 @@
         }
 
         /* ═══════════════════════════════════════════════════════════════════════════
-           PRONUNCIATION FEEDBACK UI - Full training interface
+           RECORDING PANEL - Pixel Art Cozy Style
            ═══════════════════════════════════════════════════════════════════════════ */
 
-        /* Recording Panel - Right Side (matching original design) */
+        /* Recording Panel - Right Side (cozy pixel art style) */
         .recording-panel {
             position: fixed;
             bottom: 120px;
             right: 20px;
-            width: 320px;
+            width: 280px;
             max-width: calc(100vw - 40px);
-            background: rgba(15, 15, 25, 0.95);
-            border-radius: 16px;
-            border: 2px solid rgba(78, 205, 196, 0.5);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            background: rgba(40, 30, 20, 0.98);
+            border: 6px solid var(--wood-dark, #684010);
+            box-shadow: 
+                8px 8px 0 0 var(--wood-shadow, #402808),
+                inset 3px 3px 0 0 var(--wood-light, #c88838);
             padding: 16px;
             transform: translateX(120%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.2s steps(4);
             z-index: 1001;
+            font-family: 'Press Start 2P', cursive;
         }
 
         .recording-panel.active {
             transform: translateX(0);
-            animation: slideIn 0.3s ease;
+            animation: pixelSlideIn 0.3s steps(6);
         }
         
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
+        @keyframes pixelSlideIn {
+            0% { opacity: 0; transform: translateX(40px); }
+            50% { opacity: 1; }
+            100% { opacity: 1; transform: translateX(0); }
         }
         
         .recording-header {
@@ -874,70 +963,101 @@
             align-items: center;
             gap: 10px;
             margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 4px solid var(--wood-dark, #684010);
         }
         
         .recording-dot {
             width: 12px;
             height: 12px;
-            background: #ff6b6b;
-            border-radius: 50%;
-            animation: pulse 1s ease-in-out infinite;
+            background: var(--cozy-orange, #f8a800);
+            box-shadow: 
+                2px 2px 0 0 #c87800,
+                inset 2px 2px 0 0 #ffcc44;
+            animation: pixelPulse 0.8s steps(4) infinite;
         }
         
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.7; }
+        @keyframes pixelPulse {
+            0%, 100% { 
+                transform: scale(1); 
+                background: var(--cozy-orange, #f8a800);
+                box-shadow: 2px 2px 0 0 #c87800, inset 2px 2px 0 0 #ffcc44;
+            }
+            50% { 
+                transform: scale(1.2); 
+                background: var(--cozy-yellow, #f8e038);
+                box-shadow: 2px 2px 0 0 #c8b028, inset 2px 2px 0 0 #ffffa0;
+            }
         }
         
         .recording-label {
             flex: 1;
-            color: #fff;
-            font-size: 0.9rem;
+            color: var(--cream, #f8f0d8);
+            font-size: 0.55rem;
+            text-shadow: 2px 2px 0 var(--wood-shadow, #402808);
+            letter-spacing: 1px;
         }
         
         .recording-level {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #4ecdc4;
-            min-width: 50px;
+            font-size: 0.6rem;
+            color: var(--cozy-yellow, #f8e038);
+            text-shadow: 2px 2px 0 var(--wood-shadow, #402808);
+            min-width: 45px;
             text-align: right;
         }
         
         .recording-bars {
             display: flex;
             align-items: flex-end;
-            height: 40px;
-            gap: 2px;
+            height: 36px;
+            gap: 3px;
+            padding: 8px;
+            background: rgba(24, 24, 24, 0.6);
+            border: 3px solid var(--wood-dark, #684010);
+            box-shadow: inset 2px 2px 0 0 rgba(0,0,0,0.4);
         }
         
         .recording-bars .amp-bar {
             flex: 1;
-            background: linear-gradient(to top, #4ecdc4, #f4b942);
-            border-radius: 2px;
-            min-height: 2px;
-            transition: height 0.05s ease;
+            background: var(--cozy-yellow, #f8e038);
+            box-shadow: 
+                inset 2px 0 0 0 var(--cozy-orange, #f8a800),
+                inset -1px 0 0 0 #c8b028;
+            min-height: 3px;
+            transition: height 0.05s steps(8);
+        }
+        
+        .recording-bars .amp-bar:nth-child(even) {
+            background: var(--cozy-orange, #f8a800);
+            box-shadow: 
+                inset 2px 0 0 0 var(--cozy-yellow, #f8e038),
+                inset -1px 0 0 0 #c87800;
         }
         
         .recording-waveform {
-            margin-top: 8px;
+            margin-top: 10px;
         }
         
         .recording-waveform canvas {
             width: 100%;
-            height: 50px;
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.3);
+            height: 44px;
+            background: rgba(24, 24, 24, 0.6);
+            border: 3px solid var(--wood-dark, #684010);
+            box-shadow: inset 2px 2px 0 0 rgba(0,0,0,0.4);
+            image-rendering: pixelated;
         }
         
         .recording-transcription {
-            margin-top: 10px;
-            font-size: 0.85rem;
-            color: var(--cream);
-            line-height: 1.5;
-            min-height: 24px;
-            padding: 8px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 0.5rem;
+            color: var(--cream, #f8f0d8);
+            text-shadow: 1px 1px 0 var(--wood-shadow, #402808);
+            line-height: 1.8;
+            min-height: 28px;
+            padding: 10px;
+            background: rgba(24, 24, 24, 0.5);
+            border: 3px solid var(--wood-dark, #684010);
+            box-shadow: inset 2px 2px 0 0 rgba(0,0,0,0.3);
         }
         
         .recording-transcription:empty {
@@ -946,7 +1066,13 @@
         
         .recording-transcription .word {
             display: inline-block;
-            animation: word-appear 0.2s ease-out;
+            animation: wordPixelAppear 0.15s steps(3);
+            color: var(--cozy-yellow, #f8e038);
+        }
+        
+        @keyframes wordPixelAppear {
+            0% { opacity: 0; transform: translateY(-4px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
         
         @keyframes word-appear {
@@ -1466,7 +1592,27 @@
                 flex-shrink: 0 !important;
             }
             
+            /* User message wrapper - mobile */
+            .user-message-wrapper {
+                gap: 10px !important;
+                max-width: 90% !important;
+            }
+            
+            .user-avatar-small {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 1.2rem !important;
+                border-width: 2px !important;
+                box-shadow: 2px 2px 0 0 var(--wood-shadow) !important;
+                flex-shrink: 0 !important;
+            }
+            
             .speech-bubble {
+                padding: 10px 12px !important;
+                border-width: 3px !important;
+            }
+            
+            .user-message {
                 padding: 10px 12px !important;
                 border-width: 3px !important;
             }
@@ -1474,13 +1620,27 @@
             /* Smaller text for mobile */
             .speech-text {
                 font-size: 0.6rem !important;
-                line-height: 1.9 !important;
+                line-height: 1.8 !important;
                 margin-bottom: 6px !important;
+                opacity: 0.9 !important;
             }
             
             .speech-translation {
                 font-size: 0.5rem !important;
-                line-height: 1.7 !important;
+                line-height: 1.6 !important;
+                opacity: 0.75 !important;
+            }
+            
+            .user-message .user-text {
+                font-size: 0.6rem !important;
+                line-height: 1.8 !important;
+                opacity: 0.9 !important;
+            }
+            
+            .scored-word {
+                font-size: 0.6rem !important;
+                line-height: 1.8 !important;
+                opacity: 0.85 !important;
             }
             
             .speech-actions {
@@ -1796,18 +1956,18 @@
                 </div>
             </div>
         </div>
-        <!-- Recording Panel (Right Side) - Same design as original -->
+        <!-- Recording Panel (Right Side) - Cozy Pixel Art Style -->
         <div class="recording-panel" id="recordingPanel">
             <div class="recording-header">
                 <span class="recording-dot"></span>
-                <span class="recording-label" id="recordingLabel">🎤 Recording...</span>
+                <span class="recording-label" id="recordingLabel">RECORDING...</span>
                 <span class="recording-level" id="levelValue">0%</span>
             </div>
             <div class="recording-bars" id="amplitudeBars">
                 <!-- Bars generated by JS -->
             </div>
             <div class="recording-waveform">
-                <canvas id="waveformCanvas" width="280" height="50"></canvas>
+                <canvas id="waveformCanvas" width="280" height="44"></canvas>
             </div>
             <div class="recording-transcription" id="liveTranscript"></div>
         </div>

@@ -2309,7 +2309,7 @@ async function startRecording() {
         if (micBtn) micBtn.classList.add('recording');
         if (status) {
             status.classList.remove('hidden');
-            status.textContent = "Recording...";
+            status.textContent = "RECORDING...";
         }
         if (voicePrompt) {
             voicePrompt.textContent = "Listening...";

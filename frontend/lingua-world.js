@@ -298,6 +298,136 @@ let playerCharacter = {
     hat: 0
 };
 
+// Generate player character stick figure HTML for avatar
+function generatePlayerAvatarHTML() {
+    try {
+        if (!playerCharacter) return '<span style="font-size: 2rem;">🧑</span>'; // Fallback emoji
+        
+        // Import character generation logic (simplified/scaled version)
+        // We'll create a scaled-down version of the character preview
+        const char = playerCharacter;
+    
+    // Helper functions
+    const darkenColor = (color, amt) => {
+        const num = parseInt(color.replace('#', ''), 16);
+        const r = Math.max(0, (num >> 16) - amt);
+        const g = Math.max(0, ((num >> 8) & 0xFF) - amt);
+        const b = Math.max(0, (num & 0xFF) - amt);
+        return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
+    };
+    
+    const lightenColor = (color, percent) => {
+        const num = parseInt(color.replace('#', ''), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = Math.min(255, (num >> 16) + amt);
+        const G = Math.min(255, ((num >> 8) & 0x00FF) + amt);
+        const B = Math.min(255, (num & 0x0000FF) + amt);
+        return `#${(1 << 24 | R << 16 | G << 8 | B).toString(16).slice(1)}`;
+    };
+    
+    // Data arrays
+    const hairStyles = ['Spiky', 'Mohawk', 'Flat Top', 'Long', 'Short', 'Ponytail', 'Bald', 'Curly', 'Afro', 'Pigtails', 'Buzz Cut', 'Side Part', 'Wavy', 'Slick Back'];
+    const bodyTypes = ['Normal', 'Athletic', 'Slim', 'Stocky'];
+    const outfits = ['Adventurer', 'T-Shirt', 'Striped', 'Hoodie', 'Suit', 'Overalls', 'Tank Top', 'Uniform', 'Sweater', 'Jacket', 'Polo', 'V-Neck', 'Vest', 'Lab Coat'];
+    const accessories = ['None', 'Glasses', 'Sunglasses', 'Round Glasses', 'Eye Patch', 'Monocle', 'Bandana', 'Scarf', 'Necklace', 'Bow Tie', 'Tie'];
+    const hats = ['None', 'Cap', 'Beanie', 'Top Hat', 'Cowboy', 'Hard Hat', 'Crown', 'Headphones', 'Police Cap', 'Beret', 'Bandana', 'Wizard Hat', 'Viking Helmet'];
+    const facialHairs = ['None', 'Stubble', 'Beard', 'Goatee', 'Mustache', 'Full Beard', 'Handlebar'];
+    
+    const hairStyle = hairStyles[char.hairStyle || 0];
+    const bodyType = bodyTypes[char.bodyType || 0];
+    const outfit = outfits[char.outfit || 0];
+    const accessory = accessories[char.accessory || 0];
+    const hat = hats[char.hat || 0];
+    const facialHair = facialHairs[char.facialHair || 0];
+    
+    // Body dimensions (scaled)
+    let bodyWidth = 24;
+    let bodyHeight = 28;
+    switch(bodyType) {
+        case 'Athletic': bodyWidth = 26; bodyHeight = 29; break;
+        case 'Slim': bodyWidth = 20; bodyHeight = 30; break;
+        case 'Stocky': bodyWidth = 28; bodyHeight = 25; break;
+    }
+    
+    // Generate simplified character HTML (scaled down)
+    const skinColor = char.skinColor || '#ffd5b5';
+    const hairColor = char.hairColor || '#2c1810';
+    const outfitColor = char.outfitColor || '#e74c3c';
+    const pantsColor = char.pantsColor || '#3a3a5a';
+    const eyeColor = char.eyeColor || '#4a90d9';
+    
+    // Simple hair (just a few styles for avatar)
+    let hairHTML = '';
+    if (hairStyle !== 'Bald') {
+        if (hairStyle === 'Long' || hairStyle === 'Ponytail' || hairStyle === 'Pigtails') {
+            hairHTML = `<div style="position: absolute; bottom: 45px; left: 50%; transform: translateX(-50%); width: 28px; height: 30px; background: ${hairColor}; border-radius: 4px 4px 0 0;"></div>`;
+        } else {
+            hairHTML = `<div style="position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); width: 24px; height: 8px; background: ${hairColor}; border-radius: 4px 4px 0 0;"></div>`;
+        }
+    }
+    
+    // Simple hat
+    let hatHTML = '';
+    if (hat !== 'None') {
+        hatHTML = `<div style="position: absolute; bottom: 64px; left: 50%; transform: translateX(-50%); width: 26px; height: 10px; background: #2c3e50; border-radius: 4px 4px 0 0;"></div>`;
+    }
+    
+    // Simple outfit
+    const outfitDark = darkenColor(outfitColor, 20);
+    let outfitHTML = `<div style="position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: ${outfitColor}; box-shadow: 2px 0 0 0 ${outfitDark};"></div>`;
+    
+    // Generate the character HTML
+    return `
+        <div style="position: relative; width: 100%; height: 100%; overflow: hidden;">
+            <!-- Legs -->
+            <div style="position: absolute; bottom: 0; left: calc(50% - 8px); width: 7px; height: 15px; background: ${pantsColor}; box-shadow: 2px 0 0 0 ${darkenColor(pantsColor, 15)};"></div>
+            <div style="position: absolute; bottom: 0; left: calc(50% + 1px); width: 7px; height: 15px; background: ${pantsColor}; box-shadow: 2px 0 0 0 ${darkenColor(pantsColor, 15)};"></div>
+            
+            <!-- Shoes -->
+            <div style="position: absolute; bottom: 0; left: calc(50% - 10px); width: 9px; height: 5px; background: #4a3020; box-shadow: 1px 0 0 0 #3a2010;"></div>
+            <div style="position: absolute; bottom: 0; left: calc(50% + 1px); width: 9px; height: 5px; background: #4a3020; box-shadow: 1px 0 0 0 #3a2010;"></div>
+            
+            <!-- Body/Outfit -->
+            ${outfitHTML}
+            
+            <!-- Arms -->
+            <div style="position: absolute; bottom: 25px; left: calc(50% - ${bodyWidth/2 + 6}px); width: 6px; height: 20px; background: ${skinColor}; box-shadow: 1px 0 0 0 ${darkenColor(skinColor, 15)};"></div>
+            <div style="position: absolute; bottom: 25px; left: calc(50% + ${bodyWidth/2}px); width: 6px; height: 20px; background: ${skinColor}; box-shadow: 1px 0 0 0 ${darkenColor(skinColor, 15)};"></div>
+            
+            <!-- Hands -->
+            <div style="position: absolute; bottom: 22px; left: calc(50% - ${bodyWidth/2 + 7}px); width: 7px; height: 7px; background: ${skinColor}; border-radius: 2px;"></div>
+            <div style="position: absolute; bottom: 22px; left: calc(50% + ${bodyWidth/2}px); width: 7px; height: 7px; background: ${skinColor}; border-radius: 2px;"></div>
+            
+            <!-- Head -->
+            <div style="position: absolute; bottom: 42px; left: 50%; transform: translateX(-50%); width: 22px; height: 22px; background: ${skinColor}; border-radius: 4px; box-shadow: 2px 0 0 0 ${darkenColor(skinColor, 15)}, -2px 0 0 0 ${lightenColor(skinColor, 10)};"></div>
+            
+            <!-- Hair (behind if long) -->
+            ${hairStyle === 'Long' || hairStyle === 'Afro' ? hairHTML : ''}
+            
+            <!-- Eyes -->
+            <div style="position: absolute; bottom: 52px; left: calc(50% - 6px); width: 4px; height: 5px; background: ${eyeColor}; box-shadow: inset 1px 1px 0 0 ${lightenColor(eyeColor, 30)};"></div>
+            <div style="position: absolute; bottom: 52px; left: calc(50% + 2px); width: 4px; height: 5px; background: ${eyeColor}; box-shadow: inset 1px 1px 0 0 ${lightenColor(eyeColor, 30)};"></div>
+            
+            <!-- Eye highlights -->
+            <div style="position: absolute; bottom: 55px; left: calc(50% - 5px); width: 1.5px; height: 1.5px; background: white;"></div>
+            <div style="position: absolute; bottom: 55px; left: calc(50% + 3px); width: 1.5px; height: 1.5px; background: white;"></div>
+            
+            <!-- Mouth -->
+            <div style="position: absolute; bottom: 46px; left: 50%; transform: translateX(-50%); width: 6px; height: 2px; background: ${darkenColor(skinColor, 30)}; border-radius: 0 0 2px 2px;"></div>
+            
+            <!-- Hair (in front if not long) -->
+            ${hairStyle !== 'Long' && hairStyle !== 'Afro' ? hairHTML : ''}
+            
+            <!-- Hat -->
+            ${hatHTML}
+        </div>
+    `;
+    } catch (error) {
+        console.error('Error generating player avatar:', error);
+        return '<span style="font-size: 2rem;">🧑</span>'; // Fallback emoji
+    }
+}
+
 // Voice IDs now pulled from extensive LANGUAGE_CONFIG
 // Each character has unique voice settings with expression tags
 const getVoiceForLanguage = (langCode) => {
@@ -2419,9 +2549,9 @@ async function startConversation() {
         speechHighlightInterval = setInterval(() => {
             if (wordIndex < words.length) {
                 const highlighted = words.map((word, i) => {
-                    if (i < wordIndex) return `<span class="word-spoken" style="opacity: 1;">${word}</span>`;
-                    if (i === wordIndex) return `<span class="word-highlight">${word}</span>`;
-                    return `<span class="word-pending" style="opacity: 0.3;">${word}</span>`;
+                    if (i < wordIndex) return `<span class="word-spoken" style="color: var(--cream, #f8f0d8); opacity: 0.8;">${word}</span>`;
+                    if (i === wordIndex) return `<span class="word-highlight" style="color: var(--cozy-yellow, #f8e038); text-shadow: 2px 2px 0 var(--wood-shadow, #402808), 0 0 8px rgba(248, 224, 56, 0.6);">${word}</span>`;
+                    return `<span class="word-pending" style="opacity: 0.4;">${word}</span>`;
                 }).join(' ');
                 elements.speechText.innerHTML = highlighted;
                 wordIndex++;
@@ -2650,11 +2780,12 @@ async function generateNPCResponse(playerText, isGreeting = false) {
 LEVEL ${currentDifficulty}/5: ${difficultyInstruction}
 
 OUTPUT ONLY THIS JSON:
-{"text":"Your response with vocab as word (translation)","translation":"English","newWords":[{"word":"x","meaning":"y"}],"action":"physical action","mood":"emotional tone"}
+{"text":"Your response with vocab as word (translation)","translation":"Full English translation of your entire response","newWords":[{"word":"x","meaning":"y"}],"action":"physical action","mood":"emotional tone"}
 
 RULES:
 - 2 sentences max
 - Use "word (translation)" format for 1-2 new vocab words
+- The "translation" field must contain the complete English translation of your entire response text
 - NO asterisks, NO text outside JSON`;
 
     const messages = isGreeting
@@ -2827,7 +2958,7 @@ async function speakTextWithHighlight(text, expression = null) {
         // Show full text highlighted as "completed"
         if (elements.speechText) {
             elements.speechText.innerHTML = words.map(w =>
-                `<span class="word-spoken" style="opacity: 1; color: #4ecdc4;">${w}</span>`
+                `<span class="word-spoken" style="opacity: 1; color: var(--cream, #f8f0d8);">${w}</span>`
             ).join(' ');
         }
         
@@ -2848,15 +2979,14 @@ function highlightWordInSpeech(words, currentIndex) {
 
     const highlighted = words.map((word, i) => {
         if (i < currentIndex) {
-            // Already spoken - teal color (learned)
-            return `<span class="word-spoken" style="color: #4ecdc4; opacity: 0.9;">${word}</span>`;
+            // Already spoken - cream color (completed)
+            return `<span class="word-spoken" style="color: var(--cream, #f8f0d8); opacity: 0.8;">${word}</span>`;
         } else if (i === currentIndex) {
-            // Currently speaking - bright yellow/gold glow
+            // Currently speaking - bright GOLD with pixel glow
             return `<span class="word-current" style="
-                color: #f4b942;
-                font-weight: bold;
-                text-shadow: 0 0 15px rgba(244, 185, 66, 0.8), 0 0 30px rgba(244, 185, 66, 0.4);
-                animation: wordPulse 0.3s ease-in-out;
+                color: var(--cozy-yellow, #f8e038);
+                text-shadow: 2px 2px 0 var(--wood-shadow, #402808), 0 0 8px rgba(248, 224, 56, 0.6);
+                animation: wordPulse 0.3s steps(4);
             ">${word}</span>`;
         } else {
             // Not yet spoken - dimmed
@@ -3033,7 +3163,7 @@ function stopRecording() {
     
     // Update recording panel to show processing
     const recordingLabel = document.getElementById('recordingLabel');
-    if (recordingLabel) recordingLabel.textContent = 'Processing...';
+    if (recordingLabel) recordingLabel.textContent = 'PROCESSING...';
 
     // Stop MediaRecorder
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
@@ -3280,7 +3410,16 @@ function displayUserMessageWithScores(transcript, words) {
         ? words.reduce((acc, w) => acc + (w.confidence || 0), 0) / words.length
         : 0.9;
 
-    // Create user message with word-by-word scores
+    // Create wrapper with avatar
+    const userWrapper = document.createElement('div');
+    userWrapper.className = 'user-message-wrapper';
+
+    // Create avatar
+    const userAvatar = document.createElement('div');
+    userAvatar.className = 'user-avatar-small';
+    userAvatar.innerHTML = generatePlayerAvatarHTML();
+
+    // Create user message bubble
     const userBubble = document.createElement('div');
     userBubble.className = 'user-message with-scores';
 
@@ -3293,20 +3432,20 @@ function displayUserMessageWithScores(transcript, words) {
             else if (conf < 0.85) colorClass = 'medium';
 
             return `<span class="scored-word ${colorClass}" title="${(conf * 100).toFixed(0)}% confidence">${w.text}</span>`;
-        }).join(' ')
+        }).join('')
         : transcript;
 
     userBubble.innerHTML = `
         <div class="user-label">
-            You said: 
-            <span class="overall-score ${avgConfidence >= 0.85 ? 'high' : avgConfidence >= 0.7 ? 'medium' : 'low'}">
-                ${(avgConfidence * 100).toFixed(0)}% clarity
-            </span>
+            YOU SAID:
+            <span class="clarity-score">${(avgConfidence * 100).toFixed(0)}% CLARITY</span>
         </div>
         <div class="user-text scored">${wordsHtml}</div>
     `;
 
-    elements.chatHistory.appendChild(userBubble);
+    userWrapper.appendChild(userAvatar);
+    userWrapper.appendChild(userBubble);
+    elements.chatHistory.appendChild(userWrapper);
     elements.chatHistory.scrollTop = elements.chatHistory.scrollHeight;
 }
 
@@ -3406,7 +3545,7 @@ function showAmplitudeUI() {
     
     if (recordingPanel) {
         recordingPanel.classList.add('active');
-        if (recordingLabel) recordingLabel.textContent = '🎤 Recording...';
+        if (recordingLabel) recordingLabel.textContent = 'RECORDING...';
         
         // Create bars if they don't exist
         if (amplitudeBars && amplitudeBars.children.length === 0) {
@@ -3973,7 +4112,7 @@ async function processAudioInput(audioBlob) {
                 // Update recording panel with transcription
                 const recordingLabel = document.getElementById('recordingLabel');
                 const liveTranscript = document.getElementById('liveTranscript');
-                if (recordingLabel) recordingLabel.textContent = 'Got it!';
+                if (recordingLabel) recordingLabel.textContent = 'GOT IT!';
                 
                 // Show transcribed words one by one
                 if (liveTranscript && transcription) {
@@ -3991,7 +4130,7 @@ async function processAudioInput(audioBlob) {
             } else {
                 console.error('❌ STT failed:', await sttResponse.text());
                 const recordingLabel = document.getElementById('recordingLabel');
-                if (recordingLabel) recordingLabel.textContent = 'Error - try again';
+                if (recordingLabel) recordingLabel.textContent = 'ERROR!';
             }
         }
 
@@ -4101,16 +4240,28 @@ async function processAudioInput(audioBlob) {
 function displayUserMessage(text) {
     if (!elements.chatHistory) return;
 
-    // Create a user speech bubble
+    // Create wrapper with avatar
+    const userWrapper = document.createElement('div');
+    userWrapper.className = 'user-message-wrapper';
+
+    // Create avatar
+    const userAvatar = document.createElement('div');
+    userAvatar.className = 'user-avatar-small';
+    userAvatar.innerHTML = generatePlayerAvatarHTML();
+
+    // Create user message bubble
     const userBubble = document.createElement('div');
     userBubble.className = 'user-message';
     userBubble.innerHTML = `
-        <div class="user-label">You said:</div>
+        <div class="user-label">YOU SAID:</div>
         <div class="user-text">${text}</div>
     `;
 
+    userWrapper.appendChild(userAvatar);
+    userWrapper.appendChild(userBubble);
+
     // Add to chat history
-    elements.chatHistory.appendChild(userBubble);
+    elements.chatHistory.appendChild(userWrapper);
 
     // Scroll to show new message
     elements.chatHistory.scrollTop = elements.chatHistory.scrollHeight;
@@ -4127,24 +4278,40 @@ function archiveCurrentNPCMessage() {
     
     if (!currentText || currentText === 'waiting awkwardly...') return; // Don't archive default
     
-    // Create archived NPC message
-    const npcArchive = document.createElement('div');
-    npcArchive.className = 'npc-message-archived';
-    npcArchive.style.cssText = `
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px 16px 16px 4px;
-        padding: 12px 16px;
-        max-width: 70%;
+    // Create archived NPC message wrapper with avatar - Cozy Pixel Art Style
+    const npcWrapper = document.createElement('div');
+    npcWrapper.className = 'character-speaking';
+    npcWrapper.style.cssText = `
         opacity: 0.7;
-        animation: slideInLeft 0.3s ease-out;
-    `;
-    npcArchive.innerHTML = `
-        <div style="font-size: 0.9rem; color: #fff; margin-bottom: 4px;">${currentText}</div>
-        ${currentTranslation ? `<div style="font-size: 0.8rem; color: #4ecdc4; font-style: italic;">${currentTranslation}</div>` : ''}
+        animation: pixelSlideLeft 0.2s steps(4);
+        max-width: 80%;
     `;
 
-    elements.chatHistory.appendChild(npcArchive);
+    // Create avatar (use same as current character)
+    const npcAvatar = document.createElement('div');
+    npcAvatar.className = 'character-avatar-small';
+    npcAvatar.textContent = elements.charAvatarSmall?.textContent || '👤';
+
+    // Create archived speech bubble
+    const npcArchive = document.createElement('div');
+    npcArchive.className = 'speech-bubble';
+    npcArchive.style.cssText = `
+        background: rgba(40, 30, 20, 0.75);
+        border: 5px solid rgba(104, 64, 16, 0.95);
+        border-radius: 12px;
+        box-shadow: 5px 5px 0 0 rgba(64, 40, 8, 0.9);
+        padding: 18px;
+        font-family: 'Press Start 2P', cursive;
+    `;
+    npcArchive.innerHTML = `
+        <div style="font-size: 0.75rem; color: var(--cream, #f8f0d8); margin-bottom: 8px; line-height: 2; opacity: 0.85;">${currentText}</div>
+        ${currentTranslation ? `<div style="font-size: 0.6rem; color: var(--cozy-yellow, #f8e038); line-height: 1.8; opacity: 0.7;">${currentTranslation}</div>` : ''}
+    `;
+
+    npcWrapper.appendChild(npcAvatar);
+    npcWrapper.appendChild(npcArchive);
+
+    elements.chatHistory.appendChild(npcWrapper);
     elements.chatHistory.scrollTop = elements.chatHistory.scrollHeight;
 }
 
