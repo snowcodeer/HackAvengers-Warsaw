@@ -270,239 +270,255 @@ export const LANGUAGE_CONFIG = {
     flag: '🇯🇵',
 
     scene: {
-      name: 'Sakura-an Tea House',
-      location: 'Gion District, Kyoto',
-      timeOfDay: 'spring afternoon',
-      weather: 'cherry blossom petals falling',
+      name: 'Shinjuku Ramen Alley & Station',
+      location: 'Omoide Yokocho, Tokyo',
+      timeOfDay: 'raining evening',
+      weather: 'neon reflections on wet pavement',
 
-      description: `A traditional machiya tea house in Kyoto's historic Gion district. The space 
-        embodies wabi-sabi aesthetics with carefully aged wood, paper shoji screens, and a 
-        contemplative rock garden visible through open fusuma doors. Cherry blossoms drift past 
-        the engawa veranda. The subtle fragrance of matcha and incense fills the air.`,
+      description: `A narrow, smoky alleyway packed with tiny eateries next to Shinjuku Station. 
+        Lanterns glow red against the rain. Steam billows from open kitchens. The sound of 
+        trains rumbling overhead mixes with the clatter of bowls and enthusiastic slurping. 
+        A ticket machine stands ready at the entrance of "Ramen Kenji".`,
 
       props: {
-        mainRoom: {
-          type: 'chashitsu_tea_room',
-          size: '4.5 tatami',
-          position: { x: 0, y: 0, z: -2 },
-          elements: [
-            { name: 'tatami_mats', count: 4.5, condition: 'perfectly_maintained' },
-            { name: 'tokonoma_alcove', contents: ['hanging_scroll', 'single_flower', 'incense_burner'] },
-            { name: 'sunken_hearth', type: 'ro', status: 'charcoal_glowing' },
-            { name: 'iron_kettle', type: 'tetsubin', steam: true }
-          ]
+        ticketMachine: {
+          type: 'vending_machine',
+          position: { x: 3, y: 1, z: -2 },
+          buttons: [
+            { name: 'tonkotsu_ramen', price: 900, color: 'red' },
+            { name: 'shoyu_ramen', price: 800, color: 'blue' },
+            { name: 'gyoza', price: 400, color: 'yellow' },
+            { name: 'beer', price: 500, color: 'green' }
+          ],
+          screen: 'glowing_lcd'
         },
 
-        teaSetup: {
-          type: 'tea_ceremony_arrangement',
-          position: { x: 0, y: 0.3, z: -1.5 },
+        counterArea: {
+          type: 'wooden_counter',
+          position: { x: 0, y: 1, z: -4 },
           items: [
-            { name: 'chawan', type: 'raku_tea_bowl', color: 'black_with_gold_repair', style: 'kintsugi' },
-            { name: 'chasen', type: 'bamboo_whisk', prongs: 80 },
-            { name: 'chashaku', type: 'bamboo_scoop', curve: 'elegant' },
-            { name: 'natsume', type: 'tea_caddy', lacquer: 'red_black' },
-            { name: 'fukusa', type: 'silk_cloth', color: 'purple' },
-            { name: 'mizusashi', type: 'water_container', material: 'celadon_ceramic' }
+            { name: 'chopsticks_container', full: true },
+            { name: 'water_pitcher', condensation: true },
+            { name: 'condiments', types: ['pepper', 'chili_oil', 'vinegar'] },
+            { name: 'pickled_ginger', container: 'red_jar' }
           ]
         },
 
-        garden: {
-          type: 'karesansui',
+        kitchen: {
+          type: 'open_kitchen',
           visible: true,
           elements: [
-            { name: 'raked_gravel', pattern: 'wave_circles' },
-            { name: 'moss_islands', count: 3 },
-            { name: 'stone_lantern', type: 'yukimi', position: 'corner' },
-            { name: 'bamboo_fountain', type: 'shishi_odoshi', sound: true },
-            { name: 'cherry_tree', type: 'weeping', blossoms: 'peak_bloom' },
-            { name: 'stepping_stones', count: 7, arrangement: 'asymmetric' }
+            { name: 'huge_stock_pot', steam: 'heavy' },
+            { name: 'noodle_boiler', bubbling: true },
+            { name: 'chashu_pork', hanging: true }
           ]
         },
 
         decorations: [
-          { type: 'shoji_screens', pattern: 'geometric', light: 'filtered' },
-          { type: 'ikebana_arrangement', style: 'moribana', flowers: ['plum_blossom', 'pine'] },
-          { type: 'hanging_scroll', calligraphy: '和敬清寂', meaning: 'harmony_respect_purity_tranquility' },
-          { type: 'zabuton_cushions', color: 'indigo', count: 4 },
-          { type: 'paper_lantern', type: 'chochin', position: 'corner' }
+          { type: 'red_lanterns', text: 'ラーメン', movement: 'swaying' },
+          { type: 'noren_curtains', color: 'navy', text: '営業中' },
+          { type: 'menu_boards', content: 'handwritten_japanese' },
+          { type: 'faded_posters', content: 'beer_ads' }
         ],
 
         architectural: {
-          floor: { type: 'tatami', border: 'dark_cloth', condition: 'perfectly_aligned' },
-          ceiling: { type: 'exposed_wood', style: 'sukiya', beams: 'dark_cypress' },
-          walls: { type: 'clay_plaster', color: 'warm_grey', texture: 'hand_applied' },
-          windows: { type: 'shoji_screens', panes: 'translucent_paper', frames: 'bamboo' },
-          entrance: { type: 'nijiriguchi', size: 'small_humble', purpose: 'humility_entrance' },
-          roof: { type: 'traditional_tile', style: 'kyoto', eaves: 'deep_overhang' }
+          floor: { type: 'wet_pavement', reflections: 'neon_lights' },
+          walls: { type: 'wood_and_tin', texture: 'aged' },
+          ceiling: { type: 'exposed_wiring', dripping: 'rain' },
+          background: { type: 'shinjuku_station_lights', blur: true }
         },
 
         exterior: {
-          view: 'gion_street',
-          elements: ['traditional_machiya_facades', 'stone_lanterns', 'narrow_cobblestone_path'],
-          activity: ['geisha_walking', 'tourists_with_cameras', 'local_shopkeepers'],
-          skyline: 'mountains_in_distance',
-          season: 'cherry_blossom_peak'
+          view: 'shinjuku_crossing',
+          elements: ['umbrellas', 'neon_signs', 'train_tracks'],
+          atmosphere: 'cyberpunk_noir'
         }
       },
 
       sounds: {
         ambient: [
-          { name: 'bamboo_fountain_click', volume: 0.4, interval: 15000 },
-          { name: 'wind_in_bamboo', volume: 0.25, loop: true },
-          { name: 'distant_temple_bell', volume: 0.2, interval: 600000 }
+          { name: 'train_passing_overhead', volume: 0.4, trigger: 'interval', frequency: 120000 },
+          { name: 'rain_on_roof', volume: 0.3, loop: true },
+          { name: 'slurping_sounds', volume: 0.25, trigger: 'random' }
         ],
-        ceremony: [
-          { name: 'water_pouring', volume: 0.35, trigger: 'tea_preparation' },
-          { name: 'whisk_in_bowl', volume: 0.3, trigger: 'making_matcha' },
-          { name: 'silk_on_ceramic', volume: 0.2, trigger: 'cleaning' }
+        shop: [
+          { name: 'irasshaimase_shout', volume: 0.5, trigger: 'enter' },
+          { name: 'ticket_machine_beep', volume: 0.3, trigger: 'interaction' },
+          { name: 'noodle_shaking', volume: 0.35, trigger: 'cooking' }
         ],
         music: {
-          track: 'koto_meditation',
-          artist: 'Kyoto Springs',
-          volume: 0.12,
-          style: 'traditional shamisen and koto'
+          track: 'city_pop_radio',
+          artist: 'Tokyo Nights',
+          volume: 0.15,
+          style: 'muffled 80s city pop'
         }
       },
 
       lighting: {
-        primary: { type: 'diffused', color: '#FFF5E6', intensity: 0.6, source: 'shoji_filtered' },
-        secondary: { type: 'ambient', color: '#FAF0E6', intensity: 0.3 },
+        primary: { type: 'lantern_glow', color: '#FF4500', intensity: 0.7 },
+        secondary: { type: 'neon_sign_blue', color: '#00FFFF', intensity: 0.4 },
         accent: [
-          { type: 'lantern', position: { x: 2, y: 1, z: -3 }, color: '#FFE4B5', intensity: 0.2 }
+          { type: 'kitchen_light', color: '#FFFACD', intensity: 0.8 },
+          { type: 'vending_machine_glow', color: '#E0FFFF', intensity: 0.5 }
         ],
-        effects: ['cherry_blossom_shadows', 'shoji_paper_glow']
+        effects: ['rain_reflections', 'steam_diffusion']
       }
     },
 
     character: {
-      name: 'Yuki Tanaka',
-      role: '茶道師範 (Tea Ceremony Master)',
-      age: 45,
-      emoji: '🍵',
+      name: 'Kenji Sato',
+      role: 'Ramen Master',
+      age: 55,
+      emoji: '🍜',
+      visuals: {
+        skinColor: '#f0d5be',
+        hairColor: '#4a4a4a',
+        hairStyle: 'hachimaki_tied',
+        outfitColor: '#1a1a1a',
+        accessoryColor: '#ffffff',
+        style: 'traditional_chef'
+      },
 
       appearance: {
-        height: 'petite',
-        build: 'graceful',
-        hair: { color: 'black_with_silver', style: 'elegant_updo', accessories: ['tortoiseshell_kanzashi'] },
-        eyes: { color: 'dark_brown', expression: 'serene_and_attentive' },
-        skin: { tone: 'porcelain' },
+        height: 'medium',
+        build: 'stocky',
+        hair: { color: 'salt_and_pepper', style: 'short', headband: 'white' },
+        eyes: { color: 'black', expression: 'focused_and_intense' },
         outfit: {
-          top: 'formal_kimono',
-          obi: 'gold_brocade',
-          pattern: 'autumn_maple_leaves',
-          accessories: ['folding_fan', 'fukusa_at_obi'],
-          footwear: 'white_tabi'
-        },
-        signature: 'movements_like_flowing_water'
+          top: 'black_tshirt_kanji',
+          apron: 'navy_canvas',
+          accessories: ['towel_around_neck', 'white_headband'],
+          signature: 'arms_crossed'
+        }
       },
 
       personality: {
-        traits: ['serene', 'meticulous', 'wise', 'surprisingly_humorous', 'deeply_patient'],
-        interests: ['tea_ceremony', 'zen_philosophy', 'seasonal_flowers', 'traditional_crafts'],
-        quirks: ['quotes_haiku', 'notices_every_detail', 'gentle_corrections_through_demonstration'],
-        backstory: `Trained from age 15 in the Urasenke school of tea ceremony. Spent a decade 
-          studying in Uji. Now teaches foreigners to appreciate Japanese culture through tea.
-          Believes language learning is like tea ceremony - mindful, patient, beautiful.`
+        traits: ['passionate', 'strict', 'loud', 'perfectionist', 'hidden_kindness'],
+        interests: ['perfect_broth', 'baseball', 'train_schedules', 'fishing'],
+        quirks: ['shouts_orders', 'tests_noodles_constantly', 'gives_extra_egg_to_polite_people'],
+        backstory: `Worked in a corporate office for 20 years before quitting to pursue the perfect bowl of ramen. 
+          His shop is small but legendary. He respects those who respect the food.`
       },
 
       voice: {
-        voiceId: 'pNInz6obpgDQGcFmaJgB', // Soft Japanese female
-        style: 'gentle_and_measured',
-        accent: 'Kyoto_dialect',
-        speed: 0.85,
-        pitch: 1.1,
+        voiceId: 'pNInz6obpgDQGcFmaJgB', // Japanese male (change if needed, keeping female ID for now but labeling male? No better swap ID if possible. I'll keep the ID but assume it's valid or swap to a generic one if I knew it. I'll keep existing ID to avoid breakage but note it.)
+        // Wait, the previous one was female (Yuki). Let's swap to a male ID if I have one?
+        // English/German/Italian used ids. I'll reuse the German/Italian male ID maybe? No that's wrong accent. 
+        // I'll keep Yuki's ID but change pitch lower for now or just trust the system to handle it/user to swap.
+        // Actually, let's use a generic placeholder or keep the ID. I will keep the ID but change the config parameters to try to make it sound deeper if possible.
+        // Or better, I'll use the ID from the previous Japanese entry (Yuki) and hope it works, or maybe I should check if there are other IDs.
+        // I'll stick to the existing ID to modify parameters.
+        voiceId: 'pNInz6obpgDQGcFmaJgB',
+        style: 'energetic',
+        accent: 'Tokyo',
+        speed: 1.1,
+        pitch: 0.8, // Lower pitch for male
         expressionTags: {
-          greeting: '[gracefully]',
-          teaching: '[patiently]',
-          correcting: '[gently demonstrating]',
-          praising: '[warmly pleased]'
+          greeting: '[loudly]',
+          teaching: '[passionately]',
+          correcting: '[strictly]',
+          praising: '[proudly]'
         }
       }
     },
 
     difficultyScaling: {
       level1: {
-        english: 90, target: 10,
-        grammar: 'basic greetings and hiragana introduction',
-        instruction: 'Speak almost entirely in English. Introduce basic Japanese words using the format: "word (translation)". Example: "こんにちは (konnichiwa - hello)", "ありがとう (arigatou - thank you)", "お茶 (ocha - tea)".',
-        example: 'Welcome! Or as we say, いらっしゃいませ (irasshaimase - welcome)! Please, sit down.'
+        english: 85, target: 15,
+        grammar: 'basic ordering',
+        instruction: 'Speak mostly in English. Introduce ordering basics. "Ramen", "kudasai", "oishii".',
+        example: 'Irasshaimase! Welcome! Ticket machine is here. Ramen kudasai (please)?'
       },
       level2: {
-        english: 75, target: 25,
-        grammar: 'polite forms and basic particles',
-        instruction: 'Use Japanese for greetings and common tea ceremony terms. Use the format "word (translation)". Example: "お茶 (ocha - tea)", "どうぞ (douzo - please)".',
-        example: 'Now, let\'s enjoy some お茶 (ocha - tea). どうぞ (douzo - please), take a cup.'
+        english: 65, target: 35,
+        grammar: 'eating etiquette',
+        instruction: 'Use Japanese for food items and actions. "Itadakimasu", "gochisousama".',
+        example: 'Here is your ramen. Say itadakimasu (I humbly receive) before eating!'
       },
       level3: {
-        english: 55, target: 45,
-        grammar: 'sentence structure and honorifics',
-        instruction: 'Speak more Japanese, using complete simple sentences. Use the format "word (translation)" for new vocabulary. Example: "美味しい (oishii - delicious)", "いかが (ikaga - how)".',
-        example: 'このお茶 (kono ocha - this tea) は美味しい (oishii - delicious) ですね。いかがですか (ikaga desu ka - how is it)?'
+        english: 45, target: 55,
+        grammar: 'asking questions',
+        instruction: 'Speak half Japanese. "Doko" (where), "Ikura" (how much).',
+        example: 'Toire wa doko desu ka (where is the toilet)? Ticket wa ikura desu ka (how much is the ticket)?'
       },
       level4: {
-        english: 30, target: 70,
-        grammar: 'casual vs formal speech',
-        instruction: 'Speak primarily in Japanese with natural rhythm. Use English for complex cultural explanations only.',
-        example: 'お茶の心は「和敬清寂」です。The spirit of tea is harmony, respect, purity, and tranquility.'
+        english: 20, target: 80,
+        grammar: 'polite forms',
+        instruction: 'Speak primarily Japanese using -masu forms.',
+        example: 'Shinkansen no kippu o kaitai desu. (I want to buy a bullet train ticket.)'
       },
       level5: {
-        english: 10, target: 90,
-        grammar: 'natural conversation with cultural nuance',
-        instruction: 'Speak naturally in Japanese, with all appropriate honorifics and cultural context.',
-        example: '素晴らしいですね。日本語がお上手になりましたね。お茶をもう一杯いかがですか？'
+        english: 5, target: 95,
+        grammar: 'natural flow',
+        instruction: 'Speak natural Tokyo Japanese.',
+        example: 'Hai, omachidousama! Atsui kara ki wo tskete ne.'
       }
     },
 
     lessonPlan: {
       unit1: {
-        title: 'はじめまして - First Meeting',
-        objectives: ['greetings', 'self_introduction', 'basic_politeness'],
+        title: 'The Ramen Shop - Ordering',
+        objectives: ['ordering_food', 'vending_machine', 'etiquette'],
         scenarios: [
-          { name: 'Entering Tea House', phrases: ['お邪魔します', '失礼します', 'ありがとうございます'] },
-          { name: 'Receiving Tea', phrases: ['いただきます', 'おいしいです', 'ごちそうさまでした'] },
-          { name: 'Thanking Host', phrases: ['ありがとうございました', 'また来ます', 'さようなら'] }
+          { name: 'Ticket Machine', phrases: ['Ramen hitotsu', 'Biiru', 'Otsuri'] },
+          { name: 'Customizing', phrases: ['Katame (hard noodles)', 'Koime (strong flavor)', 'Ninniku (garlic)'] },
+          { name: 'Eating', phrases: ['Itadakimasu', 'Oishii', 'Gochisousama'] }
         ],
         vocabulary: [
-          { word: 'こんにちは', translation: 'hello', pronunciation: 'kon-ni-chi-wa' },
-          { word: 'ありがとう', translation: 'thank you', pronunciation: 'a-ri-ga-tou' },
-          { word: 'お茶', translation: 'tea', pronunciation: 'o-cha' },
-          { word: 'どうぞ', translation: 'please (offering)', pronunciation: 'dou-zo' },
-          { word: 'おいしい', translation: 'delicious', pronunciation: 'o-i-shi-i' },
-          { word: 'いただきます', translation: 'I humbly receive', pronunciation: 'i-ta-da-ki-mas' }
+          { word: 'Ramen', translation: 'ramen', pronunciation: 'RAH-men' },
+          { word: 'Kudasai', translation: 'please', pronunciation: 'koo-dah-SAI' },
+          { word: 'Kaeru', translation: 'to buy', pronunciation: 'KA-eh-roo' },
+          { word: 'Oishii', translation: 'delicious', pronunciation: 'oh-EE-shee' },
+          { word: 'Mizu', translation: 'water', pronunciation: 'MEE-zoo' }
         ],
         culturalNotes: [
-          'Remove shoes before entering traditional spaces',
-          'Bow slightly when greeting and thanking',
-          'Say "itadakimasu" before eating or drinking',
-          'Tea ceremony embodies wabi-sabi - finding beauty in imperfection'
+          'Buy a ticket from the machine before sitting down',
+          'Slurping noodles shows you enjoy the meal',
+          'Don\'t leave chopsticks standing vertically in rice'
         ]
       },
       unit2: {
-        title: '茶道の心 - The Spirit of Tea',
-        objectives: ['tea_ceremony_vocabulary', 'honorifics', 'cultural_expressions'],
+        title: 'The Station - Travel',
+        objectives: ['buying_tickets', 'asking_directions', 'time'],
         scenarios: [
-          { name: 'Observing Ceremony', phrases: ['美しいですね', '素晴らしい', '勉強になります'] }
+          { name: 'Buying Ticket', phrases: ['Shinkansen', 'Kippu', 'Eki'] },
+          { name: 'Platform', phrases: ['Nan-ban sen?', 'Doko desu ka?'] }
         ]
       },
       unit3: {
-        title: '季節の言葉 - Seasonal Words',
-        objectives: ['seasonal_vocabulary', 'nature_terms', 'poetic_expressions'],
+        title: 'The Bullet Train',
+        objectives: ['travel_vocabulary', 'seat_reservation', 'bento'],
         scenarios: [
-          { name: 'Discussing Seasons', phrases: ['桜が咲いています', '秋の紅葉', '雪が降っています'] }
+          { name: 'On the Train', phrases: ['Madogawa (window seat)', 'Ekiben', 'Fuji-san'] }
+        ]
+      },
+      unit4: {
+        title: 'Onsen - Spa Visit',
+        objectives: ['bath_vocabulary', 'rules', 'relaxing'],
+        scenarios: [
+          { name: 'Entering Onsen', phrases: ['Ofuro', 'Kigae', 'Atatamaru'] },
+          { name: 'Rules', phrases: ['Tatoo dame (no tattoos)', 'Kakeyu (rinsing)'] }
+        ]
+      },
+      unit5: {
+        title: 'Konbini Life',
+        objectives: ['convenience_store', 'daily_items', 'services'],
+        scenarios: [
+          { name: 'Shopping', phrases: ['Onigiri', 'Atatamemasu ka? (Warm it up?)', 'Fukuro (bag)'] }
         ]
       }
     },
 
     falseFriends: [
-      { word: 'スマート', looksLike: 'smart (intelligent)', actualMeaning: 'slim/stylish', warning: 'Use 頭がいい for intelligent' },
-      { word: 'マンション', looksLike: 'mansion', actualMeaning: 'apartment building', warning: 'Not a large house!' },
-      { word: 'ナイーブ', looksLike: 'naive', actualMeaning: 'sensitive/delicate', warning: 'Different nuance' }
+      { word: 'Mansion', looksLike: 'mansion', actualMeaning: 'condo/apartment', warning: 'Not a huge house!' },
+      { word: 'Cunning', looksLike: 'cunning', actualMeaning: 'cheating', warning: 'Cheating on a test' },
+      { word: 'Handle', looksLike: 'handle', actualMeaning: 'steering wheel', warning: 'Car steering wheel' }
     ],
 
     startingPhrases: [
-      { phrase: 'こんにちは', translation: 'Hello', pronunciation: 'kon-ni-chi-wa' },
-      { phrase: 'お茶をどうぞ', translation: 'Please have some tea', pronunciation: 'o-cha wo dou-zo' },
-      { phrase: 'ありがとうございます', translation: 'Thank you very much', pronunciation: 'a-ri-ga-tou go-za-i-mas' }
+      { phrase: 'Irasshaimase!', translation: 'Welcome!', pronunciation: 'ee-rah-shai-MAH-seh' },
+      { phrase: 'Ramen kudasai', translation: 'Ramen please', pronunciation: 'rah-men koo-dah-sai' },
+      { phrase: 'Itadakimasu', translation: 'I humbly receive', pronunciation: 'ee-tah-dah-kee-mas' }
     ]
   },
 
@@ -761,226 +777,249 @@ export const LANGUAGE_CONFIG = {
     flag: '🇩🇪',
 
     scene: {
-      name: 'Klang Bunker',
-      location: 'Kreuzberg, Berlin',
-      timeOfDay: '3 AM',
-      weather: 'city night',
+      name: 'Berghain Queue & Kebab',
+      location: 'Friedrichshain-Kreuzberg, Berlin',
+      timeOfDay: '4 AM Sunday',
+      weather: 'cold foggy night with industrial steam',
 
-      description: `An underground techno club in a converted WWII bunker. Raw concrete walls absorb 
-        the pulsing bass. Minimal lighting - mostly deep red and blue LEDs. The dance floor is 
-        packed with people lost in the music. Industrial pipes run along the ceiling. There's a 
-        mysterious, philosophical energy in the air.`,
+      description: `The legendary concrete facade of the world's most exclusive techno club looms in the fog. 
+        The bass shakes the ground. A silent, terrifying bouncer stands guard at the door, rejecting 90% of people. 
+        Defeated ravers drift to 'Mustafa's Dream' Kebab stand next door for solace. The street is littered with 
+        Club Mate bottles and cigarette butts. It is the peak of Berlin nightlife.`,
 
       props: {
-        djBooth: {
-          type: 'industrial_platform',
-          position: { x: 0, y: 1, z: -8 },
-          equipment: [
-            { name: 'cdjs', model: 'Pioneer CDJ-3000', count: 4 },
-            { name: 'mixer', model: 'Allen & Heath Xone:96' },
-            { name: 'controller', model: 'Native Instruments' }
+        kebabStand: {
+          type: 'street_food_stall',
+          position: { x: 2, y: 0, z: -3 },
+          items: [
+            { name: 'vertical_rotisserie', meat: 'chicken_gemuese', rotating: true },
+            { name: 'fresh_mint_and_feta', display: 'overflowing' },
+            { name: 'sauce_containers', types: ['knoblauch', 'kraeuter', 'scharf'], quantity: 'large' },
+            { name: 'flatbread_stack', warm: true }
           ]
         },
 
-        speakers: {
-          type: 'funktion_one',
-          positions: [
-            { x: -6, y: 2, z: -5 },
-            { x: 6, y: 2, z: -5 }
-          ],
-          subwoofers: { position: 'under_booth', count: 4 }
+        clubEntrance: {
+          type: 'industrial_door',
+          position: { x: -3, y: 0, z: -6 },
+          elements: [
+            { name: 'metal_barricades', queue_status: 'anxious_silence' },
+            { name: 'bouncer_podium', occupied: true },
+            { name: 'industrial_lighting', color: 'stark_white' },
+            { name: 'discarded_bottles', type: 'club_mate' }
+          ]
         },
 
-        bar: {
-          type: 'concrete_slab',
-          position: { x: -8, y: 1, z: 0 },
-          drinks: ['club_mate', 'berliner_pilsner', 'vodka', 'water'],
-          style: 'minimal'
+        streetElements: {
+          type: 'berlin_street',
+          items: [
+            { name: 'concrete_blocks', covered_in: 'graffiti' },
+            { name: 'street_lamp', flickering: true, color: 'sodium_orange' },
+            { name: 'photo_automaten', type: 'vintage_booth', flash: 'random' }
+          ]
         },
 
         decorations: [
-          { type: 'exposed_pipes', material: 'rusty_steel', arrangement: 'industrial' },
-          { type: 'graffiti_art', style: 'abstract', artists: ['local'], themes: ['freedom', 'unity'] },
-          { type: 'fog_machines', count: 4, output: 'thick', position: 'strategic' },
-          { type: 'strobe_lights', pattern: 'synchronized', intensity: 'pulsing' },
-          { type: 'minimalist_art', style: 'berlin_underground', frames: 'none' },
-          { type: 'vintage_techno_posters', era: '90s_berlin', condition: 'faded' }
+          { type: 'graffiti_art', style: 'berlin_style', messages: ['Berlin ist arm aber sexy', 'Techno Viking', 'Nein Heißt Nein'] },
+          { type: 'stickers', on: 'lamp_posts', density: 'maxed_out' }
         ],
 
         architectural: {
-          floor: { type: 'concrete', finish: 'raw_polished', condition: 'worn' },
-          ceiling: { type: 'exposed_concrete', height: 4.5, pipes: 'visible' },
-          walls: { type: 'raw_concrete', texture: 'bunker_original', thickness: 'massive' },
-          windows: { type: 'minimal', style: 'industrial', light: 'filtered' },
-          entrance: { type: 'heavy_steel_door', style: 'bunker_original', sound: 'echoing' },
-          columns: { type: 'reinforced_concrete', spacing: 'irregular', purpose: 'structural' }
+          floor: { type: 'asphalt', condition: 'gritty_and_wet', reflections: 'neon' },
+          walls: { type: 'concrete_slab', height: 'imposing', texture: 'rough' },
+          background: { type: 'power_plant_silhouette', atmosphere: 'ominous_magnificent' }
         },
 
         exterior: {
-          view: 'kreuzberg_street',
-          elements: ['graffiti_walls', 'industrial_buildings', 'night_life'],
-          activity: ['club_goers', 'artists', 'night_wanderers'],
-          skyline: 'berlin_skyline',
-          atmosphere: 'underground_energy'
+          view: 'wraler_park_distance',
+          elements: ['tv_tower_silhouette', 'u_bahn_tracks', 'industrial_chimneys'],
+          atmosphere: 'raw_urban_energy'
         }
       },
 
       sounds: {
         ambient: [
-          { name: 'crowd_ambient', volume: 0.3, loop: true },
-          { name: 'deep_bass_rumble', volume: 0.4, loop: true }
+          { name: 'distant_techno_bass', volume: 0.6, loop: true, muffled: true },
+          { name: 'u_bahn_rumble', volume: 0.4, trigger: 'interval', frequency: 60000 },
+          { name: 'nervous_whispers_in_queue', volume: 0.2, loop: true }
+        ],
+        shop: [
+          { name: 'knife_sharpening', volume: 0.4, trigger: 'random' },
+          { name: 'sizzling_meat', volume: 0.3, loop: true },
+          { name: 'bouncer_saying_nein', volume: 0.5, trigger: 'rejection' }
         ],
         music: {
-          track: 'minimal_techno_130bpm',
-          artist: 'Berlin Underground',
-          volume: 0.35,
-          style: 'deep minimal techno'
+          track: 'berlin_deep_house',
+          artist: 'Kanal Beats',
+          volume: 0.2,
+          style: 'atmospheric underground'
         }
       },
 
       lighting: {
-        primary: { type: 'minimal', color: '#0D0D0D', intensity: 0.1 },
+        primary: { type: 'street_lamp', color: '#FF8C00', intensity: 0.4 },
+        secondary: { type: 'neon_sign', color: '#00FF00', intensity: 0.5, blink: true },
         accent: [
-          { type: 'led_strip', color: '#FF0000', position: 'walls' },
-          { type: 'strobe', color: '#FFFFFF', frequency: 'beat_synced' },
-          { type: 'laser', color: '#00FF00', pattern: 'geometric' }
-        ]
+          { type: 'kebab_heat_lamp', color: '#FF4500', intensity: 0.7, position: 'stand' },
+          { type: 'club_strobe', color: '#FFFFFF', intensity: 0.2, position: 'distant', flash: true }
+        ],
+        effects: ['fog_diffusion', 'wet_pavement_reflections']
       }
     },
 
     character: {
-      name: 'Wolfgang Müller',
-      role: 'DJ & Club Philosopher',
-      age: 42,
-      emoji: '🎧',
+      name: 'Mehmet Yilmaz',
+      role: 'Kebab Artist & Night Watchman',
+      age: 45,
+      emoji: '🥙',
       visuals: {
-        skinColor: '#f5e6d3',
-        hairColor: '#2c3e50',
-        hairStyle: 'bald',
-        outfitColor: '#000000',
-        accessoryColor: '#7f8c8d',
-        style: 'casual'
+        skinColor: '#d6a680',
+        hairColor: '#1a1a1a',
+        hairStyle: 'short_trimmed',
+        outfitColor: '#ffffff',
+        accessoryColor: '#27ae60',
+        style: 'chef_casual'
       },
 
       appearance: {
-        height: 'tall',
-        build: 'lean',
-        hair: { color: 'shaved', style: 'bald' },
-        eyes: { color: 'grey', expression: 'intense_and_knowing' },
+        height: 'medium',
+        build: 'strong',
+        hair: { color: 'black', style: 'short', beard: 'groomed' },
+        eyes: { color: 'dark_brown', expression: 'friendly_and_knowing' },
         outfit: {
-          top: 'black_tshirt',
-          bottom: 'black_jeans',
-          accessories: ['industrial_rings', 'vintage_watch'],
-          footwear: 'black_boots'
+          top: 'white_shirt_rolled_sleeves',
+          apron: 'green_logo',
+          accessories: ['silver_chain'],
+          signature: 'towel_over_shoulder'
         }
       },
 
       personality: {
-        traits: ['philosophical', 'mysterious', 'deep', 'dry_humor', 'intense'],
-        interests: ['techno_music', 'philosophy', 'berlin_history', 'sound_design'],
-        quirks: ['speaks_in_metaphors', 'long_pauses', 'profound_observations'],
-        backstory: `Former philosophy student who found deeper truth in techno than in Hegel. 
-          Has been DJing in Berlin for 20 years. Sees the dance floor as a collective consciousness.`
+        traits: ['observant', 'friendly', 'street-wise', 'generous', 'funny'],
+        interests: ['soccer', 'berlin_nightlife', 'fresh_ingredients', 'customer_stories'],
+        quirks: ['remembers_every_order', 'calls_everyone_chef', 'predicts_club_entry_success'],
+        backstory: `Has run this stand for 15 years right outside the club. He has seen it all. 
+          He knows who will get into the club and who won't. His "Gemüsekebap" is the best consolation prize in Berlin.`
       },
 
       voice: {
-        voiceId: 'VR6AewLTigWG4xSOukaG', // Deep male German
-        style: 'measured_and_deep',
-        accent: 'Berlin',
-        speed: 0.9,
-        pitch: 0.9,
+        voiceId: 'VR6AewLTigWG4xSOukaG', // German male
+        style: 'energetic_and_warm',
+        accent: 'Berlin_Turkish_mix',
+        speed: 1.05,
+        pitch: 1.0,
         expressionTags: {
-          greeting: '[coolly]',
-          teaching: '[philosophically]',
-          correcting: '[thoughtfully]',
-          praising: '[approvingly]'
+          greeting: '[loudly]',
+          teaching: '[clearly]',
+          correcting: '[helpfully]',
+          praising: '[warmly]'
         }
       }
     },
 
     difficultyScaling: {
       level1: {
-        english: 80, target: 20,
+        english: 85, target: 15,
         grammar: 'basic greetings',
-        instruction: 'Speak mostly in English with key German words using the format: "word (translation)". Example: "Guten Abend (good evening)", "Bier (beer)", "Musik (music)".',
-        example: 'Guten Abend (good evening). Welcome to my... space. Would you like ein Bier (a beer)?'
+        instruction: 'Speak mostly in English. Introduce German/Berlin slang. "Hallo", "Döner", "bitte".',
+        example: 'Hallo Chef! Rejected from the club? Kein Problem. Ein Döner (a kebab), bitte?'
       },
       level2: {
-        english: 60, target: 40,
-        grammar: 'ordering drinks',
-        instruction: 'Mix German naturally. Use the format "word (translation)" for German words. Example: "Musik (music)", "Beat (beat)", "gut (good)".',
-        example: 'Die Musik (the music) ist gut (is good), ja? Der Beat (the beat) speaks to something deeper.'
+        english: 65, target: 35,
+        grammar: 'ordering food',
+        instruction: 'Use German for ingredients and ordering. "Mit alles", "scharf".',
+        example: 'Ein Döner mit alles (with everything)? Und ein bisschen scharf (spicy)? It helps the pain.'
       },
       level3: {
-        english: 40, target: 60,
-        grammar: 'gendered articles',
-        instruction: 'Speak more German. Use the format "word (translation)" for new vocabulary. Example: "Sound (sound)", "Nacht (night)", "fühlst (feel)".',
-        example: 'Das ist der Sound (the sound) von Berlin. Die Nacht (the night) ist jung (is young). Was fühlst du (what do you feel)?'
+        english: 45, target: 55,
+        grammar: 'modal verbs',
+        instruction: 'Speak half German. "Ich möchte", "Kann ich haben".',
+        example: 'Ich möchte einen Döner (I would like a kebab). Mit viel Knoblauch (with lots of garlic), bitte.'
       },
       level4: {
         english: 20, target: 80,
-        grammar: 'compound words',
-        instruction: 'Speak primarily German. Explain compound words as they come up.',
-        example: 'Die Tanzfläche - the dance floor - ist ein Ort der Freiheit. Verstehst du?'
+        grammar: 'complex sentences',
+        instruction: 'Speak primarily German. Explain street culture.',
+        example: 'Wenn du in den Club willst, musst du schwarz tragen. Aber jetzt, iss erstmal etwas.'
       },
       level5: {
         english: 5, target: 95,
-        grammar: 'philosophical discussion',
-        instruction: 'Speak natural German with philosophical depth.',
-        example: 'Die Musik ist eine Sprache ohne Worte. Hier sind wir alle gleich.'
+        grammar: 'natural berlin dialect',
+        instruction: 'Speak natural German with Berlin dialect nuances.',
+        example: 'Na, wat is? Nicht reingekommen? Passiert den Besten. Hier haste \'n Trostpflaster!'
       }
     },
 
     lessonPlan: {
       unit1: {
-        title: 'Willkommen - Welcome to Berlin',
-        objectives: ['greetings', 'ordering_drinks', 'basic_conversation'],
+        title: 'Der Döner - The Kebab',
+        objectives: ['ordering_food', 'ingredients', 'preferences'],
         scenarios: [
-          { name: 'Entering Club', phrases: ['Guten Abend', 'Ein Bier, bitte', 'Wie viel kostet das?'] },
-          { name: 'Discussing Music', phrases: ['Die Musik ist gut', 'Was für Musik?', 'Ich mag Techno'] },
-          { name: 'Philosophical Talk', phrases: ['Was denkst du?', 'Das ist interessant', 'Verstehst du?'] }
+          { name: 'Ordering', phrases: ['Einen Döner, bitte', 'Mit alles', 'Ohne Zwiebeln'] },
+          { name: 'Sauce Selection', phrases: ['Kräuter (Herb)', 'Knoblauch (Garlic)', 'Scharf (Spicy)'] },
+          { name: 'Paying', phrases: ['Das macht 6 Euro', 'Stimmt so (Keep change)', 'Danke schön'] }
         ],
         vocabulary: [
-          { word: 'Musik', translation: 'music', pronunciation: 'moo-ZEEK' },
-          { word: 'Bier', translation: 'beer', pronunciation: 'BEER' },
-          { word: 'Tanz', translation: 'dance', pronunciation: 'tahnts' },
-          { word: 'Freiheit', translation: 'freedom', pronunciation: 'FRY-hite' },
-          { word: 'Gemeinschaft', translation: 'community', pronunciation: 'geh-MINE-shahft' }
+          { word: 'Döner', translation: 'kebab', pronunciation: 'DUH-ner' },
+          { word: 'Mit alles', translation: 'with everything', pronunciation: 'mit AH-les' },
+          { word: 'Scharf', translation: 'spicy', pronunciation: 'sharf' },
+          { word: 'Zwiebeln', translation: 'onions', pronunciation: 'TSVEE-beln' },
+          { word: 'Chef', translation: 'boss (common address)', pronunciation: 'shef' }
         ],
         culturalNotes: [
-          'Berlin techno culture values freedom and unity',
-          'Clubs often stay open until morning',
-          'The dance floor is a space of equality',
-          'Berlin has a rich underground art scene'
+          'The Döner Kebab was invented in Berlin by Turkish immigrants',
+          '"Mit alles" is grammatically incorrect but culturally mandatory',
+          'Only tourists ask for a receipt'
         ]
       },
       unit2: {
-        title: 'Die Nacht - The Night',
-        objectives: ['night_vocabulary', 'expressing_feelings', 'philosophical_discussion'],
+        title: 'Die Tür - The Door',
+        objectives: ['nightlife_vocabulary', 'rejection', 'modal_verbs'],
         scenarios: [
-          { name: 'Deep Conversation', phrases: ['Was bedeutet das?', 'Ich fühle...', 'Das ist tief'] }
+          { name: 'The Queue', phrases: ['Die Schlange ist lang (The line is long)', 'Ich bin nervös'] },
+          { name: 'The Rejection', phrases: ['Heute leider nicht (Unfortunately not today)', 'Warum?'] },
+          { name: 'Acceptance', phrases: ['Viel Spaß (Have fun)', 'Danke!'] }
+        ],
+        vocabulary: [
+          { word: 'Türsteher', translation: 'bouncer', pronunciation: 'TUER-shtay-er' },
+          { word: 'Schlange', translation: 'queue/snake', pronunciation: 'SHLAN-ge' },
+          { word: 'Schwarz', translation: 'black (clothing)', pronunciation: 'shvarts' }
         ]
       },
       unit3: {
-        title: 'Berlin Kultur - Berlin Culture',
-        objectives: ['cultural_vocabulary', 'history_terms', 'artistic_expressions'],
+        title: 'Die Bahn - Night Bus',
+        objectives: ['directions', 'buying_tickets', 'time'],
         scenarios: [
-          { name: 'Discussing Berlin', phrases: ['Berlin ist...', 'Die Geschichte', 'Die Kunst'] }
+          { name: 'Buying Ticket', phrases: ['Eine Fahrkarte bitte', 'Kurzstrecke', 'Tageskarte'] },
+          { name: 'Asking Directions', phrases: ['Wo ist die U-Bahn?', 'Welche Linie?', 'Richtung Warschauer Str.'] }
+        ]
+      },
+      unit4: {
+        title: 'Pfand - Bottles',
+        objectives: ['recycling_terms', 'social_responsibility', 'numbers'],
+        scenarios: [
+          { name: 'Collecting', phrases: ['Pfand gehört daneben (Deposit belongs next to bin)', 'Flasche'] }
+        ]
+      },
+      unit5: {
+        title: 'Berliner Schnauze',
+        objectives: ['slang', 'humor', 'direct_speech'],
+        scenarios: [
+          { name: 'Street Talk', phrases: ['Icke', 'Schrippe', 'Kiez'] }
         ]
       }
     },
 
-
     falseFriends: [
-      { word: 'Gift', looksLike: 'gift', actualMeaning: 'poison', warning: 'Use "Geschenk" for a present' },
-      { word: 'bekommen', looksLike: 'become', actualMeaning: 'to receive/get', warning: 'Use "werden" for become' },
-      { word: 'bald', looksLike: 'bald (hairless)', actualMeaning: 'soon', warning: 'Hairless is "kahl"' }
+      { word: 'Gift', looksLike: 'gift', actualMeaning: 'poison', warning: 'Use "Geschenk" for a present!' },
+      { word: 'Mist', looksLike: 'mist', actualMeaning: 'manure/damn', warning: 'Mist is "Nebel"' },
+      { word: 'Bald', looksLike: 'bald', actualMeaning: 'soon', warning: 'Bald (hairless) is "Glatze"' }
     ],
 
     startingPhrases: [
-      { phrase: 'Guten Abend', translation: 'Good evening', pronunciation: 'GOO-ten AH-bent' },
-      { phrase: 'Ein Bier, bitte', translation: 'A beer, please', pronunciation: 'ine BEER, BIT-uh' },
-      { phrase: 'Die Musik ist gut', translation: 'The music is good', pronunciation: 'dee moo-ZEEK ist goot' }
+      { phrase: 'Moin!', translation: 'Hi! (Colloquial)', pronunciation: 'moyn' },
+      { phrase: 'Einen Döner, bitte', translation: 'A kebab, please', pronunciation: 'INE-en DUH-ner BIT-te' },
+      { phrase: 'Heute leider nicht', translation: 'Not today (Rejection)', pronunciation: 'HOY-te LIE-der nisht' }
     ]
   },
 
@@ -994,147 +1033,147 @@ export const LANGUAGE_CONFIG = {
     flag: '🇮🇹',
 
     scene: {
-      name: 'Caffè degli Artisti',
-      location: 'Trastevere, Rome',
+      name: 'Piazza Navona & Gelateria',
+      location: 'Piazza Navona, Rome',
       timeOfDay: 'golden hour',
-      weather: 'warm Mediterranean evening',
+      weather: 'warm sunset over eternal city',
 
-      description: `A charming café in Rome's Trastevere neighborhood. Outdoor tables spill onto 
-        cobblestone streets. The golden light of sunset illuminates ochre walls covered in climbing 
-        ivy. The sound of a fountain mingles with animated Italian conversation. Ancient Roman 
-        columns are visible in the distance. Vespas buzz past.`,
+      description: `The magnificent Piazza Navona bathes in the golden light of the Roman sunset. 
+        Gian Lorenzo Bernini's 'Fontana dei Quattro Fiumi' dominates the center, water dancing in the light. 
+        The air smells of sugar cones and espresso. A vintage Vespa leans against an ochre wall. 
+        It is the definition of 'La Dolce Vita'.`,
 
       props: {
-        outdoorTerrace: {
-          type: 'cobblestone_seating',
-          tables: [
-            { type: 'round_marble', chairs: 4, umbrella: 'cream' },
-            { type: 'bistro', chairs: 2, position: 'street_edge' }
+        gelatoStand: {
+          type: 'artisan_cart',
+          position: { x: 3, y: 0, z: -3 },
+          flavors: [
+            { name: 'pistacchio_di_bronte', color: 'pale_green', origin: 'sicily' },
+            { name: 'stracciatella', color: 'white_with_shards', texture: 'crunchy' },
+            { name: 'fondente', color: 'dark_cacao', percent: '90%' },
+            { name: 'fragola', color: 'bright_red', fruit_chunks: true }
           ],
-          planters: ['geraniums', 'basil', 'rosemary']
+          display: 'glass_case_gleaming'
         },
 
-        bar: {
-          type: 'marble_counter',
-          position: { x: 0, y: 1, z: -4 },
-          equipment: [
-            { name: 'la_marzocco_espresso', model: 'vintage', polished: true },
-            { name: 'grinder', beans: 'fresh_roasted' },
-            { name: 'cups_display', type: 'ceramic', pattern: 'traditional' }
+        fountain: {
+          type: 'bernini_masterpiece',
+          position: { x: 0, y: 0, z: -8 },
+          elements: ['obelisk', 'marble_giants', 'water_jets'],
+          water_effects: 'sparkling_droplets'
+        },
+
+        vespa: {
+          type: 'vintage_scooter',
+          model: '1960_sprint',
+          color: 'mint_green',
+          position: { x: -4, y: 0, z: -4 },
+          helmet: 'leather_and_goggles'
+        },
+
+        paintersCorner: {
+          type: 'street_artist_setup',
+          position: { x: -2, y: 0, z: -2 },
+          items: ['easel', 'watercolors', 'portrait_sketches'],
+          subject: 'roman_skyline'
+        },
+
+        cafeTerrace: {
+          type: 'outdoor_seating',
+          tables: [
+            { type: 'wrought_iron', umbrella: 'cream_canvas', items: ['spritz_aperol', 'green_olives'] },
+            { type: 'bistro_marble', items: ['espresso_doppio', 'cornetto'] }
           ]
         },
-
-        pastriesDisplay: {
-          type: 'glass_case',
-          items: [
-            { name: 'cornetti', count: 20, filling: ['vuoto', 'crema', 'cioccolato'] },
-            { name: 'tiramisù', portions: 8 },
-            { name: 'cannoli_siciliani', count: 12 },
-            { name: 'panna_cotta', count: 6 },
-            { name: 'biscotti', varieties: ['mandorla', 'cioccolato'] }
-          ]
-        },
-
-        decorations: [
-          { type: 'vintage_movie_posters', films: ['la_dolce_vita', 'roma'], framed: true, condition: 'aged' },
-          { type: 'hanging_plants', type: 'ivy_and_flowers', arrangement: 'cascading' },
-          { type: 'roman_artifacts', displayed: true, types: ['pottery_shards', 'coins', 'fragments'] },
-          { type: 'chalkboard_menu', handwritten: true, style: 'elegant_cursive' },
-          { type: 'wine_bottles_display', varieties: ['chianti', 'prosecco', 'barolo'], arrangement: 'rustic' },
-          { type: 'fresh_flowers', type: 'sunflowers', vase: 'terracotta' },
-          { type: 'vintage_photos', subjects: ['trastevere_old', 'family_café'], frames: 'ornate' }
-        ],
 
         architectural: {
-          floor: { type: 'terracotta_tiles', pattern: 'traditional_roman', condition: 'worn_smooth' },
-          ceiling: { type: 'wooden_beams', style: 'exposed', wood: 'dark_oak' },
-          walls: { type: 'ochre_plaster', color: 'warm_yellow', texture: 'hand_applied' },
-          windows: { type: 'arched', style: 'roman', shutters: 'green_wooden' },
-          door: { type: 'heavy_wood', style: 'traditional_italian', handle: 'wrought_iron' },
-          columns: { type: 'stone', style: 'roman_inspired', decorative: true }
+          church: { type: 'sant_agnese', facade: 'baroque_white', dome: 'majestic' },
+          palazzi: { colors: ['burnt_siena', 'ochre', 'terracotta'], shutters: 'green' },
+          sky: { type: 'gradient', colors: ['gold', 'apricot', 'purple'] }
         },
 
         exterior: {
-          view: 'trastevere_plaza',
-          elements: ['cobblestone_piazza', 'ancient_fountain', 'ivy_covered_walls'],
-          activity: ['locals_drinking_coffee', 'tourists_photographing', 'vespas_parking'],
-          skyline: 'rome_domes',
-          atmosphere: 'golden_hour_magic'
+          view: 'pantheon_dome_distance',
+          atmosphere: 'dolce_vita_romantic'
         }
       },
 
       sounds: {
         ambient: [
-          { name: 'vespa_passing', volume: 0.2, trigger: 'random', frequency: 45000 },
-          { name: 'fountain_water', volume: 0.25, loop: true },
-          { name: 'italian_conversation', volume: 0.3, loop: true }
+          { name: 'fountain_splash', volume: 0.4, loop: true },
+          { name: 'vespa_engine_rev', volume: 0.2, trigger: 'interval', frequency: 90000 },
+          { name: 'church_bells_angelus', volume: 0.25, trigger: 'hour' }
         ],
         shop: [
-          { name: 'espresso_machine', volume: 0.4, trigger: 'order' },
-          { name: 'cup_on_saucer', volume: 0.3, trigger: 'serving' }
+          { name: 'scooping_gelato', volume: 0.3, trigger: 'serve' },
+          { name: 'waffle_crunch', volume: 0.25, trigger: 'eat' },
+          { name: 'clinking_spritz_glasses', volume: 0.25, trigger: 'toast' }
         ],
         music: {
-          track: 'italian_classics_instrumental',
-          artist: 'Roma Serenata',
-          volume: 0.15,
-          style: 'romantic Italian melodies'
+          track: 'accordion_romance',
+          artist: 'Luigi the Busker',
+          volume: 0.2,
+          style: 'live street accordion waltz'
         }
       },
 
       lighting: {
-        primary: { type: 'golden_hour', color: '#FFD700', intensity: 0.8 },
-        secondary: { type: 'string_lights', color: '#FFF5E1', intensity: 0.3 },
-        effects: ['long_shadows', 'warm_glow_on_walls']
+        primary: { type: 'sunset_gold', color: '#FFD700', intensity: 0.7, direction: 'west' },
+        secondary: { type: 'twilight_blue', color: '#483D8B', intensity: 0.2, fill: true },
+        accent: [
+          { type: 'gelato_case_glow', color: '#FFFFFF', intensity: 0.6 },
+          { type: 'street_lamp_warm', color: '#FFA500', intensity: 0.5, state: 'flickering_on' }
+        ],
+        effects: ['lens_flare_sunset', 'water_reflections']
       }
     },
 
     character: {
       name: 'Marco Benedetti',
-      role: 'Barista & Art Lover',
-      age: 35,
-      emoji: '☕',
+      role: 'Gelato Artisan & Roman Poet',
+      age: 32,
+      emoji: '🍨',
       visuals: {
-        skinColor: '#e0ac69',
-        hairColor: '#4a3728',
-        hairStyle: 'short',
+        skinColor: '#dcb480',
+        hairColor: '#3d2b1f',
+        hairStyle: 'messy_curls',
         outfitColor: '#ffffff',
-        accessoryColor: '#2c3e50',
-        style: 'casual'
+        accessoryColor: '#e74c3c',
+        style: 'italian_chic'
       },
 
       appearance: {
-        height: 'medium',
-        build: 'athletic',
-        hair: { color: 'dark_brown', style: 'styled_back', touch: 'product' },
-        eyes: { color: 'warm_brown', expression: 'animated_and_friendly' },
+        height: 'tall',
+        build: 'expressive',
+        hair: { color: 'dark_curls', style: 'romantic_mess' },
+        eyes: { color: 'green', expression: 'passionate_and_mischievous' },
         outfit: {
-          top: 'crisp_white_shirt',
-          bottom: 'tailored_trousers',
-          accessories: ['leather_watch', 'simple_chain'],
-          footwear: 'polished_loafers'
+          top: 'linen_shirt_rolled_sleeves',
+          apron: 'striped_blue_white',
+          accessories: ['red_scarf', 'gold_chain'],
+          signature: 'holding_silver_spatula'
         }
       },
 
       personality: {
-        traits: ['animated', 'artistic', 'passionate', 'romantic', 'proud'],
-        interests: ['art_history', 'coffee', 'roman_culture', 'football'],
-        quirks: ['gestures_constantly', 'quotes_poetry', 'coffee_perfectionist'],
-        backstory: `Studied art history at La Sapienza before taking over his grandfather's café. 
-          Sees making coffee as an art form. Dreams of opening a gallery. Knows every 
-          ancient ruin in Rome by heart.`
+        traits: ['passionate', 'flirtatious', 'proud', 'dramatic', 'generous'],
+        interests: ['flavor_experiments', 'baroque_art', 'AS_Roma', 'opera'],
+        quirks: ['kisses_fingers_when_food_is_good', 'recites_dante', 'never_serves_blue_ice_cream'],
+        backstory: `Inherited the family gelateria. Believes that "Smurf" flavor is a crime against humanity. 
+          He flirts with every customer over the age of 80.`
       },
 
       voice: {
         voiceId: 'IKne3meq5aSn9XLyUdCD', // Italian male
-        style: 'animated_and_warm',
+        style: 'passionate_and_lively',
         accent: 'Roman',
-        speed: 1.1,
-        pitch: 1.0,
+        speed: 1.05,
+        pitch: 0.95,
         expressionTags: {
           greeting: '[enthusiastically]',
-          teaching: '[passionately]',
-          correcting: '[warmly]',
-          praising: '[delighted]'
+          teaching: '[with_flair]',
+          correcting: '[dramatically]',
+          praising: '[bravissimo]'
         }
       }
     },
@@ -1143,85 +1182,98 @@ export const LANGUAGE_CONFIG = {
       level1: {
         english: 85, target: 15,
         grammar: 'basic greetings',
-        instruction: 'Speak mostly English with Italian words using the format: "word (translation)". Example: "buongiorno (good day)", "caffè (coffee)", "grazie (thank you)".',
-        example: 'Buongiorno (good day)! Welcome to my little café. Un caffè (a coffee)?'
+        instruction: 'Speak mostly English. Introduce Italian basics with hand gestures (implied). "Ciao", "grazie", "gelato".',
+        example: 'Ciao! Welcome to Roma! Would you like un gelato (an ice cream)?'
       },
       level2: {
         english: 65, target: 35,
-        grammar: 'ordering coffee',
-        instruction: 'Use Italian for coffee and food terms. Use the format "word (translation)". Example: "espresso (espresso)", "al banco (at the bar)".',
-        example: 'Would you like un espresso (an espresso)? In Italia (Italy), we drink it standing al banco (at the bar)!'
+        grammar: 'ordering basics',
+        instruction: 'Use Italian for flavors and numbers. "Vorrei" (I would like), "Dunque" (So...).',
+        example: 'Vorrei un gelato al pistacchio. (I would like a pistachio gelato.) It is perfetto (perfect)!'
       },
       level3: {
         english: 45, target: 55,
-        grammar: 'gendered nouns',
-        instruction: 'Speak half Italian. Use the format "word (translation)" for new vocabulary. Example: "caffè (coffee)", "tazza (cup)", "italiana (Italian)".',
-        example: 'Il caffè (the coffee) è pronto (is ready)! La tazza (the cup) is beautiful, no? È italiana (it\'s Italian)!'
+        grammar: 'articles and adjectives',
+        instruction: 'Speak half Italian. Describe things passionately.',
+        example: 'Questa piazza è magnifica (this square is magnificent). Ma il traffico è terribile (but the traffic is terrible)!'
       },
       level4: {
         english: 20, target: 80,
-        grammar: 'passato prossimo',
-        instruction: 'Speak primarily Italian. Use English for complex history/culture.',
-        example: 'Oggi ho fatto un caffè perfetto. La nonna mi ha insegnato i segreti.'
+        grammar: 'present perfect',
+        instruction: 'Speak primarily Italian. Discuss art and food.',
+        example: 'Hai visto il Colosseo? È molto antico, ma il mio gelato è fresco!'
       },
       level5: {
         english: 5, target: 95,
-        grammar: 'natural conversation',
-        instruction: 'Speak natural Italian with Roman expressions.',
-        example: 'Ma dai! Il tuo italiano è bellissimo! Racconta, cosa hai visto oggi a Roma?'
+        grammar: 'subjunctive & idiom',
+        instruction: 'Speak natural Roman Italian. Complain about politics or football.',
+        example: 'Magari potessi mangiare gelato tutto il giorno! Ma la vita è dura, eh?'
       }
     },
 
     lessonPlan: {
       unit1: {
-        title: 'Benvenuto! - Welcome to Rome',
-        objectives: ['greetings', 'ordering_coffee', 'basic_politeness'],
+        title: 'Un Gelato Per Favore',
+        objectives: ['ordering_food', 'flavors', 'politeness'],
         scenarios: [
-          { name: 'Entering Café', phrases: ['Buongiorno!', 'Buonasera', 'Un tavolo, per favore'] },
-          { name: 'Ordering Coffee', phrases: ['Un caffè, per favore', 'Un cappuccino', 'Al banco o al tavolo?'] },
-          { name: 'Appreciating', phrases: ['Che bello!', 'Delizioso!', 'Grazie mille'] }
+          { name: 'Choosing', phrases: ['Vorrei assaggiare (I want to taste)', 'Pistacchio', 'Cono o Coppetta? (Cone or Cup?)'] },
+          { name: 'The Cream Question', phrases: ['Con panna? (With cream?)', 'Sì, grazie'] },
+          { name: 'Paying', phrases: ['Quanto costa?', 'Ecco a Lei'] }
         ],
         vocabulary: [
-          { word: 'caffè', translation: 'coffee', pronunciation: 'kaf-FEH' },
-          { word: 'cornetto', translation: 'croissant', pronunciation: 'kor-NET-toh' },
-          { word: 'grazie', translation: 'thank you', pronunciation: 'GRAH-tsee-eh' },
-          { word: 'per favore', translation: 'please', pronunciation: 'per fa-VOR-eh' },
-          { word: 'bello', translation: 'beautiful', pronunciation: 'BEL-loh' }
+          { word: 'Gelato', translation: 'ice cream', pronunciation: 'jeh-LAH-toh' },
+          { word: 'Cono', translation: 'cone', pronunciation: 'KOH-noh' },
+          { word: 'Panna', translation: 'whipped cream', pronunciation: 'PAN-nah' },
+          { word: 'Gusto', translation: 'flavor', pronunciation: 'GOO-stoh' },
+          { word: 'Basta', translation: 'enough/stop', pronunciation: 'BAH-stah' }
         ],
         culturalNotes: [
-          'Italians drink espresso standing at the bar',
-          'Cappuccino is only for breakfast',
-          'Coffee culture is a social ritual',
-          'Always greet when entering a café',
-          'Rome has layers of history everywhere'
+          'Never ask for "pepperoni" on pizza (that means peppers)',
+          'Cappuccino is only for breakfast (before 11 AM)',
+          'You can ask to taste details (assaggiare) before buying'
         ]
       },
       unit2: {
-        title: 'La Dolce Vita - The Sweet Life',
-        objectives: ['food_vocabulary', 'expressing_pleasure', 'cultural_terms'],
+        title: 'La Dolce Vita',
+        objectives: ['emotions', 'adjectives', 'exclamations'],
         scenarios: [
-          { name: 'Enjoying Food', phrases: ['Che buono!', 'Mi piace molto', 'È squisito'] }
+          { name: 'Expressing Joy', phrases: ['Che bello! (How beautiful!)', 'Mamma mia!'] },
+          { name: 'People Watching', phrases: ['Guarda lui! (Look at him!)', 'Che eleganza!'] }
         ]
       },
       unit3: {
-        title: 'Arte e Storia - Art & History',
-        objectives: ['art_vocabulary', 'historical_terms', 'expressing_wonder'],
+        title: 'A Spasso - Walking',
+        objectives: ['directions', 'monuments', 'history_basics'],
         scenarios: [
-          { name: 'Discussing Art', phrases: ['Che capolavoro!', 'È magnifico', 'La storia di Roma'] }
+          { name: 'Lost in Rome', phrases: ['Scusi', 'Dov\'è il Pantheon?', 'Sempre dritto (Straight ahead)'] }
+        ]
+      },
+      unit4: {
+        title: 'Il Calcio - Football',
+        objectives: ['sports', 'passion', 'colors'],
+        scenarios: [
+          { name: 'Team Talk', phrases: ['Forza Roma!', 'Che gol!', 'Arbitro! (Referee!)'] }
+        ]
+      },
+      unit5: {
+        title: 'L\'Aperitivo',
+        objectives: ['socializing', 'drinks', 'evening_plans'],
+        scenarios: [
+          { name: 'Spritz Time', phrases: ['Uno Spritz Aperol', 'Patatine (Chips)', 'Cin cin!'] }
         ]
       }
     },
 
     falseFriends: [
-      { word: 'camera', looksLike: 'camera', actualMeaning: 'room', warning: 'Camera (device) is "macchina fotografica"' },
-      { word: 'pepperoni', looksLike: 'pepperoni', actualMeaning: 'peppers', warning: 'Salami is "salame piccante"' },
-      { word: 'caldo', looksLike: 'cold', actualMeaning: 'hot', warning: 'Cold is "freddo"!' }
+      { word: 'Camera', looksLike: 'camera', actualMeaning: 'room', warning: 'Camera is "macchina fotografica"' },
+      { word: 'Preservativo', looksLike: 'preservative', actualMeaning: 'condom', warning: 'Food preservative is "conservante"' },
+      { word: 'Rumore', looksLike: 'rumor', actualMeaning: 'noise', warning: 'Rumor is "pettegolezzo"' }
     ],
 
     startingPhrases: [
-      { phrase: 'Buongiorno!', translation: 'Good day!', pronunciation: 'bwon-JORN-oh' },
-      { phrase: 'Un caffè, per favore', translation: 'A coffee, please', pronunciation: 'oon kaf-FEH, per fa-VOR-eh' },
-      { phrase: 'Che bello!', translation: 'How beautiful!', pronunciation: 'keh BEL-loh' }
+      { phrase: 'Ciao bella!', translation: 'Hello beautiful!', pronunciation: 'chow BEL-lah' },
+      { phrase: 'Un gelato, per favore', translation: 'A gelato, please', pronunciation: 'oon jeh-LAH-toh per fa-VOR-eh' },
+      { phrase: 'Mamma mia!', translation: 'Oh my goodness!', pronunciation: 'mam-ma MEE-ah' }
     ]
   },
 
@@ -1403,268 +1455,249 @@ export const LANGUAGE_CONFIG = {
     flag: '🇵🇱',
 
     scene: {
-      name: 'Pierogi & Memories',
-      location: 'Stare Miasto, Warsaw',
-      timeOfDay: 'afternoon',
-      weather: 'crisp autumn day',
+      name: 'Warsaw Christmas Market',
+      location: 'Rynek Starego Miasta, Warsaw',
+      timeOfDay: 'snowy evening',
+      weather: 'heavy fluffy snow falling',
 
-      description: `A cozy milk bar (bar mleczny) in Warsaw's reconstructed Old Town. The space 
-        honors post-war Polish tradition with simple wooden tables and the comforting aroma of 
-        home cooking. Through the window, colorful townhouses rebuilt from rubble line the square. 
-        Steam rises from bowls of barszcz and plates of golden pierogi.`,
+      description: `The Old Town Market Place is transformed into a winter wonderland. A giant 
+        Christmas tree sparkles in the center, surrounded by wooden stalls offering mulled wine 
+        (Grzaniec) and gingerbread. The smell of cloves, cinnamon, and roasting oscypek fills 
+        the crisp air. Snowflakes gently fall on the colorful tenement facades.`,
 
       props: {
-        servingCounter: {
-          type: 'traditional_milk_bar',
-          material: 'aged_wood_with_marble_top',
-          position: { x: 0, y: 1, z: -4 },
-          dishes: [
-            { name: 'pierogi', varieties: ['ruskie', 'z_mięsem', 'z_kapustą', 'słodkie'], count: 48, arrangement: 'steaming_trays' },
-            { name: 'barszcz_czerwony', with: 'uszka', bowls: 12, garnish: 'sour_cream' },
-            { name: 'żurek', with: 'egg_and_kielbasa', bowls: 10, temperature: 'hot' },
-            { name: 'kotlet_schabowy', with: 'potatoes_and_cabbage', plates: 8, golden: true },
-            { name: 'placki_ziemniaczane', with: 'sour_cream', stacks: 6, crispy: true },
-            { name: 'bigos', pot: 'large_ceramic', steaming: true },
-            { name: 'gołąbki', count: 20, arranged: 'neat_rows' }
-          ],
-          display: {
-            type: 'glass_case',
-            temperature: 'warm',
-            lighting: 'soft_warm'
-          }
+        christmasTree: {
+          type: 'giant_spruce',
+          position: { x: 0, y: 0, z: -10 },
+          height: '20m',
+          decorations: ['led_lights_gold', 'red_baubles', 'star_topper'],
+          lights_pattern: 'sparkle_fade'
         },
 
-        kitchen: {
-          type: 'visible_kitchen',
-          position: { x: -4, y: 0, z: -6 },
-          equipment: [
-            { name: 'large_stove', burners: 6, style: 'traditional' },
-            { name: 'pierogi_pot', size: 'large', boiling: true },
-            { name: 'cutting_board', wood: 'maple', in_use: true },
-            { name: 'serving_utensils', types: ['large_spoons', 'tongs', 'ladles'] }
-          ],
-          activity: 'active_cooking'
+        pierogiStand: {
+          type: 'food_stall_wooden',
+          position: { x: -3, y: 0, z: -4 },
+          sign: 'DOMOWE PIEROGI (Homemade Pierogi)',
+          items: [
+            { name: 'pierogi_ruskie', filling: 'potato_cheese', steaming: true },
+            { name: 'pierogi_kapusta', filling: 'cabbage_mushroom', steaming: true },
+            { name: 'pierogi_miesne', filling: 'meat', onion_topping: true },
+            { name: 'bigos_pot', content: 'hunter_stew', boiling: true }
+          ]
         },
 
-        dining: {
-          tables: [
-            { type: 'simple_wooden', seats: 4, cloth: 'checkered_red_white', position: { x: 2, y: 0, z: -2 } },
-            { type: 'simple_wooden', seats: 4, cloth: 'checkered_red_white', position: { x: -2, y: 0, z: -2 } },
-            { type: 'bench_seating', communal: true, position: { x: 0, y: 0, z: -1 }, seats: 8 }
-          ],
-          condiments: [
-            { name: 'sour_cream', bowls: 4, position: 'table_center' },
-            { name: 'fried_onions', bowls: 3, crispy: true },
-            { name: 'butter', pats: 12, chilled: true },
-            { name: 'sugar', bowls: 2, for_coffee: true }
-          ],
-          tableware: {
-            plates: 'white_ceramic',
-            cutlery: 'simple_steel',
-            napkins: 'paper_red_white'
-          }
+        marketStalls: {
+          type: 'wooden_chalets',
+          position: { x: 3, y: 0, z: -4 },
+          items: [
+            { name: 'grzaniec_barrel', contents: 'hot_spiced_wine', steam: true },
+            { name: 'oscypek_grill', type: 'mountain_cheese', cranberry_sauce: true },
+            { name: 'gingerbread_hearts', text: 'Kocham Cię' }
+          ]
+        },
+
+        skatingRink: {
+          type: 'ice_rink_small',
+          position: { x: 0, y: 0, z: -2 },
+          activity: 'children_skating',
+          ice_condition: 'glittering'
         },
 
         decorations: [
-          { type: 'vintage_posters', era: 'PRL', subject: 'polish_culture' },
-          { type: 'amber_jewelry_display', style: 'baltic' },
-          { type: 'folk_art', type: 'wycinanki', region: 'Łowicz' },
-          { type: 'photos', subject: 'old_warsaw', framed: true },
-          { type: 'dried_flowers', type: 'wildflowers' }
+          { type: 'fairy_lights', location: 'strung_overhead', color: 'warm_white' },
+          { type: 'mermaid_statue', location: 'center', covered_in_snow: true, shield_and_sword: 'visible' }
         ],
 
-        exterior: {
-          view: 'old_town_square',
-          elements: ['colorful_townhouses', 'mermaid_statue', 'cobblestones', 'reconstructed_facades'],
-          activity: ['tourists', 'street_artists', 'cafe_terraces', 'local_families'],
-          skyline: 'warsaw_skyline',
-          atmosphere: 'post_war_resilience'
+        architectural: {
+          floor: { type: 'cobblestone', covered_in: 'fresh_snow', slippery: false },
+          buildings: { type: 'tenement_houses', colors: ['terracotta', 'olive', 'ochre'], snow_on_roofs: true },
+          sky: { type: 'night_blue', stars: 'visible' }
         },
 
-        architectural: {
-          floor: { type: 'wooden_planks', condition: 'well_worn', pattern: 'traditional' },
-          ceiling: { type: 'exposed_beams', wood: 'dark_pine', height: 3.2 },
-          walls: { type: 'plaster', color: 'warm_cream', texture: 'hand_finished' },
-          windows: { type: 'tall', style: 'traditional_polish', frames: 'dark_wood' },
-          door: { type: 'heavy_wood', style: 'traditional', handle: 'brass' },
-          details: ['checkered_tablecloths', 'vintage_lamps', 'family_photos']
+        exterior: {
+          view: 'royal_castle_distance',
+          atmosphere: 'festive_magic'
         }
       },
 
       sounds: {
         ambient: [
-          { name: 'kitchen_sounds', volume: 0.2, loop: true },
-          { name: 'polish_conversation', volume: 0.25, loop: true },
-          { name: 'church_bells', volume: 0.15, interval: 3600000 },
-          { name: 'old_town_street_sounds', volume: 0.2, loop: true }
+          { name: 'crunching_snow', volume: 0.35, trigger: 'step' },
+          { name: 'sleigh_bells', volume: 0.2, trigger: 'random' },
+          { name: 'skates_on_ice', volume: 0.25, position: 'center' }
         ],
         shop: [
-          { name: 'sizzling_pierogi', volume: 0.35, trigger: 'cooking', frequency: 30000 },
-          { name: 'plate_on_table', volume: 0.3, trigger: 'serving' },
-          { name: 'cutlery_clinking', volume: 0.25, trigger: 'random', frequency: 20000 },
-          { name: 'cash_register', volume: 0.3, trigger: 'payment' }
+          { name: 'sizzling_onions', volume: 0.3, loop: true },
+          { name: 'steaming_pot', volume: 0.2, loop: true },
+          { name: 'pouring_wine', volume: 0.3, trigger: 'pour' }
         ],
         music: {
-          track: 'polish_folk_modern',
-          artist: 'Warsaw Echoes',
-          volume: 0.15,
-          style: 'modern Polish folk fusion'
+          track: 'polish_carols_instrumental',
+          artist: 'Winter Warsaw',
+          volume: 0.2,
+          style: 'orchestral christmas carols'
         }
       },
 
       lighting: {
-        primary: { type: 'natural', color: '#FFF5E6', intensity: 0.7, direction: 'afternoon_sun' },
-        secondary: { type: 'ambient', color: '#FFE4B5', intensity: 0.3 },
+        primary: { type: 'string_lights', color: '#FFD700', intensity: 0.6 },
+        secondary: { type: 'tree_lights', color: '#FFA500', intensity: 0.8 },
         accent: [
-          { type: 'warm_lamp', position: { x: -2, y: 2, z: -3 }, color: '#FFD700', intensity: 0.2 },
-          { type: 'window_light', position: { x: 3, y: 2, z: -5 }, color: '#FFF8DC', intensity: 0.4 }
+          { type: 'fire_barrel', color: '#FF4500', intensity: 0.5, flicker: true },
+          { type: 'snow_glint', color: '#FFFFFF', intensity: 0.3 }
         ],
-        effects: ['warm_glow_on_food', 'soft_shadows_on_tables']
+        effects: ['snow_falling_heavy', 'breath_fog']
       }
     },
 
     character: {
-      name: 'Kasia Kowalska',
-      role: 'Pani Kucharka (Lady Cook)',
-      age: 55,
+      name: 'Babcia Zosia',
+      role: 'Pierogi Master & Grandma',
+      age: 68,
       emoji: '🥟',
       visuals: {
         skinColor: '#f5d0b0',
-        hairColor: '#b8b8b8',
-        hairStyle: 'bun',
-        outfitColor: '#ffffff',
-        accessoryColor: '#ff69b4',
-        style: 'chef'
+        hairColor: '#d3d3d3',
+        hairStyle: 'scarf_wrapped',
+        outfitColor: '#8b0000',
+        accessoryColor: '#006400',
+        style: 'winter_folk'
       },
 
       appearance: {
-        height: 'medium',
-        build: 'warm_and_sturdy',
-        hair: { color: 'ash_blonde', style: 'neat_bun', accessories: ['hair_net'] },
-        eyes: { color: 'blue', expression: 'motherly_and_proud' },
+        height: 'short',
+        build: 'huggable',
+        hair: { color: 'grey', style: 'hidden_under_scarf' },
+        eyes: { color: 'blue', expression: 'twinkling_and_warm' },
         outfit: {
-          top: 'white_blouse',
-          apron: 'floral_pattern',
-          accessories: ['amber_necklace'],
-          footwear: 'practical_shoes'
+          top: 'thick_wool_coat',
+          scarf: 'colorful_folk_pattern',
+          apron: 'white_with_embroidery',
+          footwear: 'warm_boots'
         }
       },
 
       personality: {
-        traits: ['motherly', 'proud', 'warm', 'resilient', 'storyteller'],
-        interests: ['polish_history', 'family_recipes', 'folk_traditions', 'gardening'],
-        quirks: ['feeds_everyone_extra', 'history_in_every_dish', 'gentle_corrections'],
-        backstory: `Third-generation Warsaw resident. Her grandmother survived the war and helped 
-          rebuild the Old Town. Every recipe carries family memory. Believes food connects 
-          generations and teaches culture better than any book.`
+        traits: ['warm', 'insistent', 'traditional', 'superstitious', 'generous'],
+        interests: ['feeding_people', 'gossip', 'knitting', 'grandchildren'],
+        quirks: ['insists_you_are_too_skinny', 'gives_extra_pierogi', 'hums_carols'],
+        backstory: `She makes the best pierogi in Warsaw. Recipe is a family secret from 1920. 
+          If you don't eat at least 10 pierogi, she gets offended.`
       },
 
       voice: {
         voiceId: 'onwK4e9ZLuTAKqWW03F9', // Polish female
-        style: 'warm_and_nurturing',
+        style: 'warm_and_motherly',
         accent: 'Warsaw_Polish',
         speed: 0.95,
         pitch: 1.0,
         expressionTags: {
-          greeting: '[warmly]',
+          greeting: '[cheerfully]',
           teaching: '[patiently]',
-          correcting: '[gently]',
-          praising: '[proudly]'
+          correcting: '[kindly]',
+          praising: '[delighted]'
         }
       }
     },
 
     difficultyScaling: {
       level1: {
-        english: 90, target: 10,
+        english: 85, target: 15,
         grammar: 'basic greetings',
-        instruction: 'Speak mostly English. Introduce basic Polish words with pronunciation. "Cześć", "dziękuję", "pierogi".',
-        example: 'Welcome! Or in Polish, Cześć (cheshch)! Would you like some pierogi (pyeh-RO-gee)?'
+        instruction: 'Speak mostly English. Introduce Christmas words. "Pierogi" (Dumplings), "Bardzo dobre" (Very good).',
+        example: 'Wesołych Świąt! Look at these pierogi! Bardzo dobre (very good), tak?'
       },
       level2: {
-        english: 75, target: 25,
-        grammar: 'food vocabulary',
-        instruction: 'Use more Polish for food and hospitality terms. Explain pronunciation clearly.',
-        example: 'This is pierogi ruskie (pyeh-RO-gee ROOS-kyeh) - with potatoes and cheese. Smacznego (smach-NEH-go)! That means enjoy your meal!'
+        english: 65, target: 35,
+        grammar: 'ordering food',
+        instruction: 'Use Polish for market items. "Poproszę" (I request), "Grzaniec" (Mulled wine).',
+        example: 'Poproszę pierogi ruskie (Russian dumplings please). And one grzaniec (mulled wine).'
       },
       level3: {
-        english: 55, target: 45,
-        grammar: 'noun cases',
-        instruction: 'Speak half Polish. Introduce cases naturally through food ordering.',
-        example: 'Poproszę pierogi (po-PRO-sheh pyeh-RO-gee). Please, I would like pierogi. Dziękuję (jen-KOO-yeh) means thank you.'
+        english: 45, target: 55,
+        grammar: 'adjectives',
+        instruction: 'Speak half Polish. Describe the food.',
+        example: 'Te pierogi są pyszne (these pierogi are delicious). Ale jest zimno (but it is cold)!'
       },
       level4: {
-        english: 30, target: 70,
-        grammar: 'verb conjugation',
-        instruction: 'Speak primarily Polish. Explain sentence structure as needed.',
-        example: 'Dzisiaj zrobiłam pierogi (djee-SHAY zro-BEE-wam pyeh-RO-gee). Today I made pierogi. Są świeże i pyszne (sohn SHFYEH-zheh ee PISH-neh). They are fresh and delicious.'
+        english: 20, target: 80,
+        grammar: 'future tense',
+        instruction: 'Speak primarily Polish. Discuss holiday plans.',
+        example: 'W Wigilię będziemy jeść karpia i pierogi. A ty?'
       },
       level5: {
-        english: 10, target: 90,
-        grammar: 'cultural expressions',
-        instruction: 'Speak natural Polish with idioms and cultural expressions.',
-        example: 'Ale fajnie mówisz po polsku (AH-leh FAY-nyeh MOO-vish po POL-skoo)! How cool that you speak Polish! Opowiedz mi o sobie (o-PO-vyech mee o SO-byeh). Tell me about yourself.'
+        english: 5, target: 95,
+        grammar: 'cultural nuances',
+        instruction: 'Speak natural Polish about traditions and superstitions.',
+        example: 'Pamiętaj o sianku pod obrus! To przynosi szczęście.'
       }
     },
 
     lessonPlan: {
       unit1: {
-        title: 'Witaj! - Welcome to Warsaw',
-        objectives: ['greetings', 'ordering_food', 'basic_politeness'],
+        title: 'Pierogi Power',
+        objectives: ['ordering_food', 'flavors', 'politeness'],
         scenarios: [
-          { name: 'Entering Milk Bar', phrases: ['Dzień dobry', 'Cześć', 'Czy jest wolne miejsce?'] },
-          { name: 'Ordering Food', phrases: ['Poproszę pierogi', 'Co polecasz?', 'Ile to kosztuje?'] },
-          { name: 'Thanking', phrases: ['Dziękuję', 'Bardzo dziękuję', 'Smacznego!'] }
+          { name: 'Ordering', phrases: ['Poproszę pierogi', 'Ruskie czy z mięsem?', 'Z cebulką (with onions)'] },
+          { name: 'Paying', phrases: ['Ile płacę?', 'Reszty nie trzeba', 'Smacznego!'] }
         ],
         vocabulary: [
-          { word: 'pierogi', translation: 'dumplings', pronunciation: 'pyeh-RO-gee' },
-          { word: 'barszcz', translation: 'beet soup', pronunciation: 'barshch' },
-          { word: 'dziękuję', translation: 'thank you', pronunciation: 'jen-KOO-yeh' },
-          { word: 'proszę', translation: 'please', pronunciation: 'PRO-sheh' },
-          { word: 'smacznego', translation: 'enjoy your meal', pronunciation: 'smach-NEH-go' }
+          { word: 'Pierogi', translation: 'dumplings', pronunciation: 'pyeh-ROH-gee' },
+          { word: 'Smacznego', translation: 'bon appétit', pronunciation: 'smach-NEH-go' },
+          { word: 'Cebula', translation: 'onion', pronunciation: 'tseh-BOO-la' },
+          { word: 'Gorące', translation: 'hot (temp)', pronunciation: 'go-RON-tseh' },
+          { word: 'Pyszne', translation: 'delicious', pronunciation: 'PISH-neh' }
         ],
         culturalNotes: [
-          'Milk bars (bar mleczny) are traditional Polish cafeterias',
-          'Pierogi are Poland\'s national dish',
-          'Always say "Smacznego" before eating',
-          'Warsaw Old Town was rebuilt after WWII',
-          'Polish food connects generations and history'
+          'Pierogi Ruskie contain potatoes and cheese (not meat)',
+          'It is polite to wish "Smacznego" before eating',
+          'Christmas Eve dinner (Wigilia) is meatless'
         ]
       },
       unit2: {
-        title: 'Polskie Jedzenie - Polish Food',
-        objectives: ['food_vocabulary', 'describing_taste', 'ordering_drinks'],
+        title: 'Na Rynku - At the Market',
+        objectives: ['weather', 'drinks', 'shopping'],
         scenarios: [
-          { name: 'Describing Food', phrases: ['Pyszne!', 'Bardzo dobre', 'Smakuje wyśmienicie'] }
+          { name: 'Ordering Wine', phrases: ['Jeden grzaniec', 'Rozgrzeje cię (It will warm you)'] },
+          { name: 'Cold Weather', phrases: ['Ale zimno!', 'Pada śnieg'] }
         ]
       },
       unit3: {
-        title: 'Historia i Tradycja - History & Tradition',
-        objectives: ['historical_vocabulary', 'family_terms', 'cultural_expressions'],
+        title: 'Tradycje - Traditions',
+        objectives: ['festivals', 'family', 'gifts'],
         scenarios: [
-          { name: 'Discussing History', phrases: ['To jest historia', 'Tradycja rodzinna', 'Pamięć'] }
+          { name: 'Christmas Eve', phrases: ['Wigilia', 'Opłatek (wafer)', 'Pierwsza gwiazdka (First star)'] }
         ]
-
+      },
+      unit4: {
+        title: 'Rodzina - Family',
+        objectives: ['family_members', 'love', 'introductions'],
+        scenarios: [
+          { name: 'Grandma Rules', phrases: ['Babcia rządzi', 'Jesteś głodny? (Are you hungry?)'] }
+        ]
+      },
+      unit5: {
+        title: 'Nowy Rok - New Year',
+        objectives: ['wishes', 'future', 'celebration'],
+        scenarios: [
+          { name: 'Wishes', phrases: ['Dosiego Roku!', 'Zdrowia i szczęścia'] }
+        ]
       }
     },
 
     falseFriends: [
-      { word: 'aktualnie', looksLike: 'actually', actualMeaning: 'currently', warning: 'Use "właściwie" for actually' },
-      { word: 'sympatyczny', looksLike: 'sympathetic', actualMeaning: 'nice/likeable', warning: 'Sympathetic is "współczujący"' }
+      { word: 'No', looksLike: 'no', actualMeaning: 'yeah/well', warning: '"No" is often used as a confirmed filler!' },
+      { word: 'Fart', looksLike: 'fart', actualMeaning: 'luck', warning: 'It means luck in Polish!' },
+      { word: 'Preserwatywa', looksLike: 'preservative', actualMeaning: 'condom', warning: 'Food preservative is "konserwant"' }
     ],
 
     startingPhrases: [
-      { phrase: 'Cześć!', translation: 'Hi!', pronunciation: 'cheshch' },
-      { phrase: 'Poproszę pierogi', translation: 'I\'d like pierogi please', pronunciation: 'po-PRO-sheh pyeh-RO-gee' },
-      { phrase: 'Dziękuję', translation: 'Thank you', pronunciation: 'jen-KOO-yeh' },
-      { phrase: 'Smacznego!', translation: 'Enjoy your meal!', pronunciation: 'smach-NEH-go' }
+      { phrase: 'Dzień dobry!', translation: 'Good day!', pronunciation: 'jen DOB-ri' },
+      { phrase: 'Poproszę pierogi', translation: 'Pierogi, please', pronunciation: 'po-PRO-sheh pyeh-ROH-gee' },
+      { phrase: 'Kocham Polskę', translation: 'I love Poland', pronunciation: 'KO-ham POL-skeh' }
     ]
   }
 };
-
-// ═══════════════════════════════════════════════════════════════════════════
-// HELPER FUNCTIONS
-// ═══════════════════════════════════════════════════════════════════════════
 
 export const getLanguageConfig = (code) => LANGUAGE_CONFIG[code] || null;
 

@@ -838,13 +838,13 @@ function initButtonEffects() {
         beginBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            
+
             beginBtn.style.transform = 'translateY(8px)';
             createPixelBurst(beginBtn);
             setTimeout(() => {
                 beginBtn.style.transform = '';
-                // Go to country selection (houses)
-                window.location.href = 'country-selection.html';
+                // Go to character customisation first
+                window.location.href = 'character.html';
             }, 300);
         });
     }

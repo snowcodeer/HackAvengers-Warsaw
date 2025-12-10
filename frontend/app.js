@@ -8,6 +8,8 @@ import { RealtimeVoice, realtimeVoice } from './core/RealtimeVoice.js';
 import { RealtimeVoiceFeedback, voiceFeedback } from './core/RealtimeVoiceFeedback.js';
 import { SceneBuilder } from './core/SceneBuilder.js';
 import { generateDynamicScenario } from './scenarioGenerator.js';
+import { SCENE_OBJECTIVES } from './config/objectives.js';
+import { generatePlayerAvatarHTML } from './core/AvatarSystem.js';
 
 // ==================== CONFIGURATION ====================
 const CONFIG = {
@@ -73,14 +75,14 @@ const MIRAGE_BASE_PROMPTS = {
 // Feed NPC actions/mood into Mirage for dynamic visual style
 function updateMirageFromResponse(response) {
     if (!isMirageActive()) return;
-    
+
     const language = gameState.language || 'french';
     const base = MIRAGE_BASE_PROMPTS[language] || MIRAGE_BASE_PROMPTS.french;
-    
+
     let prompt = base;
     if (response.mood) prompt += `, ${response.mood}`;
     if (response.action) prompt += `, character ${response.action}`;
-    
+
     updateMiragePrompt(prompt);
     console.log(`🎨 Mirage: ${response.mood || '-'} | ${response.action || '-'}`);
 }
@@ -99,184 +101,7 @@ let speechHighlightInterval = null;
 // ==================== OBJECTIVES SYSTEM ====================
 // Progressive objectives per level - each level has objectives that get progressively harder
 // Level 1: Simple greetings, Level 5: Complex questions and conversation
-const SCENE_OBJECTIVES = {
-    french: {
-        1: [ // Level 1 - First Contact (simple greetings)
-            { target: "Bonjour!", english: "Hello!", hint: '"Bonjour!" or "Salut!"', keywords: ['bonjour', 'salut', 'hello', 'hi', 'bon'] },
-            { target: "Ça va?", english: "How are you?", hint: '"Ça va?" or "Comment ça va?"', keywords: ['ça va', 'ca va', 'comment', 'how', 'are you'] }
-        ],
-        2: [ // Level 2 - Getting Comfortable (ordering basics)
-            { target: "Un croissant, s'il vous plaît.", english: "A croissant, please.", hint: '"Un croissant, s\'il vous plaît"', keywords: ['croissant', 'pain', 'please', 'plaît', 'plait', 'sil', 'vous'] },
-            { target: "C'est combien?", english: "How much is it?", hint: '"C\'est combien?" or "Quel est le prix?"', keywords: ['combien', 'prix', 'price', 'cost', 'how much', 'euro'] }
-        ],
-        3: [ // Level 3 - Conversational (preferences)
-            { target: "Je voudrais deux croissants.", english: "I would like two croissants.", hint: '"Je voudrais..." + item', keywords: ['voudrais', 'would', 'like', 'want', 'deux', 'three', 'un', 'une'] },
-            { target: "Qu'est-ce que vous recommandez?", english: "What do you recommend?", hint: '"Qu\'est-ce que vous recommandez?"', keywords: ['recommand', 'suggest', 'what', 'best', 'prefer'] }
-        ],
-        4: [ // Level 4 - Advanced (complex ordering)
-            { target: "Je suis allergique aux noix.", english: "I am allergic to nuts.", hint: '"Je suis allergique à..."', keywords: ['allergique', 'allergy', 'noix', 'nuts', 'gluten', 'lactose'] },
-            { target: "Est-ce que c'est fait maison?", english: "Is it homemade?", hint: '"Est-ce que c\'est fait maison?"', keywords: ['maison', 'home', 'made', 'fresh', 'today', 'fait'] }
-        ],
-        5: [ // Level 5 - Fluent (natural conversation)
-            { target: "Depuis quand faites-vous ce métier?", english: "How long have you been doing this job?", hint: 'Ask about their career/story', keywords: ['depuis', 'how long', 'years', 'work', 'job', 'métier', 'boulang'] },
-            { target: "Merci beaucoup, c'était délicieux!", english: "Thank you, it was delicious!", hint: '"Merci beaucoup! C\'était délicieux!"', keywords: ['merci', 'thank', 'delici', 'bon', 'good', 'excellent', 'parfait'] }
-        ]
-    },
-    japanese: {
-        1: [
-            { target: "こんにちは！", english: "Hello!", hint: '"こんにちは" (Konnichiwa)', keywords: ['konnichiwa', 'konichiwa', 'hello', 'hi', 'こんにちは', 'ohayo'] },
-            { target: "お元気ですか？", english: "How are you?", hint: '"お元気ですか？" (Ogenki desu ka?)', keywords: ['genki', 'ogenki', 'how', 'are', '元気'] }
-        ],
-        2: [
-            { target: "お茶をください。", english: "Tea, please.", hint: '"お茶をください" (Ocha wo kudasai)', keywords: ['ocha', 'tea', 'kudasai', 'please', 'お茶', 'ください'] },
-            { target: "いくらですか？", english: "How much is it?", hint: '"いくらですか？" (Ikura desu ka?)', keywords: ['ikura', 'how much', 'price', 'cost', 'いくら', 'yen'] }
-        ],
-        3: [
-            { target: "これは何ですか？", english: "What is this?", hint: '"これは何ですか？" (Kore wa nan desu ka?)', keywords: ['nan', 'what', 'kore', 'this', '何', 'これ'] },
-            { target: "おすすめは何ですか？", english: "What do you recommend?", hint: '"おすすめは何ですか？"', keywords: ['osusume', 'recommend', 'suggest', 'best', 'popular'] }
-        ],
-        4: [
-            { target: "抹茶と煎茶の違いは何ですか？", english: "What's the difference between matcha and sencha?", hint: 'Ask about tea differences', keywords: ['matcha', 'sencha', 'difference', 'chigai', 'which', 'better'] },
-            { target: "おいしいですか？", english: "Is it delicious?", hint: '"おいしいですか？" (Oishii desu ka?)', keywords: ['oishii', 'delicious', 'tasty', 'good', 'おいしい'] }
-        ],
-        5: [
-            { target: "お茶の作り方を教えてください。", english: "Please teach me how to make tea.", hint: 'Ask about the tea ceremony', keywords: ['teach', 'how', 'make', 'ceremony', 'tradition', 'oshiete'] },
-            { target: "ありがとうございました！", english: "Thank you very much!", hint: '"ありがとうございました！"', keywords: ['arigatou', 'arigatō', 'thank', 'ありがとう', 'domo'] }
-        ]
-    },
-    spanish: {
-        1: [
-            { target: "¡Hola!", english: "Hello!", hint: '"¡Hola!" or "Buenos días"', keywords: ['hola', 'hello', 'hi', 'buenos', 'buenas'] },
-            { target: "¿Cómo estás?", english: "How are you?", hint: '"¿Cómo estás?" or "¿Qué tal?"', keywords: ['como', 'estas', 'tal', 'how', 'are'] }
-        ],
-        2: [
-            { target: "Un café, por favor.", english: "A coffee, please.", hint: '"Un café, por favor"', keywords: ['cafe', 'café', 'coffee', 'por favor', 'please', 'favor'] },
-            { target: "¿Cuánto cuesta?", english: "How much does it cost?", hint: '"¿Cuánto cuesta?"', keywords: ['cuanto', 'cuánto', 'cuesta', 'cost', 'price', 'euro'] }
-        ],
-        3: [
-            { target: "¿Qué me recomiendas?", english: "What do you recommend?", hint: '"¿Qué recomiendas?"', keywords: ['recomiend', 'recommend', 'suggest', 'best'] },
-            { target: "Me gustaría probar algo típico.", english: "I would like to try something typical.", hint: '"Me gustaría probar..."', keywords: ['gustaría', 'probar', 'try', 'típico', 'typical', 'local'] }
-        ],
-        4: [
-            { target: "¿Tienen opciones vegetarianas?", english: "Do you have vegetarian options?", hint: '"¿Tienen opciones vegetarianas?"', keywords: ['vegetarian', 'vegan', 'opciones', 'tienen', 'sin carne', 'meat'] },
-            { target: "¿Está hecho con ingredientes frescos?", english: "Is it made with fresh ingredients?", hint: 'Ask about freshness', keywords: ['fresco', 'fresh', 'hecho', 'made', 'today', 'ingredientes'] }
-        ],
-        5: [
-            { target: "¿Cuál es la historia de este plato?", english: "What is the history of this dish?", hint: 'Ask about the dish\'s origin', keywords: ['historia', 'history', 'origen', 'tradition', 'receta', 'recipe'] },
-            { target: "¡Estuvo delicioso! ¡Gracias!", english: "It was delicious! Thanks!", hint: '"¡Estuvo delicioso! ¡Gracias!"', keywords: ['delicioso', 'gracias', 'thank', 'delicious', 'excellent', 'bueno'] }
-        ]
-    },
-    german: {
-        1: [
-            { target: "Guten Tag!", english: "Good day!", hint: '"Guten Tag!" or "Hallo!"', keywords: ['guten', 'tag', 'hallo', 'hello', 'hi', 'morgen'] },
-            { target: "Wie geht es Ihnen?", english: "How are you?", hint: '"Wie geht es Ihnen?"', keywords: ['wie', 'geht', 'how', 'are', 'gut'] }
-        ],
-        2: [
-            { target: "Ein Bier, bitte.", english: "A beer, please.", hint: '"Ein Bier, bitte"', keywords: ['bier', 'beer', 'bitte', 'please'] },
-            { target: "Was kostet das?", english: "How much does this cost?", hint: '"Was kostet das?"', keywords: ['kostet', 'cost', 'preis', 'price', 'euro', 'was'] }
-        ],
-        3: [
-            { target: "Die Speisekarte, bitte.", english: "The menu, please.", hint: '"Die Speisekarte, bitte"', keywords: ['speisekarte', 'menu', 'karte', 'bitte'] },
-            { target: "Was empfehlen Sie?", english: "What do you recommend?", hint: '"Was empfehlen Sie?"', keywords: ['empfehl', 'recommend', 'suggest', 'best', 'gut'] }
-        ],
-        4: [
-            { target: "Haben Sie etwas Vegetarisches?", english: "Do you have something vegetarian?", hint: '"Haben Sie vegetarische Optionen?"', keywords: ['vegetarisch', 'vegetarian', 'haben', 'have', 'vegan'] },
-            { target: "Ist das hausgemacht?", english: "Is that homemade?", hint: '"Ist das hausgemacht?"', keywords: ['hausgemacht', 'homemade', 'haus', 'frisch', 'fresh'] }
-        ],
-        5: [
-            { target: "Können Sie mir mehr über dieses Gericht erzählen?", english: "Can you tell me more about this dish?", hint: 'Ask about the dish\'s story', keywords: ['erzähl', 'tell', 'mehr', 'more', 'gericht', 'dish', 'tradition'] },
-            { target: "Vielen Dank, das war ausgezeichnet!", english: "Thank you, that was excellent!", hint: '"Vielen Dank! Das war ausgezeichnet!"', keywords: ['dank', 'thank', 'ausgezeichnet', 'excellent', 'gut', 'lecker'] }
-        ]
-    },
-    italian: {
-        1: [
-            { target: "Ciao!", english: "Hello!", hint: '"Ciao!" or "Buongiorno!"', keywords: ['ciao', 'hello', 'hi', 'buongiorno', 'buon'] },
-            { target: "Come stai?", english: "How are you?", hint: '"Come stai?" or "Come sta?"', keywords: ['come', 'stai', 'sta', 'how', 'are', 'bene'] }
-        ],
-        2: [
-            { target: "Un espresso, per favore.", english: "An espresso, please.", hint: '"Un espresso, per favore"', keywords: ['espresso', 'caffe', 'caffè', 'per favore', 'please', 'favore'] },
-            { target: "Quanto costa?", english: "How much does it cost?", hint: '"Quanto costa?"', keywords: ['quanto', 'costa', 'cost', 'price', 'euro'] }
-        ],
-        3: [
-            { target: "Cosa mi consiglia?", english: "What do you recommend?", hint: '"Cosa mi consiglia?"', keywords: ['consiglia', 'recommend', 'cosa', 'what', 'best'] },
-            { target: "Vorrei provare qualcosa di tipico.", english: "I would like to try something typical.", hint: '"Vorrei provare..."', keywords: ['vorrei', 'would', 'provare', 'try', 'tipico', 'typical'] }
-        ],
-        4: [
-            { target: "Avete opzioni senza glutine?", english: "Do you have gluten-free options?", hint: '"Avete opzioni senza glutine?"', keywords: ['glutine', 'gluten', 'avete', 'have', 'senza', 'without', 'vegano'] },
-            { target: "È fatto in casa?", english: "Is it homemade?", hint: '"È fatto in casa?"', keywords: ['casa', 'home', 'fatto', 'made', 'fresco', 'fresh'] }
-        ],
-        5: [
-            { target: "Qual è la storia di questo piatto?", english: "What is the history of this dish?", hint: 'Ask about origins and traditions', keywords: ['storia', 'history', 'tradizione', 'tradition', 'origine', 'origin', 'ricetta'] },
-            { target: "Grazie mille, era squisito!", english: "Thank you, it was exquisite!", hint: '"Grazie mille! Era squisito!"', keywords: ['grazie', 'thank', 'squisito', 'delizioso', 'buono', 'excellent'] }
-        ]
-    },
-    polish: {
-        1: [
-            { target: "Dzień dobry!", english: "Good day!", hint: '"Dzień dobry!" or "Cześć!"', keywords: ['dzień', 'dzien', 'dobry', 'cześć', 'czesc', 'hello', 'hi'] },
-            { target: "Jak się masz?", english: "How are you?", hint: '"Jak się masz?"', keywords: ['jak', 'masz', 'how', 'are', 'dobrze'] }
-        ],
-        2: [
-            { target: "Poproszę pierogi.", english: "Pierogi, please.", hint: '"Poproszę pierogi"', keywords: ['poproszę', 'poprosze', 'proszę', 'pierogi', 'please'] },
-            { target: "Ile to kosztuje?", english: "How much does it cost?", hint: '"Ile to kosztuje?"', keywords: ['ile', 'kosztuje', 'cost', 'price', 'złoty', 'zloty'] }
-        ],
-        3: [
-            { target: "Co poleca pan/pani?", english: "What do you recommend?", hint: '"Co poleca pan/pani?"', keywords: ['poleca', 'recommend', 'suggest', 'co', 'what', 'najlepsze'] },
-            { target: "Chciałbym spróbować czegoś tradycyjnego.", english: "I would like to try something traditional.", hint: '"Chciałbym spróbować..."', keywords: ['chciałbym', 'chcialbym', 'spróbować', 'try', 'tradycyjn', 'traditional'] }
-        ],
-        4: [
-            { target: "Czy macie opcje wegetariańskie?", english: "Do you have vegetarian options?", hint: '"Czy macie opcje wegetariańskie?"', keywords: ['wegetariańsk', 'wegetariansk', 'vegetarian', 'macie', 'have', 'bez mięsa'] },
-            { target: "Czy to jest domowej roboty?", english: "Is this homemade?", hint: '"Czy to jest domowej roboty?"', keywords: ['domow', 'home', 'roboty', 'made', 'świeże', 'swieze', 'fresh'] }
-        ],
-        5: [
-            { target: "Jaka jest historia tego dania?", english: "What is the history of this dish?", hint: 'Ask about Polish culinary traditions', keywords: ['historia', 'history', 'tradycja', 'tradition', 'danie', 'dish', 'przepis'] },
-            { target: "Dziękuję, było pyszne!", english: "Thank you, it was delicious!", hint: '"Dziękuję! Było pyszne!"', keywords: ['dziękuję', 'dziekuje', 'thank', 'pyszne', 'delicious', 'dobre', 'smaczne'] }
-        ]
-    },
-    mandarin: {
-        1: [
-            { target: "你好！", english: "Hello!", hint: '"你好！" (Nǐ hǎo!)', keywords: ['你好', 'nihao', 'ni hao', 'hello', 'hi'] },
-            { target: "你好吗？", english: "How are you?", hint: '"你好吗？" (Nǐ hǎo ma?)', keywords: ['好吗', 'hao ma', 'how', 'are', 'fine'] }
-        ],
-        2: [
-            { target: "我要一杯茶。", english: "I want a cup of tea.", hint: '"我要一杯茶" (Wǒ yào yī bēi chá)', keywords: ['茶', 'cha', 'tea', '要', 'yao', 'want', '杯', 'bei'] },
-            { target: "多少钱？", english: "How much?", hint: '"多少钱？" (Duōshao qián?)', keywords: ['多少', 'duoshao', 'how much', '钱', 'qian', 'money', 'yuan'] }
-        ],
-        3: [
-            { target: "这是什么？", english: "What is this?", hint: '"这是什么？" (Zhè shì shénme?)', keywords: ['什么', 'shenme', 'what', '这', 'zhe', 'this'] },
-            { target: "你推荐什么？", english: "What do you recommend?", hint: '"你推荐什么？" (Nǐ tuījiàn shénme?)', keywords: ['推荐', 'tuijian', 'recommend', 'suggest', 'best'] }
-        ],
-        4: [
-            { target: "有素食的选择吗？", english: "Are there vegetarian options?", hint: '"有素食的选择吗？"', keywords: ['素食', 'sushi', 'vegetarian', '选择', 'xuanze', 'option', '有', 'you'] },
-            { target: "这是自己做的吗？", english: "Is this homemade?", hint: '"这是自己做的吗？"', keywords: ['自己', 'ziji', 'home', '做', 'zuo', 'made', 'fresh', '新鲜'] }
-        ],
-        5: [
-            { target: "这道菜的故事是什么？", english: "What is the story of this dish?", hint: 'Ask about traditions and origins', keywords: ['故事', 'gushi', 'story', 'history', '传统', 'chuantong', 'tradition'] },
-            { target: "谢谢，非常好吃！", english: "Thank you, very delicious!", hint: '"谢谢！非常好吃！" (Xièxiè! Fēicháng hǎo chī!)', keywords: ['谢谢', 'xiexie', 'thank', '好吃', 'haochi', 'delicious', '非常', 'feichang'] }
-        ]
-    },
-    english: {
-        1: [
-            { target: "Hello!", english: "Hello!", hint: '"Hello!" or "Hi there!"', keywords: ['hello', 'hi', 'hey', 'good morning', 'good day'] },
-            { target: "How are you?", english: "How are you?", hint: '"How are you?" or "How\'s it going?"', keywords: ['how', 'are', 'you', 'doing', 'going'] }
-        ],
-        2: [
-            { target: "I would like a coffee, please.", english: "I would like a coffee, please.", hint: '"I would like... please"', keywords: ['would', 'like', 'please', 'want', 'coffee', 'tea'] },
-            { target: "How much is this?", english: "How much is this?", hint: '"How much is this?"', keywords: ['how much', 'price', 'cost', 'dollar', 'pay'] }
-        ],
-        3: [
-            { target: "What do you recommend?", english: "What do you recommend?", hint: '"What do you recommend?"', keywords: ['recommend', 'suggest', 'best', 'popular', 'favorite'] },
-            { target: "I'd like to try something new.", english: "I'd like to try something new.", hint: '"I\'d like to try..."', keywords: ['try', 'new', 'something', 'different', 'special'] }
-        ],
-        4: [
-            { target: "Do you have any vegetarian options?", english: "Do you have any vegetarian options?", hint: '"Do you have vegetarian options?"', keywords: ['vegetarian', 'vegan', 'options', 'have', 'without meat'] },
-            { target: "Is this made fresh daily?", english: "Is this made fresh daily?", hint: '"Is this fresh?"', keywords: ['fresh', 'made', 'today', 'daily', 'homemade'] }
-        ],
-        5: [
-            { target: "What's the story behind this dish?", english: "What's the story behind this dish?", hint: 'Ask about the history or origin', keywords: ['story', 'history', 'behind', 'origin', 'tradition', 'where'] },
-            { target: "Thank you, that was wonderful!", english: "Thank you, that was wonderful!", hint: '"Thank you! That was wonderful!"', keywords: ['thank', 'wonderful', 'great', 'delicious', 'amazing', 'excellent'] }
-        ]
-    }
-};
+
 
 // Objective state
 let objectiveState = {
@@ -299,134 +124,7 @@ let playerCharacter = {
 };
 
 // Generate player character stick figure HTML for avatar
-function generatePlayerAvatarHTML() {
-    try {
-        if (!playerCharacter) return '<span style="font-size: 2rem;">🧑</span>'; // Fallback emoji
-        
-        // Import character generation logic (simplified/scaled version)
-        // We'll create a scaled-down version of the character preview
-        const char = playerCharacter;
-    
-    // Helper functions
-    const darkenColor = (color, amt) => {
-        const num = parseInt(color.replace('#', ''), 16);
-        const r = Math.max(0, (num >> 16) - amt);
-        const g = Math.max(0, ((num >> 8) & 0xFF) - amt);
-        const b = Math.max(0, (num & 0xFF) - amt);
-        return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
-    };
-    
-    const lightenColor = (color, percent) => {
-        const num = parseInt(color.replace('#', ''), 16);
-        const amt = Math.round(2.55 * percent);
-        const R = Math.min(255, (num >> 16) + amt);
-        const G = Math.min(255, ((num >> 8) & 0x00FF) + amt);
-        const B = Math.min(255, (num & 0x0000FF) + amt);
-        return `#${(1 << 24 | R << 16 | G << 8 | B).toString(16).slice(1)}`;
-    };
-    
-    // Data arrays
-    const hairStyles = ['Spiky', 'Mohawk', 'Flat Top', 'Long', 'Short', 'Ponytail', 'Bald', 'Curly', 'Afro', 'Pigtails', 'Buzz Cut', 'Side Part', 'Wavy', 'Slick Back'];
-    const bodyTypes = ['Normal', 'Athletic', 'Slim', 'Stocky'];
-    const outfits = ['Adventurer', 'T-Shirt', 'Striped', 'Hoodie', 'Suit', 'Overalls', 'Tank Top', 'Uniform', 'Sweater', 'Jacket', 'Polo', 'V-Neck', 'Vest', 'Lab Coat'];
-    const accessories = ['None', 'Glasses', 'Sunglasses', 'Round Glasses', 'Eye Patch', 'Monocle', 'Bandana', 'Scarf', 'Necklace', 'Bow Tie', 'Tie'];
-    const hats = ['None', 'Cap', 'Beanie', 'Top Hat', 'Cowboy', 'Hard Hat', 'Crown', 'Headphones', 'Police Cap', 'Beret', 'Bandana', 'Wizard Hat', 'Viking Helmet'];
-    const facialHairs = ['None', 'Stubble', 'Beard', 'Goatee', 'Mustache', 'Full Beard', 'Handlebar'];
-    
-    const hairStyle = hairStyles[char.hairStyle || 0];
-    const bodyType = bodyTypes[char.bodyType || 0];
-    const outfit = outfits[char.outfit || 0];
-    const accessory = accessories[char.accessory || 0];
-    const hat = hats[char.hat || 0];
-    const facialHair = facialHairs[char.facialHair || 0];
-    
-    // Body dimensions (scaled)
-    let bodyWidth = 24;
-    let bodyHeight = 28;
-    switch(bodyType) {
-        case 'Athletic': bodyWidth = 26; bodyHeight = 29; break;
-        case 'Slim': bodyWidth = 20; bodyHeight = 30; break;
-        case 'Stocky': bodyWidth = 28; bodyHeight = 25; break;
-    }
-    
-    // Generate simplified character HTML (scaled down)
-    const skinColor = char.skinColor || '#ffd5b5';
-    const hairColor = char.hairColor || '#2c1810';
-    const outfitColor = char.outfitColor || '#e74c3c';
-    const pantsColor = char.pantsColor || '#3a3a5a';
-    const eyeColor = char.eyeColor || '#4a90d9';
-    
-    // Simple hair (just a few styles for avatar)
-    let hairHTML = '';
-    if (hairStyle !== 'Bald') {
-        if (hairStyle === 'Long' || hairStyle === 'Ponytail' || hairStyle === 'Pigtails') {
-            hairHTML = `<div style="position: absolute; bottom: 45px; left: 50%; transform: translateX(-50%); width: 28px; height: 30px; background: ${hairColor}; border-radius: 4px 4px 0 0;"></div>`;
-        } else {
-            hairHTML = `<div style="position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); width: 24px; height: 8px; background: ${hairColor}; border-radius: 4px 4px 0 0;"></div>`;
-        }
-    }
-    
-    // Simple hat
-    let hatHTML = '';
-    if (hat !== 'None') {
-        hatHTML = `<div style="position: absolute; bottom: 64px; left: 50%; transform: translateX(-50%); width: 26px; height: 10px; background: #2c3e50; border-radius: 4px 4px 0 0;"></div>`;
-    }
-    
-    // Simple outfit
-    const outfitDark = darkenColor(outfitColor, 20);
-    let outfitHTML = `<div style="position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); width: ${bodyWidth}px; height: ${bodyHeight}px; background: ${outfitColor}; box-shadow: 2px 0 0 0 ${outfitDark};"></div>`;
-    
-    // Generate the character HTML
-    return `
-        <div style="position: relative; width: 100%; height: 100%; overflow: hidden;">
-            <!-- Legs -->
-            <div style="position: absolute; bottom: 0; left: calc(50% - 8px); width: 7px; height: 15px; background: ${pantsColor}; box-shadow: 2px 0 0 0 ${darkenColor(pantsColor, 15)};"></div>
-            <div style="position: absolute; bottom: 0; left: calc(50% + 1px); width: 7px; height: 15px; background: ${pantsColor}; box-shadow: 2px 0 0 0 ${darkenColor(pantsColor, 15)};"></div>
-            
-            <!-- Shoes -->
-            <div style="position: absolute; bottom: 0; left: calc(50% - 10px); width: 9px; height: 5px; background: #4a3020; box-shadow: 1px 0 0 0 #3a2010;"></div>
-            <div style="position: absolute; bottom: 0; left: calc(50% + 1px); width: 9px; height: 5px; background: #4a3020; box-shadow: 1px 0 0 0 #3a2010;"></div>
-            
-            <!-- Body/Outfit -->
-            ${outfitHTML}
-            
-            <!-- Arms -->
-            <div style="position: absolute; bottom: 25px; left: calc(50% - ${bodyWidth/2 + 6}px); width: 6px; height: 20px; background: ${skinColor}; box-shadow: 1px 0 0 0 ${darkenColor(skinColor, 15)};"></div>
-            <div style="position: absolute; bottom: 25px; left: calc(50% + ${bodyWidth/2}px); width: 6px; height: 20px; background: ${skinColor}; box-shadow: 1px 0 0 0 ${darkenColor(skinColor, 15)};"></div>
-            
-            <!-- Hands -->
-            <div style="position: absolute; bottom: 22px; left: calc(50% - ${bodyWidth/2 + 7}px); width: 7px; height: 7px; background: ${skinColor}; border-radius: 2px;"></div>
-            <div style="position: absolute; bottom: 22px; left: calc(50% + ${bodyWidth/2}px); width: 7px; height: 7px; background: ${skinColor}; border-radius: 2px;"></div>
-            
-            <!-- Head -->
-            <div style="position: absolute; bottom: 42px; left: 50%; transform: translateX(-50%); width: 22px; height: 22px; background: ${skinColor}; border-radius: 4px; box-shadow: 2px 0 0 0 ${darkenColor(skinColor, 15)}, -2px 0 0 0 ${lightenColor(skinColor, 10)};"></div>
-            
-            <!-- Hair (behind if long) -->
-            ${hairStyle === 'Long' || hairStyle === 'Afro' ? hairHTML : ''}
-            
-            <!-- Eyes -->
-            <div style="position: absolute; bottom: 52px; left: calc(50% - 6px); width: 4px; height: 5px; background: ${eyeColor}; box-shadow: inset 1px 1px 0 0 ${lightenColor(eyeColor, 30)};"></div>
-            <div style="position: absolute; bottom: 52px; left: calc(50% + 2px); width: 4px; height: 5px; background: ${eyeColor}; box-shadow: inset 1px 1px 0 0 ${lightenColor(eyeColor, 30)};"></div>
-            
-            <!-- Eye highlights -->
-            <div style="position: absolute; bottom: 55px; left: calc(50% - 5px); width: 1.5px; height: 1.5px; background: white;"></div>
-            <div style="position: absolute; bottom: 55px; left: calc(50% + 3px); width: 1.5px; height: 1.5px; background: white;"></div>
-            
-            <!-- Mouth -->
-            <div style="position: absolute; bottom: 46px; left: 50%; transform: translateX(-50%); width: 6px; height: 2px; background: ${darkenColor(skinColor, 30)}; border-radius: 0 0 2px 2px;"></div>
-            
-            <!-- Hair (in front if not long) -->
-            ${hairStyle !== 'Long' && hairStyle !== 'Afro' ? hairHTML : ''}
-            
-            <!-- Hat -->
-            ${hatHTML}
-        </div>
-    `;
-    } catch (error) {
-        console.error('Error generating player avatar:', error);
-        return '<span style="font-size: 2rem;">🧑</span>'; // Fallback emoji
-    }
-}
+
 
 // Voice IDs now pulled from extensive LANGUAGE_CONFIG
 // Each character has unique voice settings with expression tags
@@ -2122,17 +1820,17 @@ function setupControls() {
             mouseY = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, mouseY));
         }
     });
-    
+
     // Mobile Virtual Joystick
     const joystick = document.getElementById('mobile-joystick');
     const joystickThumb = document.getElementById('joystickThumb');
-    
+
     if (joystick && joystickThumb) {
         let joystickActive = false;
         let joystickStartX = 0;
         let joystickStartY = 0;
         const maxDistance = 40; // Max thumb movement radius
-        
+
         function handleJoystickStart(e) {
             e.preventDefault();
             joystickActive = true;
@@ -2142,60 +1840,60 @@ function setupControls() {
             joystickStartX = rect.left + rect.width / 2;
             joystickStartY = rect.top + rect.height / 2;
         }
-        
+
         function handleJoystickMove(e) {
             if (!joystickActive) return;
             e.preventDefault();
-            
+
             const touch = e.touches ? e.touches[0] : e;
             let deltaX = touch.clientX - joystickStartX;
             let deltaY = touch.clientY - joystickStartY;
-            
+
             // Limit to max distance
             const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
             if (distance > maxDistance) {
                 deltaX = (deltaX / distance) * maxDistance;
                 deltaY = (deltaY / distance) * maxDistance;
             }
-            
+
             // Move thumb visually
             joystickThumb.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
-            
+
             // Convert to key presses (with deadzone)
             const deadzone = 10;
             const normalizedX = deltaX / maxDistance;
             const normalizedY = deltaY / maxDistance;
-            
+
             keys['KeyW'] = deltaY < -deadzone;
             keys['KeyS'] = deltaY > deadzone;
             keys['KeyA'] = deltaX < -deadzone;
             keys['KeyD'] = deltaX > deadzone;
         }
-        
+
         function handleJoystickEnd(e) {
             e.preventDefault();
             joystickActive = false;
             joystickThumb.classList.remove('active');
             joystickThumb.style.transform = 'translate(-50%, -50%)';
-            
+
             // Reset all movement keys
             keys['KeyW'] = false;
             keys['KeyS'] = false;
             keys['KeyA'] = false;
             keys['KeyD'] = false;
         }
-        
+
         // Touch events
         joystick.addEventListener('touchstart', handleJoystickStart, { passive: false });
         document.addEventListener('touchmove', handleJoystickMove, { passive: false });
         document.addEventListener('touchend', handleJoystickEnd, { passive: false });
-        
+
         // Mouse events (for desktop testing)
         joystick.addEventListener('mousedown', handleJoystickStart);
         document.addEventListener('mousemove', handleJoystickMove);
         document.addEventListener('mouseup', handleJoystickEnd);
     }
-    
+
     // Mobile tap-to-talk on interact prompt
     if (elements.interactPrompt) {
         elements.interactPrompt.addEventListener('click', () => {
@@ -2203,7 +1901,7 @@ function setupControls() {
                 startConversation();
             }
         });
-        
+
         elements.interactPrompt.addEventListener('touchend', (e) => {
             e.preventDefault();
             if (nearNPC && !isConversationActive) {
@@ -2211,24 +1909,24 @@ function setupControls() {
             }
         });
     }
-    
+
     // Mobile Mic Action Button
     const mobileMicBtn = document.getElementById('mobile-mic-btn');
     if (mobileMicBtn) {
         console.log('🎤 Mobile mic button found, attaching handlers...');
-        
+
         // Touch start - begin recording or start conversation
         mobileMicBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             e.stopPropagation();
             console.log(`🎤 Touch START - inConversation: ${isConversationActive}, isRecording: ${isRecording}, nearNPC: ${nearNPC}, npcSpeaking: ${isNPCSpeaking}`);
-            
+
             // Don't allow recording while NPC is speaking
             if (isNPCSpeaking) {
                 console.log('🎤 NPC is speaking - wait for them to finish');
                 return;
             }
-            
+
             if (isConversationActive) {
                 // In conversation - start recording
                 if (!isRecording) {
@@ -2244,25 +1942,25 @@ function setupControls() {
                 console.log('🎤 Not near NPC and not in conversation - nothing to do');
             }
         }, { passive: false });
-        
+
         // Touch end - stop recording
         mobileMicBtn.addEventListener('touchend', (e) => {
             e.preventDefault();
             e.stopPropagation();
             console.log(`🎤 Touch END - inConversation: ${isConversationActive}, isRecording: ${isRecording}`);
-            
+
             if (isConversationActive && isRecording) {
                 console.log('🎤 Stopping recording from mobile mic...');
                 toggleRecording();
                 mobileMicBtn.classList.remove('recording');
             }
         }, { passive: false });
-        
+
         // Mouse events for desktop testing
         mobileMicBtn.addEventListener('mousedown', (e) => {
             e.stopPropagation();
             console.log(`🎤 Mouse DOWN - inConversation: ${isConversationActive}, isRecording: ${isRecording}`);
-            
+
             if (isConversationActive && !isRecording) {
                 toggleRecording();
                 mobileMicBtn.classList.add('recording');
@@ -2270,11 +1968,11 @@ function setupControls() {
                 startConversation();
             }
         });
-        
+
         mobileMicBtn.addEventListener('mouseup', (e) => {
             e.stopPropagation();
             console.log(`🎤 Mouse UP - inConversation: ${isConversationActive}, isRecording: ${isRecording}`);
-            
+
             if (isConversationActive && isRecording) {
                 toggleRecording();
                 mobileMicBtn.classList.remove('recording');
@@ -2283,7 +1981,7 @@ function setupControls() {
     } else {
         console.warn('⚠️ Mobile mic button not found in DOM!');
     }
-    
+
     // Exit conversation button (mobile)
     const exitChatBtn = document.getElementById('exit-chat-btn');
     if (exitChatBtn) {
@@ -2292,7 +1990,7 @@ function setupControls() {
                 endConversation();
             }
         });
-        
+
         exitChatBtn.addEventListener('touchend', (e) => {
             e.preventDefault();
             if (isConversationActive) {
@@ -2306,36 +2004,36 @@ function setupControls() {
 function setupConversationUI() {
     // Voice button - click to toggle recording
     console.log('🎤 Setting up conversation UI, voiceBtn:', elements.voiceBtn);
-    
+
     if (elements.voiceBtn) {
         // Use mousedown instead of click for more reliable touch/click handling
         elements.voiceBtn.addEventListener('mousedown', (e) => {
             e.preventDefault();
             e.stopPropagation();
             console.log('🎤 Voice button MOUSEDOWN! isRecording:', isRecording, 'isNPCSpeaking:', isNPCSpeaking, 'disabled:', elements.voiceBtn.disabled);
-            
+
             if (isNPCSpeaking) {
                 console.log('🎤 Cannot record - NPC is speaking');
                 return;
             }
-            
+
             toggleRecording();
         });
-        
+
         // Also handle touch for mobile
         elements.voiceBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             e.stopPropagation();
             console.log('🎤 Voice button TOUCHSTART! isRecording:', isRecording, 'isNPCSpeaking:', isNPCSpeaking);
-            
+
             if (isNPCSpeaking) {
                 console.log('🎤 Cannot record - NPC is speaking');
                 return;
             }
-            
+
             toggleRecording();
         }, { passive: false });
-        
+
         console.log('✅ Voice button mousedown/touchstart listeners attached');
     } else {
         console.error('❌ Voice button not found!');
@@ -2355,29 +2053,29 @@ function setupConversationUI() {
 // ==================== PRELOAD GREETING FOR INSTANT PLAYBACK ====================
 async function preloadGreeting() {
     console.log('🎙️ Preloading NPC greeting...');
-    
+
     // Update audio indicator to show loading
     const audioIndicator = document.getElementById('audioIndicator');
     const audioText = audioIndicator?.querySelector('.audio-text');
     if (audioText) audioText.textContent = 'Loading...';
-    
+
     try {
         // Generate the greeting text
         console.log('📝 Generating greeting text...');
         preloadedGreeting = await generateNPCResponse(null, true);
         console.log('✅ Greeting text ready:', preloadedGreeting?.text?.substring(0, 50) + '...');
-        
+
         // Pre-generate the audio
         if (preloadedGreeting?.text) {
             if (audioText) audioText.textContent = 'Loading Audio...';
-            
+
             const language = gameState.language || 'french';
             const langConfig = getLanguageConfig(language);
             const characterId = langConfig?.character?.name || 'default';
             const voiceConfig = getVoiceForLanguage(language);
-            
+
             let audioLoaded = false;
-            
+
             // Try backend API first
             try {
                 console.log('🔊 Generating greeting audio (backend)...');
@@ -2390,7 +2088,7 @@ async function preloadGreeting() {
                         expression: 'greeting'
                     })
                 });
-                
+
                 if (response.ok) {
                     const audioBlob = await response.blob();
                     preloadedGreetingAudio = new Audio(URL.createObjectURL(audioBlob));
@@ -2405,7 +2103,7 @@ async function preloadGreeting() {
             } catch (backendError) {
                 console.log('⚠️ Backend TTS failed, trying direct ElevenLabs...');
             }
-            
+
             // Fallback to direct ElevenLabs API
             if (!audioLoaded && voiceConfig?.voiceId) {
                 try {
@@ -2425,7 +2123,7 @@ async function preloadGreeting() {
                             }
                         })
                     });
-                    
+
                     if (response.ok) {
                         const audioBlob = await response.blob();
                         preloadedGreetingAudio = new Audio(URL.createObjectURL(audioBlob));
@@ -2441,7 +2139,7 @@ async function preloadGreeting() {
                     console.log('⚠️ ElevenLabs TTS also failed:', elevenLabsError);
                 }
             }
-            
+
             if (audioLoaded) {
                 if (audioText) audioText.textContent = 'Ready!';
                 if (audioIndicator) audioIndicator.style.borderColor = '#2ecc71';
@@ -2458,10 +2156,10 @@ async function preloadGreeting() {
 async function startConversation() {
     isConversationActive = true;
     document.exitPointerLock();
-    
+
     // Add body class for mobile UI state
     document.body.classList.add('in-conversation');
-    
+
     // PAUSE background music during conversation completely
     if (audioManager) {
         if (audioManager.backgroundMusic) {
@@ -2493,7 +2191,7 @@ async function startConversation() {
     // Use preloaded greeting if available, otherwise generate fresh
     let greeting;
     let usePreloadedAudio = false;
-    
+
     if (preloadedGreeting) {
         greeting = preloadedGreeting;
         usePreloadedAudio = preloadedGreetingAudio !== null;
@@ -2501,9 +2199,9 @@ async function startConversation() {
     } else {
         greeting = await generateNPCResponse(null, true);
     }
-    
+
     displayNPCMessage(greeting.text, greeting.translation);
-    
+
     // Feed action/mood to Decart Mirage
     updateMirageFromResponse(greeting);
 
@@ -2521,29 +2219,29 @@ async function startConversation() {
     // Play preloaded audio or generate fresh
     if (usePreloadedAudio && preloadedGreetingAudio) {
         console.log('🎙️ Playing preloaded greeting with highlighting...');
-        
+
         // Mark NPC as speaking - disable mic
         isNPCSpeaking = true;
         updateMicButtonState();
-        
+
         currentAudio = preloadedGreetingAudio;
         currentSpeechText = greeting.text;
         speechHighlightIndex = 0;
-        
+
         const words = greeting.text.split(/\s+/);
-        
+
         // Show words dimmed initially (same as speakTextWithHighlight)
         if (elements.speechText) {
             elements.speechText.innerHTML = words.map(w =>
                 `<span class="word-pending" style="opacity: 0.3;">${w}</span>`
             ).join(' ');
         }
-        
+
         // Get actual audio duration for proper sync
         const audioDuration = currentAudio.duration || 5;
         const msPerWord = (audioDuration * 1000) / words.length;
         console.log(`🔊 Preloaded audio: ${audioDuration.toFixed(2)}s, ${words.length} words, ${msPerWord.toFixed(0)}ms/word`);
-        
+
         // Start highlighting synced to audio
         let wordIndex = 0;
         speechHighlightInterval = setInterval(() => {
@@ -2557,10 +2255,10 @@ async function startConversation() {
                 wordIndex++;
             }
         }, msPerWord);
-        
+
         currentAudio.play().catch(e => console.error('Audio play error:', e));
         console.log('🎵 Preloaded audio started - beginning highlight sync');
-        
+
         await new Promise(resolve => {
             currentAudio.addEventListener('ended', () => {
                 console.log('🎵 Preloaded audio ended');
@@ -2568,18 +2266,18 @@ async function startConversation() {
             }, { once: true });
             currentAudio.addEventListener('error', resolve, { once: true });
         });
-        
+
         // Clear interval and show all words
         if (speechHighlightInterval) {
             clearInterval(speechHighlightInterval);
             speechHighlightInterval = null;
         }
         elements.speechText.innerHTML = greeting.text;
-        
+
         // NPC finished - enable mic
         isNPCSpeaking = false;
         updateMicButtonState();
-        
+
         // Clear preloaded audio
         preloadedGreetingAudio = null;
         preloadedGreeting = null;
@@ -2591,9 +2289,9 @@ async function startConversation() {
 // Update mic button visual state
 function updateMicButtonState() {
     const voiceBtn = elements.voiceBtn;
-    
+
     console.log('🎤 updateMicButtonState - isNPCSpeaking:', isNPCSpeaking);
-    
+
     if (isNPCSpeaking) {
         // Visual feedback only - don't disable (it blocks events)
         if (voiceBtn) {
@@ -2649,21 +2347,21 @@ function endConversation() {
     isConversationActive = false;
     isNPCSpeaking = false;  // Reset NPC speaking state
     isRecording = false;    // Reset recording state
-    
+
     // Remove body class for mobile UI state
     document.body.classList.remove('in-conversation');
-    
+
     // Resume background music after conversation
     if (audioManager) {
         if (audioManager.backgroundMusic) {
-            audioManager.backgroundMusic.play().catch(() => {});
+            audioManager.backgroundMusic.play().catch(() => { });
             console.log('🔊 Background music RESUMED after conversation');
         }
         if (audioManager.ambientSound) {
-            audioManager.ambientSound.play().catch(() => {});
+            audioManager.ambientSound.play().catch(() => { });
         }
     }
-    
+
     // Reset voice button state
     if (elements.voiceBtn) {
         elements.voiceBtn.classList.remove('recording');
@@ -2671,7 +2369,7 @@ function endConversation() {
         elements.voiceBtn.style.opacity = '1';
         elements.voiceBtn.style.cursor = 'pointer';
     }
-    
+
     elements.conversationPanel.classList.remove('active');
     elements.controlsHint.style.display = 'block';
     conversationHistory = [];
@@ -2718,7 +2416,7 @@ async function sendTextMessage() {
     // Get NPC response
     const response = await generateNPCResponse(text);
     displayNPCMessage(response.text, response.translation, response.correction);
-    
+
     // Feed action/mood to Decart Mirage
     updateMirageFromResponse(response);
 
@@ -2896,7 +2594,7 @@ async function speakTextWithHighlight(text, expression = null) {
     // Mark NPC as speaking - disable mic button
     isNPCSpeaking = true;
     updateMicButtonState();
-    
+
     // Store the text for highlighting
     currentSpeechText = text;
     speechHighlightIndex = 0;
@@ -2961,7 +2659,7 @@ async function speakTextWithHighlight(text, expression = null) {
                 `<span class="word-spoken" style="opacity: 1; color: var(--cream, #f8f0d8);">${w}</span>`
             ).join(' ');
         }
-        
+
         // NPC finished speaking - enable mic button
         isNPCSpeaking = false;
         updateMicButtonState();
@@ -3006,16 +2704,28 @@ async function speakTextAndGetAudio(text, expression = null) {
     }
 
     const language = gameState.language || 'french';
-    const voiceConfig = getVoiceForLanguage(language);
-    const langConfig = getLanguageConfig(language);
-    const characterId = langConfig?.character?.name || 'default';
-    
+
+
+    // Map language to backend character ID to ensure correct voice/accent
+    const languageToCharacterId = {
+        'french': 'amelie',
+        'japanese': 'yuki',
+        'spanish': 'carmen',
+        'german': 'wolfgang',
+        'italian': 'marco',
+        'mandarin': 'meilin',
+        'polish': 'kasia',
+        'english': 'victoria'
+    };
+
+    const characterId = languageToCharacterId[language] || 'amelie';
+
     // V3 model - don't prepend custom expression tags (they get read aloud)
     // V3 only supports specific tags like [whispers], [laughs], [sighs]
     let processedText = text;
-    
+
     try {
-        // Try backend API first
+        // Use backend API
         const response = await fetch(`${CONFIG.BACKEND_URL}/api/speak`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -3043,48 +2753,11 @@ async function speakTextAndGetAudio(text, expression = null) {
 
             console.log(`🔊 Backend TTS: "${text.substring(0, 40)}..." duration: ${currentAudio.duration}s`);
             return currentAudio;
+        } else {
+            console.error('Backend TTS error:', await response.text());
         }
     } catch (backendError) {
-        console.warn('Backend TTS failed:', backendError);
-    }
-
-    // Fallback to direct ElevenLabs API
-
-    try {
-        const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceConfig.voiceId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'xi-api-key': CONFIG.ELEVENLABS_API_KEY
-            },
-            body: JSON.stringify({
-                text: processedText,
-                model_id: 'eleven_v3',
-                voice_settings: {
-                    stability: 0.5,
-                    similarity_boost: 0.75
-                }
-            })
-        });
-
-        if (response.ok) {
-            const audioBlob = await response.blob();
-            const audioUrl = URL.createObjectURL(audioBlob);
-            currentAudio = new Audio(audioUrl);
-
-            await new Promise((resolve) => {
-                currentAudio.addEventListener('loadedmetadata', resolve);
-                currentAudio.addEventListener('error', resolve);
-                currentAudio.load();
-            });
-
-            currentAudio.play().catch(e => console.error('Audio play error:', e));
-
-            console.log(`🔊 Direct TTS: "${text.substring(0, 40)}..." duration: ${currentAudio.duration}s`);
-            return currentAudio;
-        }
-    } catch (error) {
-        console.error('TTS error:', error);
+        console.error('Backend TTS failed:', backendError);
     }
 
     return null;
@@ -3125,12 +2798,12 @@ async function startRecording() {
         console.log('🎤 Cannot record - NPC is speaking');
         return;
     }
-    
+
     isRecording = true;
     window.recordingStartTime = performance.now();
     console.log(`\n🔴 ═══════ RECORDING STARTED ═══════`);
     console.log(`⏱️ [0ms] Recording begins...`);
-    
+
     // Clear live transcript
     const liveTranscript = document.getElementById('liveTranscript');
     if (liveTranscript) liveTranscript.innerHTML = '';
@@ -3156,11 +2829,11 @@ async function startRecording() {
 function stopRecording() {
     if (!isRecording) return;
     isRecording = false;
-    
+
     const recordingDuration = window.recordingStartTime ? (performance.now() - window.recordingStartTime).toFixed(0) : '?';
     console.log(`⏹️ ═══════ RECORDING STOPPED ═══════`);
     console.log(`⏱️ Recording duration: ${recordingDuration}ms`);
-    
+
     // Update recording panel to show processing
     const recordingLabel = document.getElementById('recordingLabel');
     if (recordingLabel) recordingLabel.textContent = 'PROCESSING...';
@@ -3363,7 +3036,7 @@ async function processRealtimeTranscript(transcript, words) {
 
     const response = await generateNPCResponse(transcript);
     displayNPCMessage(response.text, response.translation);
-    
+
     // Feed action/mood to Decart Mirage
     updateMirageFromResponse(response);
 
@@ -3472,7 +3145,7 @@ async function startRegularRecording() {
             'audio/ogg;codecs=opus',
             'audio/ogg'
         ];
-        
+
         let selectedMimeType = '';
         for (const type of mimeTypes) {
             if (MediaRecorder.isTypeSupported(type)) {
@@ -3481,7 +3154,7 @@ async function startRegularRecording() {
                 break;
             }
         }
-        
+
         const recorderOptions = selectedMimeType ? { mimeType: selectedMimeType } : {};
         mediaRecorder = new MediaRecorder(stream, recorderOptions);
         console.log(`🎤 MediaRecorder created with mimeType: ${mediaRecorder.mimeType}`);
@@ -3496,7 +3169,7 @@ async function startRegularRecording() {
             const totalDuration = window.recordingStartTime ? (performance.now() - window.recordingStartTime).toFixed(0) : '?';
             console.log(`⏱️ MediaRecorder stopped, total time since start: ${totalDuration}ms`);
             console.log(`📦 Total chunks: ${audioChunks.length}`);
-            
+
             stopAmplitudeVisualization();
             hideAmplitudeUI();
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
@@ -3542,11 +3215,11 @@ function showAmplitudeUI() {
     const recordingPanel = document.getElementById('recordingPanel');
     const recordingLabel = document.getElementById('recordingLabel');
     const amplitudeBars = document.getElementById('amplitudeBars');
-    
+
     if (recordingPanel) {
         recordingPanel.classList.add('active');
         if (recordingLabel) recordingLabel.textContent = 'RECORDING...';
-        
+
         // Create bars if they don't exist
         if (amplitudeBars && amplitudeBars.children.length === 0) {
             for (let i = 0; i < 32; i++) {
@@ -3557,7 +3230,7 @@ function showAmplitudeUI() {
             }
         }
     }
-    
+
     // PAUSE background music while recording - use correct property name
     if (audioManager && audioManager.backgroundMusic) {
         audioManager.backgroundMusic.pause();
@@ -3575,7 +3248,7 @@ function hideAmplitudeUI() {
     if (recordingPanel) {
         recordingPanel.classList.remove('active');
     }
-    
+
     // Keep music paused during conversation - will resume when conversation ends
     // Don't resume here since we want silence during the whole conversation
 }
@@ -3588,14 +3261,14 @@ function startAmplitudeVisualization() {
 
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
-    
+
     // Use right-side recording panel elements
     const amplitudeBars = document.getElementById('amplitudeBars');
     const bars = amplitudeBars ? amplitudeBars.children : [];
     const levelDisplay = document.getElementById('levelValue');
     const canvas = document.getElementById('waveformCanvas');
     const ctx = canvas?.getContext('2d');
-    
+
     // Waveform history for time series display
     const waveformHistory = [];
     const maxHistory = 150;
@@ -3609,7 +3282,7 @@ function startAmplitudeVisualization() {
             }
             return;
         }
-        
+
         animationFrameId = requestAnimationFrame(draw);
 
         analyser.getByteFrequencyData(dataArray);
@@ -3637,7 +3310,7 @@ function startAmplitudeVisualization() {
                 bars[i].style.height = `${height}px`;
             }
         }
-        
+
         // Draw time series waveform
         if (ctx && canvas) {
             waveformHistory.push(avg);
@@ -4041,7 +3714,7 @@ async function processAudioInput(audioBlob) {
     const startTime = performance.now();
     console.log(`\n🎙️ ═══════ VOICE PROCESSING START ═══════`);
     console.log(`⏱️ [${startTime.toFixed(0)}ms] Recording received, size: ${(audioBlob.size / 1024).toFixed(1)}KB`);
-    
+
     elements.textInput.placeholder = 'Transcribing your voice...';
     elements.textInput.disabled = true;
     elements.sendBtn.disabled = true;
@@ -4057,63 +3730,42 @@ async function processAudioInput(audioBlob) {
         let transcription = '';
         let wordsWithScores = [];
 
-        if (CONFIG.ELEVENLABS_API_KEY) {
-            console.log(`⏱️ [${(performance.now() - startTime).toFixed(0)}ms] 🎤 Starting ElevenLabs STT...`);
+        if (CONFIG.BACKEND_URL) {
+            console.log(`⏱️ [${(performance.now() - startTime).toFixed(0)}ms] 🎤 Starting Backend STT...`);
+            console.log(`📁 Sending audio to backend (Language: ${language})`);
 
-            // Determine file extension from blob type
-            const mimeToExt = {
-                'audio/mp4': 'mp4',
-                'audio/webm': 'webm',
-                'audio/webm;codecs=opus': 'webm',
-                'audio/ogg': 'ogg',
-                'audio/ogg;codecs=opus': 'ogg',
-                'audio/wav': 'wav'
-            };
-            const ext = mimeToExt[audioBlob.type] || 'webm';
-            const filename = `recording.${ext}`;
-            console.log(`📁 Sending audio as: ${filename} (type: ${audioBlob.type})`);
-            
             const formData = new FormData();
-            formData.append('file', audioBlob, filename);
-            formData.append('model_id', 'scribe_v1');
+            formData.append('audio', audioBlob, 'recording.webm');
+            formData.append('language', language);
 
-            const sttResponse = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+            const backendResponse = await fetch(`${CONFIG.BACKEND_URL}/api/transcribe`, {
                 method: 'POST',
-                headers: {
-                    'xi-api-key': CONFIG.ELEVENLABS_API_KEY
-                },
                 body: formData
             });
 
-            if (sttResponse.ok) {
-                const sttData = await sttResponse.json();
-                transcription = sttData.text || '';
-                console.log(`⏱️ [${(performance.now() - startTime).toFixed(0)}ms] ✅ STT complete`);
+            if (backendResponse.ok) {
+                const data = await backendResponse.json();
+                transcription = data.text || data.transcription || '';
 
-                // Extract word-level data if available
-                if (sttData.words && Array.isArray(sttData.words)) {
-                    wordsWithScores = sttData.words.map(w => ({
-                        text: w.text || w.word,
-                        confidence: w.confidence || 0.9,
-                        start: w.start,
-                        end: w.end
-                    }));
-                    console.log(`📊 Word timestamps:`, wordsWithScores.map(w => `${w.text}@${w.start?.toFixed(2)}s`).join(', '));
+                // Use backend word timestamps if available (backend should be updated to return them)
+                // For now, we simulate scores if not present
+                if (data.words) {
+                    wordsWithScores = data.words;
                 } else {
-                    // Create word scores from text
                     wordsWithScores = transcription.split(/\s+/).filter(w => w).map(w => ({
                         text: w,
                         confidence: 0.85
                     }));
                 }
 
+                console.log(`⏱️ [${(performance.now() - startTime).toFixed(0)}ms] ✅ STT complete`);
                 console.log(`📝 Transcription: "${transcription}"`);
-                
+
                 // Update recording panel with transcription
                 const recordingLabel = document.getElementById('recordingLabel');
                 const liveTranscript = document.getElementById('liveTranscript');
                 if (recordingLabel) recordingLabel.textContent = 'GOT IT!';
-                
+
                 // Show transcribed words one by one
                 if (liveTranscript && transcription) {
                     liveTranscript.innerHTML = '';
@@ -4128,34 +3780,9 @@ async function processAudioInput(audioBlob) {
                     });
                 }
             } else {
-                console.error('❌ STT failed:', await sttResponse.text());
+                console.error('❌ Backend STT failed:', await backendResponse.text());
                 const recordingLabel = document.getElementById('recordingLabel');
                 if (recordingLabel) recordingLabel.textContent = 'ERROR!';
-            }
-        }
-
-        // ═══════════════════════════════════════════════════════════════════════
-        // FALLBACK: TRY BACKEND IF DIRECT STT FAILED
-        // ═══════════════════════════════════════════════════════════════════════
-        if (!transcription) {
-            console.log('🎤 Trying backend transcription...');
-
-            const formData = new FormData();
-            formData.append('audio', audioBlob, 'recording.webm');
-            formData.append('language', language);
-
-            const backendResponse = await fetch(`${CONFIG.BACKEND_URL}/api/transcribe`, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (backendResponse.ok) {
-                const data = await backendResponse.json();
-                transcription = data.text || data.transcription || '';
-                wordsWithScores = transcription.split(/\s+/).filter(w => w).map(w => ({
-                    text: w,
-                    confidence: 0.85
-                }));
             }
         }
 
@@ -4170,13 +3797,13 @@ async function processAudioInput(audioBlob) {
         // DISPLAY USER'S TRANSCRIPTION WITH WORD SCORES
         // ═══════════════════════════════════════════════════════════════════════
         console.log(`⏱️ [${(performance.now() - startTime).toFixed(0)}ms] 📤 Displaying user message...`);
-        
+
         // Hide recording panel after short delay
         setTimeout(() => {
             const recordingPanel = document.getElementById('recordingPanel');
             if (recordingPanel) recordingPanel.classList.remove('active');
         }, 1000);
-        
+
         archiveCurrentNPCMessage();
         displayUserMessageWithScores(transcription, wordsWithScores);
 
@@ -4191,7 +3818,7 @@ async function processAudioInput(audioBlob) {
         const response = await generateNPCResponse(transcription);
         console.log(`⏱️ [${(performance.now() - startTime).toFixed(0)}ms] ✅ NPC response ready: "${response.text?.substring(0, 50)}..."`);
         displayNPCMessage(response.text, response.translation);
-        
+
         // Feed action/mood to Decart Mirage
         updateMirageFromResponse(response);
 
@@ -4275,9 +3902,9 @@ function archiveCurrentNPCMessage() {
 
     const currentText = elements.speechText.textContent || elements.speechText.innerText;
     const currentTranslation = elements.speechTranslation?.textContent || '';
-    
+
     if (!currentText || currentText === 'waiting awkwardly...') return; // Don't archive default
-    
+
     // Create archived NPC message wrapper with avatar - Cozy Pixel Art Style
     const npcWrapper = document.createElement('div');
     npcWrapper.className = 'character-speaking';

@@ -31,13 +31,17 @@ The backend provides the following API endpoints with **real AI integration**:
   - [x] Text-to-Speech (TTS) implementation
   - [x] Audio streaming endpoint
   - [x] Expressive voice tags (`[sadly]`, `[excited]`, etc.) using **Eleven v3**
-- [ ] **Speech-to-Text (STT)**
-  - [ ] Integrate ElevenLabs STT for microphone input
-- [ ] **Frontend Integration**
+  - [x] **Speech-to-Text (STT)** (Scribe v1)
+    - [x] Backend proxy for secure transcription
+    - [x] Language hint enforcement
+  - [x] **Pronunciation Assessment**
+    - [x] Multi-language feedback heuristics
+    - [x] `/api/assess` endpoint
+- [x] **Frontend Integration**
   - [x] Basic API connection
   - [x] Audio playback
-  - [ ] STT Input UI
-  - [ ] Quest UI updates
+  - [x] STT Input UI (Secure Backend Proxy)
+  - [x] Quest UI updates
 - [ ] **Game Content**
   - [ ] Expand questline beyond the initial "Find Cat" demo
   - [ ] Add more vocabulary tracking

@@ -104,6 +104,34 @@ async def speech_to_text(
         raise HTTPException(status_code=500, detail=f"STT Error: {str(e)}")
 
 
+@router.post("/assess")
+async def assess_pronunciation(
+    audio: UploadFile = File(...),
+    target_text: str = Form(...),
+    language: str = Form(...)
+):
+    """
+    Assess user's pronunciation against target text.
+    """
+    try:
+        audio_content = await audio.read()
+        
+        # Run assessment (sync method in service)
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(
+            None,
+            lambda: elevenlabs_service.assess_pronunciation(
+                audio_content=audio_content,
+                target_text=target_text,
+                language=language
+            )
+        )
+        
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Assessment Error: {str(e)}")
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # REAL-TIME TRANSCRIPTION (WebSocket)
 # ═══════════════════════════════════════════════════════════════════════════════

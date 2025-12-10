@@ -348,7 +348,9 @@ class ElevenLabsService:
         try:
             result = self.client.speech_to_text.convert(
                 file=audio_content,
-                model_id="scribe_v1"
+                model_id="scribe_v1",
+                language_code=language_hint,
+                tag="audio_upload"
             )
             
             return {
@@ -501,27 +503,67 @@ class ElevenLabsService:
             
             # Check for common pronunciation issues by language
             if language == "french":
-                if "r" in target_clean and user_text.replace("r", "") == target_clean.replace("r", ""):
+                if "r" in target_clean:
                     issues.append("French 'r' sound needs work")
-                    suggestions.append("Practice the guttural French 'r' from the back of throat")
+                    suggestions.append("Practice the guttural French 'r' from the back of your throat")
+                if "u" in target_clean:
+                    issues.append("French 'u' vowel sound")
+                    suggestions.append("Round your lips tightly and say 'ee'")
                     
             elif language == "german":
                 if "ch" in target_clean:
                     issues.append("German 'ch' sound may need practice")
                     suggestions.append("The German 'ch' varies - 'ich' is softer than 'ach'")
+                if "ü" in target_clean or "ä" in target_clean or "ö" in target_clean:
+                    issues.append("Umlaut vowels need distinct clarity")
+                    suggestions.append("Pay attention to the lip shape for umlauts")
                     
+            elif language == "spanish":
+                if "rr" in target_clean:
+                    issues.append("Rolling 'rr' sound")
+                    suggestions.append("Practice rolling your tongue for the double 'rr'")
+                if "j" in target_clean:
+                    issues.append("Spanish 'j' sound")
+                    suggestions.append("The 'j' is stronger, like a harsh 'h' in the throat")
+                if "z" in target_clean or ("ci" in target_clean or "ce" in target_clean):
+                    issues.append("Castilian 'th' sound for z/c")
+                    suggestions.append("In Spain, 'z' and 'c' before i/e are pronounced like 'th'")
+                    
+            elif language == "italian":
+                if "gl" in target_clean or "gn" in target_clean:
+                    issues.append("Soft 'gl' or 'gn' sounds")
+                    suggestions.append("'Gli' is like 'lli' in million; 'gn' is like 'ny' in canyon")
+                # Check for double consonants (simplified check)
+                import re
+                if re.search(r'(.)\1', target_clean):
+                    issues.append("Double consonants timing")
+                    suggestions.append("Hold double consonants (doppie) longer than single ones")
+            
+            elif language == "mandarin":
+                if accuracy_score < 80:
+                    issues.append("Tone accuracy")
+                    suggestions.append("Mandarin is tonal - wrong tone changes the meaning. Mimic the melody.")
+            
+            elif language == "polish":
+                if "sz" in target_clean or "cz" in target_clean or "rz" in target_clean:
+                    issues.append("Cluster sounds (sz, cz, rz)")
+                    suggestions.append("Polish consonant clusters are sharp but distinct.")
+                if "ą" in target_clean or "ę" in target_clean:
+                    issues.append("Nasal vowels (ą, ę)")
+                    suggestions.append("These are nasal vowels, hold them slightly longer.")
+
             elif language == "japanese":
                 if accuracy_score < 70:
-                    issues.append("Pitch accent may need adjustment")
-                    suggestions.append("Japanese uses pitch patterns - listen carefully to native speakers")
-        
+                    issues.append("Pitch accent stability")
+                    suggestions.append("Japanese has flat pitch but distinct accents. Listen to the rhythm.")
+
         return PronunciationFeedback(
             word=target_text,
             target_pronunciation=target_text,
             user_pronunciation=user_text,
             accuracy_score=round(accuracy_score, 1),
             issues=issues if issues else ["Good pronunciation!"],
-            suggestions=suggestions if suggestions else ["Keep practicing!"]
+            suggestions=suggestions if suggestions else ["Great job! Keep practicing."]
         )
 
     # ═══════════════════════════════════════════════════════════════════════════

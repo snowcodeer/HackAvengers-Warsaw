@@ -16,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 # Import routers
-from routers import conversation, voice, scenario
+from routers import conversation, voice, scenario, progress
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # APP INITIALIZATION
@@ -53,6 +53,9 @@ app.include_router(conversation.router)
 
 # Scenario API - Dynamic generation
 app.include_router(scenario.router)
+
+# Progress API - Save/Load user data
+app.include_router(progress.router)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
