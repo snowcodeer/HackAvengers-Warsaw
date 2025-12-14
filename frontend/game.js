@@ -1,5 +1,7 @@
 // 3D Game World using Three.js
 import { initHandTracker, getControlData, getHandshakeStatus, updateHandshakeUI } from './camera/handinput.js';
+import { startMirageStream, stopMirageStream } from './mirage.js';
+import { audioManager } from './core/AudioManager.js';
 
 let scene, camera, renderer;
 let player, playerVelocity;
@@ -511,10 +513,15 @@ function playSound(sound) {
 }
 
 // Start ambient sounds (call after user interaction)
-function startAmbientSounds() {
+async function startAmbientSounds() {
     if (ambientWind && ambientWind.paused) {
         ambientWind.play().catch(() => { });
     }
+    
+    // 🎵 Start Polish background music using AudioManager
+    await audioManager.initialize();
+    await audioManager.playMusic('polish');
+    console.log('🎵 Polish background music started');
 }
 
 // Play cat meow (call when finding the cat)
@@ -1153,12 +1160,12 @@ function createNPC(appearance) {
     const armMaterial = new THREE.MeshStandardMaterial({ color: skinColor });
 
     const leftArm = new THREE.Mesh(armGeometry, armMaterial);
-    leftArm.position.set(-0.95, 2.2, 0);
+    leftArm.position.set(-0.65, 2.2, 0);
     leftArm.castShadow = true;
     npc.add(leftArm);
 
     const rightArm = new THREE.Mesh(armGeometry, armMaterial);
-    rightArm.position.set(0.95, 2.2, 0);
+    rightArm.position.set(0.65, 2.2, 0);
     rightArm.castShadow = true;
     npc.add(rightArm);
 
@@ -1167,11 +1174,11 @@ function createNPC(appearance) {
     const handMaterial = new THREE.MeshStandardMaterial({ color: skinColor });
 
     const leftHand = new THREE.Mesh(handGeometry, handMaterial);
-    leftHand.position.set(-0.95, 1.3, 0);
+    leftHand.position.set(-0.65, 1.3, 0);
     npc.add(leftHand);
 
     const rightHand = new THREE.Mesh(handGeometry, handMaterial);
-    rightHand.position.set(0.95, 1.3, 0);
+    rightHand.position.set(0.65, 1.3, 0);
     npc.add(rightHand);
 
     // Head
@@ -1776,6 +1783,131 @@ function setupControls() {
             mouseY = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, mouseY));
         }
     });
+    
+    // Mobile Virtual Joystick
+    const joystick = document.getElementById('mobile-joystick');
+    const joystickThumb = document.getElementById('joystickThumb');
+    
+    if (joystick && joystickThumb) {
+        let joystickActive = false;
+        let joystickStartX = 0;
+        let joystickStartY = 0;
+        const maxDistance = 40;
+        
+        function handleJoystickStart(e) {
+            e.preventDefault();
+            joystickActive = true;
+            joystickThumb.classList.add('active');
+            const touch = e.touches ? e.touches[0] : e;
+            const rect = joystick.getBoundingClientRect();
+            joystickStartX = rect.left + rect.width / 2;
+            joystickStartY = rect.top + rect.height / 2;
+        }
+        
+        function handleJoystickMove(e) {
+            if (!joystickActive) return;
+            e.preventDefault();
+            
+            const touch = e.touches ? e.touches[0] : e;
+            let deltaX = touch.clientX - joystickStartX;
+            let deltaY = touch.clientY - joystickStartY;
+            
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            if (distance > maxDistance) {
+                deltaX = (deltaX / distance) * maxDistance;
+                deltaY = (deltaY / distance) * maxDistance;
+            }
+            
+            joystickThumb.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+            
+            const deadzone = 10;
+            keys['w'] = deltaY < -deadzone;
+            keys['s'] = deltaY > deadzone;
+            keys['a'] = deltaX < -deadzone;
+            keys['d'] = deltaX > deadzone;
+        }
+        
+        function handleJoystickEnd(e) {
+            e.preventDefault();
+            joystickActive = false;
+            joystickThumb.classList.remove('active');
+            joystickThumb.style.transform = 'translate(-50%, -50%)';
+            keys['w'] = false;
+            keys['s'] = false;
+            keys['a'] = false;
+            keys['d'] = false;
+        }
+        
+        joystick.addEventListener('touchstart', handleJoystickStart, { passive: false });
+        document.addEventListener('touchmove', handleJoystickMove, { passive: false });
+        document.addEventListener('touchend', handleJoystickEnd, { passive: false });
+        
+        joystick.addEventListener('mousedown', handleJoystickStart);
+        document.addEventListener('mousemove', handleJoystickMove);
+        document.addEventListener('mouseup', handleJoystickEnd);
+    }
+    
+    // Mobile tap-to-talk on interact prompt
+    const interactPrompt = document.getElementById('interactPrompt');
+    if (interactPrompt) {
+        interactPrompt.addEventListener('click', () => {
+            if (nearestNPC && !currentDialogue) {
+                startDialogue(nearestNPC);
+            }
+        });
+        
+        interactPrompt.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (nearestNPC && !currentDialogue) {
+                startDialogue(nearestNPC);
+            }
+        });
+    }
+    
+    // Mobile Mic Action Button
+    const mobileMicBtn = document.getElementById('mobile-mic-btn');
+    if (mobileMicBtn) {
+        // Touch start - begin recording or start dialogue
+        mobileMicBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (currentDialogue) {
+                // In dialogue - start recording
+                if (!isRecording) {
+                    startRecording();
+                    mobileMicBtn.classList.add('recording');
+                }
+            } else if (nearestNPC) {
+                // Near NPC but not in dialogue - start it
+                startDialogue(nearestNPC);
+            }
+        }, { passive: false });
+        
+        // Touch end - stop recording
+        mobileMicBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (currentDialogue && isRecording) {
+                stopRecording();
+                mobileMicBtn.classList.remove('recording');
+            }
+        }, { passive: false });
+        
+        // Mouse events for desktop testing
+        mobileMicBtn.addEventListener('mousedown', () => {
+            if (currentDialogue && !isRecording) {
+                startRecording();
+                mobileMicBtn.classList.add('recording');
+            } else if (nearestNPC && !currentDialogue) {
+                startDialogue(nearestNPC);
+            }
+        });
+        
+        mobileMicBtn.addEventListener('mouseup', () => {
+            if (currentDialogue && isRecording) {
+                stopRecording();
+                mobileMicBtn.classList.remove('recording');
+            }
+        });
+    }
 }
 
 function startDialogue(npc) {
@@ -1828,6 +1960,30 @@ function startDialogue(npc) {
     // Show voice prompt
     const voicePrompt = document.getElementById('voicePrompt');
     if (voicePrompt) voicePrompt.classList.add('active');
+
+    // Start MirageLSD Stream
+    // Construct a prompt based on the NPC
+    const npcName = npc.userData.name || "Villager";
+    // Extract role if possible (e.g. "Chef Pierre" -> "Chef")
+    const role = npcName.split(' ')[0] || "Villager";
+
+    // Get selected country from localStorage (default to Poland if not set)
+    const country = localStorage.getItem('selectedCountry') || 'Poland';
+
+    let prompt = "";
+
+    if (country === 'China') {
+        prompt = `A realistic ${role} wearing traditional Chinese Hanfu clothing standing on the Great Wall of China, green mountains background, misty atmosphere, high quality`;
+    } else if (country === 'France') {
+        prompt = `A realistic ${role} wearing 19th century French fashion standing near the Eiffel Tower in Paris, romantic atmosphere, high quality`;
+    } else if (country === 'Japan') {
+        prompt = `A realistic ${role} wearing traditional Japanese Kimono standing near a Torii gate and cherry blossoms, Kyoto atmosphere, high quality`;
+    } else {
+        // Default (Poland)
+        prompt = `A realistic ${role} standing in front of a majestic Polish monument statue in Warsaw, winter atmosphere, high quality, detailed architecture`;
+    }
+
+    startMirageStream(prompt, "gameCanvas");
 }
 
 function zoomToNPC() {
@@ -1923,6 +2079,9 @@ function endDialogue() {
 
     // Zoom out
     zoomOut();
+
+    // Stop MirageLSD Stream
+    stopMirageStream();
 }
 
 function updatePlayer(delta) {
@@ -2150,7 +2309,7 @@ async function startRecording() {
         if (micBtn) micBtn.classList.add('recording');
         if (status) {
             status.classList.remove('hidden');
-            status.textContent = "Recording...";
+            status.textContent = "RECORDING...";
         }
         if (voicePrompt) {
             voicePrompt.textContent = "Listening...";

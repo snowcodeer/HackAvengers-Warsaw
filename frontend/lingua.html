@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinguaVerse - Immersive Language Learning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* 8-bit color palette */
+            --sky-light: #87CEEB;
+            --sky-mid: #5BA3D9;
+            --grass-bright: #7EC850;
+            --grass-dark: #5A9A38;
+            --wood-main: #8B5A2B;
+            --wood-dark: #654321;
+            --wood-light: #A67C52;
+            --cream: #FFF8DC;
+            --pixel-black: #1a1a2e;
+            --cozy-yellow: #FFD93D;
+            --cozy-orange: #FF8C42;
+            --accent-red: #E74C3C;
+            --accent-teal: #4ecdc4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background: linear-gradient(180deg, var(--sky-light) 0%, var(--sky-mid) 50%, var(--grass-bright) 70%, var(--grass-dark) 100%);
+            color: var(--pixel-black);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Pixel clouds */
+        .bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            z-index: 0;
+            background-image: 
+                radial-gradient(ellipse 80px 40px at 15% 20%, white 50%, transparent 50%),
+                radial-gradient(ellipse 60px 30px at 18% 22%, white 50%, transparent 50%),
+                radial-gradient(ellipse 100px 50px at 70% 15%, white 50%, transparent 50%),
+                radial-gradient(ellipse 70px 35px at 75% 18%, white 50%, transparent 50%),
+                radial-gradient(ellipse 90px 45px at 45% 25%, white 50%, transparent 50%);
+        }
+
+        .floating-orbs { display: none; }
+
+        /* Main container */
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 2rem;
+            color: var(--wood-dark);
+            text-shadow: 
+                4px 4px 0px var(--cozy-yellow),
+                -2px -2px 0px var(--cream);
+            margin-bottom: 12px;
+        }
+
+        .tagline {
+            font-size: 0.7rem;
+            color: var(--wood-main);
+            line-height: 1.8;
+        }
+
+        /* Step sections */
+        .step-section {
+            margin-bottom: 40px;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: var(--cozy-yellow);
+            border: 4px solid var(--wood-dark);
+            box-shadow: 4px 4px 0px var(--wood-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: var(--wood-dark);
+        }
+
+        .step-title {
+            font-size: 1rem;
+            color: var(--wood-dark);
+            text-shadow: 2px 2px 0px var(--cozy-yellow);
+        }
+
+        /* Language grid */
+        .language-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+        }
+
+        .language-card {
+            background: var(--cream);
+            border: 4px solid var(--wood-dark);
+            box-shadow: 6px 6px 0px var(--wood-dark);
+            padding: 20px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .language-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px var(--wood-dark);
+        }
+
+        .language-card:active {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0px var(--wood-dark);
+        }
+
+        .language-card.selected {
+            background: var(--cozy-yellow);
+            border-color: var(--cozy-orange);
+            box-shadow: 6px 6px 0px var(--cozy-orange);
+        }
+
+        .language-flag {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .language-name {
+            font-size: 0.6rem;
+            color: var(--wood-dark);
+            margin-bottom: 4px;
+        }
+
+        .language-native {
+            font-size: 0.5rem;
+            color: var(--wood-main);
+        }
+
+        /* Scenario grid */
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .scenario-card {
+            background: var(--cream);
+            border: 4px solid var(--wood-dark);
+            box-shadow: 6px 6px 0px var(--wood-dark);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .scenario-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px var(--wood-dark);
+        }
+
+        .scenario-card:active {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0px var(--wood-dark);
+        }
+
+        .scenario-card.selected {
+            background: var(--cozy-yellow);
+            border-color: var(--cozy-orange);
+            box-shadow: 6px 6px 0px var(--cozy-orange);
+        }
+
+        .scenario-preview {
+            height: 140px;
+            background: linear-gradient(180deg, var(--sky-light) 0%, var(--grass-bright) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            border-bottom: 4px solid var(--wood-dark);
+        }
+
+        .scenario-content {
+            padding: 16px;
+        }
+
+        .scenario-location {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .scenario-flag {
+            font-size: 1rem;
+        }
+
+        .scenario-country {
+            font-size: 0.5rem;
+            color: var(--grass-dark);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .scenario-name {
+            font-size: 0.8rem;
+            color: var(--wood-dark);
+            margin-bottom: 8px;
+        }
+
+        .scenario-desc {
+            font-size: 0.5rem;
+            color: var(--wood-main);
+            line-height: 2;
+        }
+
+        .scenario-vocab {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .vocab-tag {
+            background: var(--grass-bright);
+            border: 2px solid var(--grass-dark);
+            padding: 4px 8px;
+            font-size: 0.45rem;
+            color: var(--pixel-black);
+        }
+
+        /* Character preview */
+        .character-section {
+            background: var(--cream);
+            border: 4px solid var(--wood-dark);
+            box-shadow: 6px 6px 0px var(--wood-dark);
+            padding: 24px;
+            display: flex;
+            gap: 24px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .character-avatar {
+            width: 120px;
+            height: 120px;
+            background: var(--cozy-yellow);
+            border: 4px solid var(--wood-dark);
+            box-shadow: 4px 4px 0px var(--wood-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            flex-shrink: 0;
+        }
+
+        .character-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .character-name {
+            font-size: 0.9rem;
+            color: var(--wood-dark);
+            margin-bottom: 8px;
+        }
+
+        .character-role {
+            color: var(--cozy-orange);
+            font-size: 0.6rem;
+            margin-bottom: 12px;
+        }
+
+        .character-bio {
+            font-size: 0.5rem;
+            line-height: 2;
+            color: var(--wood-main);
+        }
+
+        /* Start button */
+        .start-section {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .start-btn {
+            background: var(--cozy-yellow);
+            border: 4px solid var(--wood-dark);
+            box-shadow: 6px 6px 0px var(--wood-dark);
+            padding: 16px 40px;
+            font-size: 0.9rem;
+            font-family: 'Press Start 2P', cursive;
+            color: var(--wood-dark);
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .start-btn:hover {
+            background: var(--cozy-orange);
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px var(--wood-dark);
+        }
+
+        .start-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0px var(--wood-dark);
+        }
+
+        .start-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .powered-by {
+            margin-top: 16px;
+            font-size: 0.5rem;
+            color: var(--wood-main);
+        }
+
+        .powered-by span {
+            color: var(--accent-teal);
+        }
+
+        /* Hidden sections */
+        .hidden {
+            display: none !important;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-canvas"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="logo">Mówka</h1>
+            <p class="tagline">Pick Your Scene</p>
+        </header>
+
+        <!-- Step 1: Language Selection -->
+        <section class="step-section" id="step-language">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <h2 class="step-title">Choose Your Language</h2>
+            </div>
+            <div class="language-grid" id="languageGrid">
+                <div class="language-card" data-lang="french">
+                    <div class="language-flag">🇫🇷</div>
+                    <div class="language-name">French</div>
+                    <div class="language-native">Français</div>
+                </div>
+                <div class="language-card" data-lang="german">
+                    <div class="language-flag">🇩🇪</div>
+                    <div class="language-name">German</div>
+                    <div class="language-native">Deutsch</div>
+                </div>
+                <div class="language-card" data-lang="spanish">
+                    <div class="language-flag">🇪🇸</div>
+                    <div class="language-name">Spanish</div>
+                    <div class="language-native">Español</div>
+                </div>
+                <div class="language-card" data-lang="mandarin">
+                    <div class="language-flag">🇨🇳</div>
+                    <div class="language-name">Mandarin</div>
+                    <div class="language-native">中文</div>
+                </div>
+                <div class="language-card" data-lang="japanese">
+                    <div class="language-flag">🇯🇵</div>
+                    <div class="language-name">Japanese</div>
+                    <div class="language-native">日本語</div>
+                </div>
+                <div class="language-card" data-lang="polish">
+                    <div class="language-flag">🇵🇱</div>
+                    <div class="language-name">Polish</div>
+                    <div class="language-native">Polski</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 2: Scenario Selection -->
+        <section class="step-section hidden" id="step-scenario">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <h2 class="step-title">Pick Your Scene</h2>
+            </div>
+            <div class="scenario-grid" id="scenarioGrid">
+                <!-- Scenarios populated by JS based on language -->
+            </div>
+        </section>
+
+        <!-- Step 3: Character Preview -->
+        <section class="step-section hidden" id="step-character">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <h2 class="step-title">Meet Your Guide</h2>
+            </div>
+            <div class="character-section" id="characterPreview">
+                <!-- Character populated by JS -->
+            </div>
+        </section>
+
+        <!-- Start Button -->
+        <section class="start-section hidden" id="step-start">
+            <button class="start-btn" id="startBtn" disabled>Enter the World</button>
+            <p class="powered-by">
+                Powered by <span>Decart AI</span> · <span>ElevenLabs</span> · <span>Claude</span>
+            </p>
+        </section>
+    </div>
+
+    <script type="module" src="lingua.js"></script>
+</body>
+</html>
+

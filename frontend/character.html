@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,14 +10,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="character.css">
 </head>
+
 <body>
     <div class="scene">
         <div class="sky"></div>
         <div class="snow-container" id="snowContainer"></div>
-        
+
         <div class="content">
             <h1 class="title">Character Customisation</h1>
-            
+
             <div class="customisation-container">
                 <!-- Character Preview -->
                 <div class="character-preview">
@@ -27,15 +29,16 @@
                     </div>
                     <p class="preview-label">Preview</p>
                 </div>
-                
+
                 <!-- Customisation Options -->
                 <div class="options-panel">
                     <!-- Name -->
                     <div class="option-group">
                         <label class="option-label">Name</label>
-                        <input type="text" id="characterName" class="pixel-input" placeholder="Enter name..." maxlength="12">
+                        <input type="text" id="characterName" class="pixel-input" placeholder="Enter name..."
+                            maxlength="12">
                     </div>
-                    
+
                     <!-- Body Type -->
                     <div class="option-group">
                         <label class="option-label">Body Type</label>
@@ -45,7 +48,7 @@
                             <button class="nav-btn next" data-target="bodyType">▶</button>
                         </div>
                     </div>
-                    
+
                     <!-- Skin Color -->
                     <div class="option-group">
                         <label class="option-label">Skin Color</label>
@@ -60,7 +63,7 @@
                             <button class="color-btn" data-color="#5c3d2e" style="background: #5c3d2e;"></button>
                         </div>
                     </div>
-                    
+
                     <!-- Hair Style -->
                     <div class="option-group">
                         <label class="option-label">Hair Style</label>
@@ -70,7 +73,7 @@
                             <button class="nav-btn next" data-target="hairStyle">▶</button>
                         </div>
                     </div>
-                    
+
                     <!-- Hair Color -->
                     <div class="option-group">
                         <label class="option-label">Hair Color</label>
@@ -88,10 +91,11 @@
                             <button class="color-btn" data-color="#e91e63" style="background: #e91e63;"></button>
                             <button class="color-btn" data-color="#ff9800" style="background: #ff9800;"></button>
                             <button class="color-btn" data-color="#cccccc" style="background: #cccccc;"></button>
-                            <button class="color-btn" data-color="#ffffff" style="background: #ffffff; border: 2px solid #ccc;"></button>
+                            <button class="color-btn" data-color="#ffffff"
+                                style="background: #ffffff; border: 2px solid #ccc;"></button>
                         </div>
                     </div>
-                    
+
                     <!-- Facial Hair -->
                     <div class="option-group">
                         <label class="option-label">Facial Hair</label>
@@ -101,7 +105,7 @@
                             <button class="nav-btn next" data-target="facialHair">▶</button>
                         </div>
                     </div>
-                    
+
                     <!-- Accessory -->
                     <div class="option-group">
                         <label class="option-label">Accessory</label>
@@ -111,7 +115,7 @@
                             <button class="nav-btn next" data-target="accessory">▶</button>
                         </div>
                     </div>
-                    
+
                     <!-- Hat -->
                     <div class="option-group">
                         <label class="option-label">Hat</label>
@@ -121,7 +125,7 @@
                             <button class="nav-btn next" data-target="hat">▶</button>
                         </div>
                     </div>
-                    
+
                     <!-- Eye Color -->
                     <div class="option-group">
                         <label class="option-label">Eye Color</label>
@@ -133,7 +137,7 @@
                             <button class="color-btn" data-color="#9b59b6" style="background: #9b59b6;"></button>
                         </div>
                     </div>
-                    
+
                     <!-- Outfit -->
                     <div class="option-group">
                         <label class="option-label">Outfit</label>
@@ -143,7 +147,7 @@
                             <button class="nav-btn next" data-target="outfit">▶</button>
                         </div>
                     </div>
-                    
+
                     <!-- Outfit Color -->
                     <div class="option-group">
                         <label class="option-label">Outfit Color</label>
@@ -163,12 +167,13 @@
                             <button class="color-btn" data-color="#ff69b4" style="background: #ff69b4;"></button>
                             <button class="color-btn" data-color="#2c3e50" style="background: #2c3e50;"></button>
                             <button class="color-btn" data-color="#34495e" style="background: #34495e;"></button>
-                            <button class="color-btn" data-color="#ffffff" style="background: #ffffff; border: 2px solid #ccc;"></button>
+                            <button class="color-btn" data-color="#ffffff"
+                                style="background: #ffffff; border: 2px solid #ccc;"></button>
                             <button class="color-btn" data-color="#1a1a1a" style="background: #1a1a1a;"></button>
                             <button class="color-btn" data-color="#8b6914" style="background: #8b6914;"></button>
                         </div>
                     </div>
-                    
+
                     <!-- Pants Color -->
                     <div class="option-group">
                         <label class="option-label">Pants Color</label>
@@ -185,7 +190,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Submit Button -->
             <div class="button-container">
                 <button class="submit-btn" id="submitBtn">
@@ -198,13 +203,13 @@
                 </button>
             </div>
         </div>
-        
+
         <div class="ground">
             <div class="grass-row"></div>
         </div>
     </div>
-    
-    <script src="character.js"></script>
-</body>
-</html>
 
+    <script type="module" src="character.js"></script>
+</body>
+
+</html>

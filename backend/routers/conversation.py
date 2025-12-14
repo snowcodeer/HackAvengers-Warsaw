@@ -1,164 +1,150 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-from fastapi.responses import StreamingResponse
+"""
+═══════════════════════════════════════════════════════════════════════════════
+CONVERSATION ROUTER - AI-Powered Language Learning Conversations
+Multi-turn dialogues with Claude
+═══════════════════════════════════════════════════════════════════════════════
+"""
+
+from fastapi import APIRouter
 from pydantic import BaseModel
-from services.voice_service import voice_service
-from services.npc_service import npc_service
+from typing import Optional, List, Dict, Any
 import uuid
 
-router = APIRouter(prefix="/api/conversation", tags=["conversation"])
+from services.npc_service import npc_service
+from services.lesson_service import lesson_service
 
-class ConversationStartRequest(BaseModel):
-    npc_id: str
+router = APIRouter(prefix="/api/conversation", tags=["Conversation"])
 
-class ConversationResponseRequest(BaseModel):
-    npc_id: str
-    text: str # For text-based testing, eventually will use audio
 
-# Global Game State (MVP)
+# ═══════════════════════════════════════════════════════════════════════════════
+# REQUEST/RESPONSE MODELS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class RespondRequest(BaseModel):
+    """Send a message in a conversation"""
+    language: str
+    language_name: Optional[str] = None
+    user_input: str
+    conversation_history: List[Dict[str, str]] = []
+    character: Optional[Dict[str, Any]] = None
+    scenario: Optional[Dict[str, Any]] = None
+    difficulty: Optional[Dict[str, Any]] = None
+    session_id: Optional[str] = None
+    user_id: Optional[str] = "default_user"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONVERSATION STATE (In-Memory - Use Redis/DB in production)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Active conversations by session ID
+active_sessions: Dict[str, Dict[str, Any]] = {}
+
+# Game state for conversation tracking
 game_state = {
     "quest_step": 1,
-    "difficulty": 1,
-    "conversation_history": {}
+    "difficulty_level": 1,
+    "conversation_count": 0
 }
 
-# Simple in-memory cache for audio generation parameters
-# Format: {uuid: (text, voice_id)}
-audio_cache = {}
 
-@router.get("/audio/{audio_id}")
-async def stream_audio(audio_id: str):
-    if audio_id not in audio_cache:
-        raise HTTPException(status_code=404, detail="Audio not found or expired")
+def get_or_create_session(session_id: Optional[str] = None) -> tuple[str, Dict]:
+    """Get existing session or create new one."""
+    if session_id and session_id in active_sessions:
+        return session_id, active_sessions[session_id]
     
-    text, voice_id = audio_cache.pop(audio_id)
-    
-    def iterfile():
-        stream = voice_service.generate_audio_stream(text, voice_id)
-        if stream:
-            yield from stream
-            
-    return StreamingResponse(iterfile(), media_type="audio/mpeg")
-
-@router.post("/transcribe")
-async def transcribe_audio(audio: UploadFile = File(...)):
-    content = await audio.read()
-    text = voice_service.speech_to_text(content)
-    if not text:
-        raise HTTPException(status_code=400, detail="Failed to transcribe audio (too short or corrupted)")
-    return {"text": text}
-
-@router.post("/start")
-async def start_conversation(request: ConversationStartRequest):
-    # Reset history for this NPC
-    game_state["conversation_history"][request.npc_id] = []
-    
-    # Get initial greeting from NPC (Dynamic but goal-oriented)
-    initial_prompt = "The player has just approached you. Greet them warmly and hint at the current objective immediately."
-    greeting = npc_service.get_response(
-        request.npc_id, 
-        initial_prompt, 
-        [], 
-        game_state["quest_step"], 
-        game_state["difficulty"]
-    )
-    
-    # Store greeting
-    game_state["conversation_history"][request.npc_id].append({"role": "assistant", "content": greeting})
-    
-    # Prepare Audio (Lazy Generation)
-    voice_id = npc_service.get_voice_id(request.npc_id)
-    audio_id = str(uuid.uuid4())
-    audio_cache[audio_id] = (greeting, voice_id)
-    audio_url = f"/api/conversation/audio/{audio_id}"
-    
-    return {
-        "message": f"Conversation started with {request.npc_id}",
-        "greeting": greeting,
-        "audio_url": audio_url
+    new_id = session_id or str(uuid.uuid4())
+    active_sessions[new_id] = {
+        "history": [],
+        "turn_count": 0,
+        "vocabulary_learned": [],
+        "corrections_given": [],
+        "difficulty_level": 1
     }
+    return new_id, active_sessions[new_id]
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONVERSATION ENDPOINT
+# ═══════════════════════════════════════════════════════════════════════════════
 
 @router.post("/respond")
-async def respond_to_conversation(
-    npc_id: str = Form(...),
-    audio: UploadFile = File(None),
-    text: str = Form(None)
-):
-    if not audio and not text:
-        raise HTTPException(status_code=400, detail="Either audio or text is required")
+async def respond_to_message(request: RespondRequest):
+    """
+    Process user message and generate NPC response.
     
-    player_text = text
-    if audio:
-        content = await audio.read()
-        player_text = voice_service.speech_to_text(content)
-        if not player_text:
-             # Fallback or error? Let's return a helpful error
-             raise HTTPException(status_code=400, detail="Could not understand audio. Please try again.")
+    This is the main conversation endpoint that:
+    1. Takes user input (text)
+    2. Generates NPC response via Claude
+    3. Returns response with teaching elements
+    """
+    session_id, session = get_or_create_session(request.session_id)
     
-    # Retrieve history
-    history = game_state["conversation_history"].get(npc_id, [])
+    # Build conversation history
+    history = request.conversation_history or session.get("history", [])
     
-    # Get NPC response
-    npc_response = npc_service.get_response(
-        npc_id, 
-        player_text, 
-        history,
-        game_state["quest_step"],
-        game_state["difficulty"]
-    )
+    # Determine character name
+    character_name = "Amélie"
+    if request.character:
+        character_name = request.character.get("name", "Amélie")
     
-    # Check for Quest Completion Tag
-    quest_advanced = False
+    # Determine difficulty
+    difficulty_level = 1
+    if request.difficulty:
+        difficulty_level = request.difficulty.get("level", 1)
     
-    # Clean bracketed expressions (e.g., [happy], [sad])
-    import re
-    clean_response = re.sub(r'\[.*?\]', '', npc_response).strip()
-    
-    # Check for [DONE] specifically in the original response if logic depends on it
-    if "[DONE]" in npc_response:
-        # Advance Quest State if valid transition
-        if npc_id == "child" and game_state["quest_step"] == 1:
-            game_state["quest_step"] = 2
-            quest_advanced = True
-        elif npc_id == "mati" and game_state["quest_step"] == 2:
-            game_state["quest_step"] = 3
-            quest_advanced = True
-        elif npc_id == "jade" and game_state["quest_step"] == 3:
-            game_state["quest_step"] = 4
-            quest_advanced = True
-        elif npc_id == "kitty" and game_state["quest_step"] == 4:
-            game_state["quest_step"] = 5
-            quest_advanced = True
-        elif npc_id == "child" and game_state["quest_step"] == 5:
-            # Quest Complete
-            pass
-            
-    npc_response = clean_response
-    
-    # Update history
-    history.append({"role": "user", "content": player_text})
-    history.append({"role": "assistant", "content": npc_response})
-    game_state["conversation_history"][npc_id] = history
+    try:
+        # Get NPC response from Claude
+        npc_response = npc_service.get_npc_response(
+            player_input=request.user_input,
+            npc_name=character_name.lower(),
+            conversation_history=history[-10:],  # Last 10 messages
+            quest_state={
+                "step": game_state.get("quest_step", 1),
+                "scenario": request.scenario.get("id") if request.scenario else None
+            },
+            difficulty=difficulty_level
+        )
         
-    # Difficulty Scaling (Simple)
-    # Increase difficulty every 2 turns (DEMO MODE: fast progression)
-    if len(history) % 2 == 0 and game_state["difficulty"] < 5:
-        game_state["difficulty"] += 1
-    
-    # Prepare Audio (Lazy Generation)
-    voice_id = npc_service.get_voice_id(npc_id)
-    audio_id = str(uuid.uuid4())
-    audio_cache[audio_id] = (npc_response, voice_id)
-    audio_url = f"/api/conversation/audio/{audio_id}"
-    
-    return {
-        "transcription": player_text,
-        "response": npc_response,
-        "audio_url": audio_url,
-        "quest_state": game_state["quest_step"],
-        "difficulty": game_state["difficulty"],
-        "quest_advanced": quest_advanced
-    }
-
-@router.post("/end")
-async def end_conversation(npc_id: str):
-    return {"message": f"Conversation ended with {npc_id}"}
+        response_text = npc_response.get("response", "I understand. Please continue.")
+        
+        # Update session history
+        session["history"].append({"role": "user", "content": request.user_input})
+        session["history"].append({"role": "assistant", "content": response_text})
+        session["turn_count"] += 1
+        
+        # Track vocabulary if mentioned
+        if npc_response.get("vocabulary"):
+            session["vocabulary_learned"].extend(npc_response["vocabulary"])
+            # Update user glossary
+            for word in npc_response["vocabulary"]:
+                lesson_service.add_vocabulary_word(
+                    request.user_id,
+                    request.language,
+                    word
+                )
+        
+        # Update game state
+        game_state["conversation_count"] += 1
+        
+        return {
+            "session_id": session_id,
+            "response": response_text,
+            "text": response_text,  # Alias for compatibility
+            "translation": npc_response.get("translation"),
+            "correction": npc_response.get("correction"),
+            "encouragement": npc_response.get("encouragement"),
+            "new_vocabulary": npc_response.get("vocabulary", []),
+            "newVocabulary": npc_response.get("vocabulary", []),  # Alias
+            "turn_count": session["turn_count"],
+            "difficulty_level": difficulty_level
+        }
+        
+    except Exception as e:
+        # Fallback response
+        return {
+            "session_id": session_id,
+            "response": "That's great! Keep practicing.",
+            "text": "That's great! Keep practicing.",
+            "error": str(e)
+        }

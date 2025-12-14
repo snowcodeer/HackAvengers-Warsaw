@@ -1,10 +1,12 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
-import json
 from pathlib import Path
+import aiosqlite
+import csv
+import io
 
 app = FastAPI(title="Mówka Waitlist Backend")
 
@@ -17,11 +19,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Path to store waitlist data
-WAITLIST_FILE = Path(__file__).parent / "data" / "waitlist.json"
+# Path to store waitlist database
+DATA_DIR = Path(__file__).parent / "data"
+DB_PATH = DATA_DIR / "waitlist.db"
 
 # Ensure data directory exists
-WAITLIST_FILE.parent.mkdir(exist_ok=True)
+DATA_DIR.mkdir(exist_ok=True)
+
+
+async def init_db():
+    """Initialize the SQLite database and create tables if they don't exist."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS waitlist (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT UNIQUE NOT NULL,
+                joined_at TEXT NOT NULL
+            )
+        """)
+        await db.execute("""
+            CREATE INDEX IF NOT EXISTS idx_email ON waitlist(email)
+        """)
+        await db.commit()
+
+
+@app.on_event("startup")
+async def startup():
+    """Initialize database on startup."""
+    await init_db()
 
 
 class WaitlistRequest(BaseModel):
@@ -34,29 +59,27 @@ async def join_waitlist(request: WaitlistRequest):
     Add an email to the waitlist.
     """
     try:
-        # Load existing waitlist
-        waitlist = []
-        if WAITLIST_FILE.exists():
-            with open(WAITLIST_FILE, "r") as f:
-                waitlist = json.load(f)
-        
-        # Check if email already exists
-        if any(entry["email"] == request.email for entry in waitlist):
-            raise HTTPException(
-                status_code=400,
-                detail="Email already on waitlist"
+        async with aiosqlite.connect(DB_PATH) as db:
+            # Check if email already exists
+            cursor = await db.execute(
+                "SELECT email FROM waitlist WHERE email = ?",
+                (request.email,)
             )
-        
-        # Add new entry
-        entry = {
-            "email": request.email,
-            "joined_at": datetime.now().isoformat()
-        }
-        waitlist.append(entry)
-        
-        # Save waitlist
-        with open(WAITLIST_FILE, "w") as f:
-            json.dump(waitlist, f, indent=2)
+            existing = await cursor.fetchone()
+            
+            if existing:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Email already on waitlist"
+                )
+            
+            # Add new entry
+            joined_at = datetime.now().isoformat()
+            await db.execute(
+                "INSERT INTO waitlist (email, joined_at) VALUES (?, ?)",
+                (request.email, joined_at)
+            )
+            await db.commit()
         
         return {
             "message": "Successfully joined waitlist",
@@ -78,11 +101,21 @@ async def get_waitlist():
     Get all waitlist entries (for admin purposes).
     """
     try:
-        if not WAITLIST_FILE.exists():
-            return {"waitlist": [], "count": 0}
-        
-        with open(WAITLIST_FILE, "r") as f:
-            waitlist = json.load(f)
+        async with aiosqlite.connect(DB_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            cursor = await db.execute(
+                "SELECT id, email, joined_at FROM waitlist ORDER BY joined_at DESC"
+            )
+            rows = await cursor.fetchall()
+            
+            waitlist = [
+                {
+                    "id": row["id"],
+                    "email": row["email"],
+                    "joined_at": row["joined_at"]
+                }
+                for row in rows
+            ]
         
         return {
             "waitlist": waitlist,
@@ -99,6 +132,57 @@ async def get_waitlist():
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
+
+
+@app.get("/waitlist/export")
+async def export_waitlist(format: str = "csv"):
+    """
+    Export waitlist entries as CSV or JSON.
+    """
+    try:
+        async with aiosqlite.connect(DB_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            cursor = await db.execute(
+                "SELECT id, email, joined_at FROM waitlist ORDER BY joined_at DESC"
+            )
+            rows = await cursor.fetchall()
+
+            if format.lower() == "csv":
+                # Generate CSV
+                output = io.StringIO()
+                writer = csv.writer(output)
+                writer.writerow(["ID", "Email", "Joined At"])
+
+                for row in rows:
+                    writer.writerow([row["id"], row["email"], row["joined_at"]])
+
+                return Response(
+                    content=output.getvalue(),
+                    media_type="text/csv",
+                    headers={"Content-Disposition": "attachment; filename=waitlist.csv"}
+                )
+            else:
+                # Return as JSON
+                waitlist = [
+                    {
+                        "id": row["id"],
+                        "email": row["email"],
+                        "joined_at": row["joined_at"]
+                    }
+                    for row in rows
+                ]
+                return {"waitlist": waitlist, "count": len(waitlist)}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to export waitlist: {str(e)}"
+        )
+
+
+@app.get("/")
+async def root():
+    return {"message": "Mówka Waitlist Backend is running"}
 
 # Mount static files (must be last to avoid overriding API routes)
 app.mount("/", StaticFiles(directory=Path(__file__).parent.parent, html=True), name="static")
